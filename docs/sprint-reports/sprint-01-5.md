@@ -49,6 +49,23 @@ Every department (beauty, fragrance, footwear, gifts, chocolates) has the right 
 | Admin header buttons overlapped the avatar on phones | Text labels were too wide | Icon-only below 768 px, with accessible names |
 | Dev server logged `useShop` and `reading 'id'` errors | Stale hot-reload state after collections were added mid-session | Gone after a restart. Not reproducible on a clean server or the build. |
 
+## Post-review polish (v0.3.1)
+After reviewing the admin, the owner asked for four changes before Sprint 2. All are done:
+
+| Request | What changed |
+|---|---|
+| Refactor the sidebar spacing and realign its toggle | One shared inset and even group spacing. The collapse button sits in the logo row, and Payload's floating toggle no longer overlaps the logo. Collapse is remembered, and the sidebar stays open on laptops. On phones it is a drawer. |
+| Update the sidebar search bar | Field-style search with a search icon and ⌘ / K key caps |
+| Bring the remaining pages to the new design | Every Payload list, edit, global and account screen now has the same eyebrow, header, card toolbar, table, pager and field cards as Products and Inventory |
+| Fix the select dropdown icon | Drawn chevron with even spacing, plus hover and focus states |
+
+**Verification:**
+- Lint and typecheck are clean.
+- The 16 existing e2e tests passed after the redesign.
+- Sidebar flows were scripted and passed: open by default at 1280 px, collapse, reload stays collapsed, reopen, reload stays open; on a phone: open, close, close on outside tap.
+- Two new e2e tests were added (restyled screens, collapse persistence). The full suite passes 18 of 18 on a clean dev server.
+- Docker Desktop stopped once during testing. After Postgres came back, the dev server had to be restarted to clear a stale runtime error; the data was intact.
+
 ## Demo checklist
 1. Run `pnpm seed:catalog && pnpm seed:demo`, then `pnpm dev`.
 2. Admin home: check the KPI cards, the launch checklist and "Needs attention". Press **⌘K**, type "runner" and open the sneaker.

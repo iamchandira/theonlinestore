@@ -385,73 +385,164 @@ h1, h2, h3, h4,
    Sidebar (custom Nav)
    ========================================================================== */
 .nav.tos-nav {
+  /* We own the spacing: cancel Payload's header-height top padding and gutters */
+  --nav-padding-block-start: 0px;
+  --nav-padding-block-end: 0px;
+  --nav-padding-inline-start: 0px;
+  --nav-padding-inline-end: 0px;
   background: #fff;
   border-right: 1px solid var(--tos-line);
+  .nav__scroll {
+    padding: 0;
+  }
 }
+/* Payload's floating toggle sits on top of the logo when the nav is open. Our collapse
+   button lives in the brand row instead; Payload's hamburger shows only when collapsed. */
+body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
+  display: none;
+}
+.template-default__nav-toggler-container {
+  padding-left: 12px;
+}
+.template-default__nav-toggler,
+.app-header__mobile-nav-toggler {
+  width: 36px;
+  height: 36px;
+  justify-content: center;
+  border-radius: 10px !important;
+  border: 1px solid var(--tos-line-strong) !important;
+  background: #fff !important;
+  color: var(--tos-ink) !important;
+  &:hover {
+    border-color: var(--tos-ink) !important;
+  }
+}
+
 .tos-nav__inner {
+  --tos-nav-x: 12px; /* one inset shared by the brand row, search, links and footer */
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   min-height: 100%;
-  padding: 18px 14px 14px;
-  gap: 4px;
+  padding: 0 var(--tos-nav-x) 12px;
+  /* The column scrolls; nothing inside it may be squeezed to fit */
+  > * {
+    flex-shrink: 0;
+  }
 }
 .tos-nav__brand {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 2px 8px 14px;
+  height: var(--app-header-height);
+  margin: 0 calc(var(--tos-nav-x) * -1);
+  padding: 0 var(--tos-nav-x) 0 calc(var(--tos-nav-x) + 10px);
+  background: #fff;
+  a {
+    display: flex;
+    align-items: center;
+  }
   img {
-    height: 34px;
+    height: 30px;
     width: auto;
+    display: block;
   }
 }
-.tos-nav__close {
-  display: none;
+.tos-nav__collapse {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
   border: 0;
+  border-radius: 10px;
   background: transparent;
-  padding: 6px;
-  border-radius: 8px;
+  color: var(--tos-subtle);
   cursor: pointer;
-  color: var(--tos-ink);
+  transition: background-color 0.15s, color 0.15s;
+  &:hover {
+    background: var(--tos-canvas);
+    color: var(--tos-ink);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--tos-brand-600);
+    outline-offset: 1px;
+  }
 }
+
+/* Search: reads like a field, opens the command palette */
 .tos-nav__search {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-  height: 38px;
-  margin: 0 0 10px;
-  padding: 0 10px;
+  height: 40px;
+  margin: 4px 0 6px;
+  padding: 0 8px 0 12px;
   border: 1px solid var(--tos-line-strong);
   border-radius: 10px;
   background: var(--tos-canvas);
+  box-shadow: inset 0 1px 1px rgb(14 26 51 / 0.03);
   color: var(--tos-muted);
-  font: 500 13px var(--font-body);
-  cursor: pointer;
+  font: 500 14px/1 var(--font-body);
   text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
   &:hover {
-    border-color: var(--tos-ink);
-  }
-  span {
-    flex: 1;
-  }
-  kbd {
-    font: 600 11px var(--font-body);
-    color: var(--tos-muted);
     background: #fff;
-    border: 1px solid var(--tos-line-strong);
-    border-radius: 6px;
-    padding: 2px 6px;
+    border-color: var(--tos-subtle);
+  }
+  &:focus-visible {
+    outline: none;
+    background: #fff;
+    border-color: var(--tos-ink);
+    box-shadow: 0 0 0 4px var(--tos-brand-100);
   }
 }
+.tos-nav__search-icon {
+  flex-shrink: 0;
+  color: var(--tos-subtle);
+}
+.tos-nav__search-text {
+  flex: 1;
+  min-width: 0;
+}
+.tos-nav__search-keys {
+  display: inline-flex;
+  gap: 3px;
+  kbd {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 4px;
+    border: 1px solid var(--tos-line-strong);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background: #fff;
+    color: var(--tos-muted);
+    font: 600 11px/1 var(--font-body);
+  }
+}
+
 .tos-nav__group {
-  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 16px;
+}
+.tos-nav__search + .tos-nav__group {
+  margin-top: 8px;
 }
 .tos-nav__label {
-  padding: 6px 10px 4px;
+  padding: 0 10px 6px;
   font-size: 11px;
   font-weight: 700;
+  line-height: 16px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--tos-subtle);
@@ -460,14 +551,16 @@ h1, h2, h3, h4,
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 38px;
+  gap: 12px;
+  min-height: 36px;
   padding: 0 10px;
   border-radius: 10px;
   color: var(--tos-ink-2);
   font-size: 14px;
   font-weight: 500;
-  text-decoration: none;
+  line-height: 20px;
+  text-decoration: none !important;
+  white-space: nowrap;
   transition: background-color 0.15s, color 0.15s;
   svg {
     flex-shrink: 0;
@@ -481,6 +574,10 @@ h1, h2, h3, h4,
       color: var(--tos-ink);
     }
   }
+  &:focus-visible {
+    outline: 2px solid var(--tos-brand-600);
+    outline-offset: -2px;
+  }
   &--active {
     background: var(--tos-brand-50);
     color: var(--tos-brand-700);
@@ -488,10 +585,17 @@ h1, h2, h3, h4,
     svg {
       color: var(--tos-brand-600);
     }
+    &:hover {
+      background: var(--tos-brand-50);
+      color: var(--tos-brand-700);
+      svg {
+        color: var(--tos-brand-600);
+      }
+    }
     &::before {
       content: '';
       position: absolute;
-      left: -14px;
+      left: calc(var(--tos-nav-x) * -1);
       top: 8px;
       bottom: 8px;
       width: 3px;
@@ -513,14 +617,15 @@ h1, h2, h3, h4,
 }
 .tos-nav__badge {
   margin-left: auto;
-  min-width: 20px;
+  min-width: 22px;
   height: 20px;
-  padding: 0 6px;
+  padding: 0 7px;
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
   font-size: 11px;
   font-weight: 700;
+  line-height: 1;
   background: var(--tos-danger-bg);
   color: var(--tos-danger);
   &--soon {
@@ -531,19 +636,23 @@ h1, h2, h3, h4,
 }
 .tos-nav__footer {
   margin-top: auto;
-  padding-top: 14px;
+  padding-top: 12px;
   border-top: 1px solid var(--tos-line);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+}
+.tos-nav__group:has(+ .tos-nav__footer) {
+  margin-bottom: 20px;
 }
 .tos-nav__user {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-top: 6px;
   padding: 8px 10px;
   border-radius: 12px;
-  text-decoration: none;
+  text-decoration: none !important;
   color: var(--tos-ink);
   &:hover {
     background: var(--tos-canvas);
@@ -570,11 +679,6 @@ h1, h2, h3, h4,
   display: block;
   font-size: 12px;
   color: var(--tos-muted);
-}
-@media (max-width: 1024px) {
-  .tos-nav__close {
-    display: inline-grid;
-  }
 }
 
 /* ==========================================================================
@@ -876,6 +980,7 @@ h1, h2, h3, h4,
   }
 }
 .tos-mono {
+  white-space: nowrap;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--tos-muted);
@@ -1072,14 +1177,26 @@ h1, h2, h3, h4,
   }
 }
 .tos-select {
+  appearance: none;
+  -webkit-appearance: none;
   height: 36px;
-  padding: 0 12px;
+  padding: 0 36px 0 14px;
   border: 1px solid var(--tos-line-strong);
   border-radius: 999px;
-  background: #fff;
+  /* Tabler chevron-down, drawn by us so it sits inside the pill with even spacing */
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6l6 -6'/%3E%3C/svg%3E") no-repeat right 12px center / 16px;
   font: 600 13px var(--font-body);
   color: var(--tos-ink);
   cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  &:hover {
+    border-color: var(--tos-subtle);
+  }
+  &:focus-visible {
+    outline: none;
+    border-color: var(--tos-ink);
+    box-shadow: 0 0 0 4px var(--tos-brand-100);
+  }
 }
 .tos-table-wrap {
   overflow-x: auto;
@@ -1267,4 +1384,583 @@ h1, h2, h3, h4,
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* ==========================================================================
+   Payload's built-in screens in the TOS design
+   Every collection list (Categories, Brands, Tags, Occasions, Recipients,
+   Concerns, Media, Users, Stock history) and every edit screen (documents,
+   the Home page global, Account) gets the same page header, cards, toolbar
+   and table as our custom Products / Inventory screens.
+   ========================================================================== */
+
+/* ---------- Section eyebrows (same as our custom pages) ---------- */
+$tos-sections: (
+  products: 'Catalogue',
+  categories: 'Catalogue',
+  brands: 'Catalogue',
+  tags: 'Catalogue',
+  occasions: 'Catalogue',
+  recipients: 'Catalogue',
+  concerns: 'Catalogue',
+  media: 'Content',
+  stock-movements: 'Insights',
+  users: 'People',
+);
+@each $slug, $label in $tos-sections {
+  .collection-list--#{$slug} .list-header::before,
+  .template-default__wrap:has(.collection-edit--#{$slug}) .doc-header__header::before {
+    content: '#{$label}';
+  }
+}
+.template-default__wrap:has(.global-edit) .doc-header__header::before {
+  content: 'Content';
+}
+.template-default__wrap:has(.account) .doc-header__header::before {
+  content: 'Your account';
+}
+.list-header::before,
+.doc-header__header::before {
+  flex-basis: 100%;
+  margin-bottom: 6px;
+  font: 700 12px/1.2 var(--font-body);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--tos-brand-600);
+}
+
+/* ---------- Page header ---------- */
+.collection-list__wrap {
+  padding-top: 12px;
+  padding-bottom: 48px;
+}
+.list-header {
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin: 12px 0 20px !important;
+}
+.list-header__title,
+.doc-header__title {
+  font: 700 30px/1.15 var(--tos-display) !important;
+  letter-spacing: -0.02em;
+  color: var(--tos-ink);
+}
+.list-header__title-and-actions {
+  gap: 14px;
+}
+.list-header .view-description,
+.collection-list .view-description,
+.doc-header .view-description {
+  margin-top: 6px;
+  max-width: 72ch;
+  color: var(--tos-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.doc-header {
+  padding-top: 12px;
+  padding-bottom: 18px;
+}
+.doc-header__header {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* "Create New" → our primary pill */
+.list-create-new-doc__create-new-button.btn,
+.list-header .btn.btn--size-small {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  margin: 0 !important;
+  padding: 0 16px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--tos-brand-600) !important;
+  color: #fff !important;
+  font: 700 13px var(--font-body);
+  box-shadow: 0 6px 16px -8px rgb(217 57 10 / 0.6);
+  .btn__label::before {
+    content: '+ ';
+  }
+  &:hover {
+    background: var(--tos-brand-700) !important;
+  }
+}
+
+/* Edit / API tabs on documents */
+.doc-tab.btn {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  margin: 0 !important;
+  .btn__content {
+    display: flex;
+    align-items: center;
+  }
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--tos-ink-2) !important;
+  font: 600 13px var(--font-body);
+  &:hover {
+    background: #fff !important;
+  }
+}
+.doc-tab--active.btn {
+  background: var(--tos-ink) !important;
+  color: #fff !important;
+}
+
+/* ---------- List: toolbar + table + pager read as one card ---------- */
+.list-controls {
+  gap: 0;
+  margin-bottom: 0 !important;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--tos-line);
+  border-bottom: 0;
+  border-radius: var(--tos-radius-lg) var(--tos-radius-lg) 0 0;
+  box-shadow: var(--tos-shadow);
+}
+.list-controls .search-bar {
+  --search-bg: transparent;
+  min-height: 38px;
+  gap: 10px;
+  background: transparent;
+}
+.list-controls .search-filter {
+  max-width: 420px;
+}
+.list-controls .search-filter__input {
+  height: 38px;
+  padding-left: 40px;
+  border: 1px solid var(--tos-line-strong) !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  box-shadow: none !important;
+  font: 500 14px var(--font-body);
+  color: var(--tos-ink);
+  &:focus {
+    border-color: var(--tos-ink) !important;
+    box-shadow: 0 0 0 4px var(--tos-brand-100) !important;
+  }
+}
+.list-controls .search-filter .icon,
+.list-controls .search-filter svg {
+  color: var(--tos-subtle);
+}
+.list-controls .search-bar__actions {
+  gap: 8px;
+  padding: 0;
+  justify-content: flex-end;
+}
+.list-controls .search-bar .icon--search {
+  color: var(--tos-subtle);
+}
+.list-controls .pill,
+.list-controls__columns .pill-selector__pill {
+  height: 34px;
+  padding: 0 12px 0 14px !important;
+  border: 1px solid var(--tos-line-strong) !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: var(--tos-ink) !important;
+  font: 600 13px var(--font-body);
+  box-shadow: none !important;
+  &:hover {
+    border-color: var(--tos-subtle) !important;
+  }
+}
+.list-controls__columns .pill-selector__pill {
+  height: 30px;
+  font-size: 12px;
+}
+.list-controls__columns .pill-selector,
+.list-controls__where .where-builder {
+  padding-top: 14px;
+}
+
+.collection-list__tables {
+  margin-bottom: 0 !important;
+  background: #fff;
+  border-inline: 1px solid var(--tos-line);
+  box-shadow: var(--tos-shadow);
+}
+.collection-list .table {
+  width: 100%;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+}
+.collection-list .table table,
+.table table {
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.collection-list .table thead th {
+  padding: 10px 16px;
+  background: #faf9f7;
+  border-top: 1px solid var(--tos-line);
+  border-bottom: 1px solid var(--tos-line);
+  color: var(--tos-muted);
+  font: 600 12px var(--font-body);
+  white-space: nowrap;
+  .sort-column__label,
+  .sort-header__label,
+  span {
+    color: inherit;
+  }
+  button {
+    color: var(--tos-subtle);
+  }
+}
+.collection-list .table tbody tr,
+.collection-list .table tbody tr:nth-child(odd) {
+  background: transparent !important;
+  border-radius: 0 !important;
+}
+.collection-list .table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--tos-line);
+  vertical-align: middle;
+  color: var(--tos-ink-2);
+}
+.collection-list .table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.collection-list .table tbody tr:hover td {
+  background: #fcfbfa;
+}
+.collection-list .table td:first-child,
+.collection-list .table th:first-child {
+  padding-inline-start: 20px;
+}
+/* The title cell links to the document: bold ink, no underline */
+.collection-list .table tbody td a {
+  color: var(--tos-ink);
+  font-weight: 600;
+  text-decoration: none;
+  &:hover {
+    color: var(--tos-brand-600);
+  }
+}
+.collection-list .table .thumbnail {
+  border-radius: 10px;
+  border: 1px solid var(--tos-line);
+  background: #fff;
+  overflow: hidden;
+}
+.collection-list .checkbox-input__input,
+.collection-list .select-row .checkbox-input__input {
+  border-radius: 6px;
+}
+
+.collection-list .page-controls,
+.collection-list__wrap > .page-controls {
+  margin: 0;
+  padding: 10px 16px;
+  background: #fff;
+  border: 1px solid var(--tos-line);
+  border-radius: 0 0 var(--tos-radius-lg) var(--tos-radius-lg);
+  box-shadow: var(--tos-shadow);
+  color: var(--tos-muted);
+  font-size: 13px;
+  .paginator {
+    margin: 0;
+    width: auto;
+    align-items: center;
+    gap: 2px;
+  }
+}
+.paginator__page {
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  border-radius: 999px !important;
+  font: 600 13px var(--font-body);
+  &:hover {
+    background: var(--tos-canvas);
+  }
+}
+.paginator__page--is-current {
+  background: var(--tos-ink) !important;
+  color: #fff !important;
+}
+.per-page .popup-button,
+.per-page button {
+  font: 600 13px var(--font-body);
+  color: var(--tos-ink);
+}
+/* No pager (one page): close the card under the table */
+.collection-list__tables:not(:has(+ .page-controls)):last-child,
+.collection-list__wrap > .collection-list__tables:last-child {
+  border-bottom: 1px solid var(--tos-line);
+  border-radius: 0 0 var(--tos-radius-lg) var(--tos-radius-lg);
+}
+.collection-list__no-results {
+  padding: 48px 24px;
+  background: #fff;
+  border: 1px solid var(--tos-line);
+  border-radius: 0 0 var(--tos-radius-lg) var(--tos-radius-lg);
+  text-align: center;
+  color: var(--tos-muted);
+}
+.list-selection {
+  font-size: 13px;
+  color: var(--tos-muted);
+}
+
+/* ---------- Edit screens: sticky action bar + white cards ---------- */
+.doc-controls {
+  border-top: 1px solid var(--tos-line);
+  border-bottom: 1px solid var(--tos-line);
+  background: rgb(255 255 255 / 0.9) !important;
+  backdrop-filter: blur(10px);
+}
+.doc-controls__label {
+  color: var(--tos-subtle);
+}
+.doc-controls__value {
+  color: var(--tos-ink-2);
+  font-weight: 600;
+}
+.doc-controls__popup .popup-button {
+  border-radius: 10px;
+}
+.document-fields--has-sidebar,
+.document-fields {
+  --main-border: none;
+  --main-field-margin: 0px;
+}
+/* Tabs (e.g. Product / Variants & stock / Details) sit flush inside the card */
+.document-fields__fields > .tabs-field {
+  margin: 0 !important;
+  > .tabs-field__content-wrap {
+    padding-inline: 0 !important;
+  }
+}
+.document-fields__fields > .tabs-field:first-child {
+  margin-top: -8px !important;
+}
+.tabs-field__tabs-wrap {
+  margin-inline: 0 !important;
+  padding-inline: 0 !important;
+}
+.document-fields__sidebar-fields {
+  padding-top: 0 !important;
+}
+.document-fields__edit {
+  padding-top: 24px;
+  padding-bottom: 48px;
+}
+/* Main column card */
+.document-fields__main > .document-fields__edit > .document-fields__fields,
+.global-edit .document-fields__fields {
+  padding: 28px;
+  background: #fff;
+  border: 1px solid var(--tos-line);
+  border-radius: var(--tos-radius-lg);
+  box-shadow: var(--tos-shadow);
+}
+/* Sidebar card */
+.document-fields__sidebar {
+  padding-top: 24px;
+}
+.document-fields__sidebar-fields {
+  > .render-fields {
+    padding: 24px;
+    background: #fff;
+    border: 1px solid var(--tos-line);
+    border-radius: var(--tos-radius-lg);
+    box-shadow: var(--tos-shadow);
+  }
+  > .render-fields:empty {
+    display: none;
+  }
+}
+/* Groups (e.g. SEO) inside the card: a quiet divider instead of Payload's heavy rule */
+.document-fields__fields .group-field--top-level {
+  margin: 8px 0 0 !important;
+  padding: 24px 0 0 !important;
+  border-top: 1px solid var(--tos-line) !important;
+  border-bottom: 0 !important;
+}
+.group-field__title,
+.group-field__title .field-label {
+  font: 700 18px/1.3 var(--tos-display) !important;
+  color: var(--tos-ink) !important;
+}
+.field-label {
+  font: 600 13px var(--font-body) !important;
+  color: var(--tos-ink-2) !important;
+}
+.field-description {
+  color: var(--tos-muted) !important;
+  font-size: 12.5px;
+}
+.field-type input,
+.field-type textarea,
+.react-select .rs__control {
+  border-color: var(--tos-line-strong) !important;
+  box-shadow: none !important;
+}
+.field-type input:hover,
+.field-type textarea:hover,
+.react-select .rs__control:hover {
+  border-color: var(--tos-subtle) !important;
+}
+/* Arrays / blocks inside the card */
+.array-field__header,
+.blocks-field__header {
+  margin-bottom: 12px;
+}
+.collapsible {
+  border: 1px solid var(--tos-line) !important;
+  border-radius: var(--tos-radius) !important;
+  box-shadow: none !important;
+  overflow: clip;
+  &:hover {
+    border-color: var(--tos-line-strong) !important;
+  }
+}
+.collapsible__content {
+  border-radius: 0 0 var(--tos-radius) var(--tos-radius) !important;
+}
+.collapsible__toggle-wrap {
+  background: #faf9f7 !important;
+  border-radius: var(--tos-radius) var(--tos-radius) 0 0;
+}
+.collapsible--collapsed .collapsible__toggle-wrap {
+  border-radius: var(--tos-radius);
+}
+/* Upload / dropzone */
+.dropzone {
+  border-radius: var(--tos-radius) !important;
+  border-color: var(--tos-line-strong) !important;
+  background: #faf9f7 !important;
+}
+
+@media (max-width: 768px) {
+  .list-header__title,
+  .doc-header__title {
+    font-size: 24px !important;
+  }
+  .list-controls {
+    padding: 12px;
+  }
+  .document-fields__main > .document-fields__edit > .document-fields__fields,
+  .global-edit .document-fields__fields,
+  .document-fields__sidebar-fields > .render-fields {
+    padding: 18px;
+  }
+}
+
+/* Tabs inside the card start at the card edge (Payload adds a gutter-wide spacer) */
+.document-fields__fields .tabs-field__tabs::before,
+.document-fields__fields .tabs-field__tabs::after {
+  display: none !important;
+}
+/* Rich text uses the admin body font, not the browser serif */
+.rich-text-lexical,
+.rich-text-lexical .editor-placeholder,
+.rich-text-lexical [contenteditable] {
+  font-family: var(--font-body) !important;
+}
+.rich-text-lexical .editor-placeholder {
+  font-size: 14px;
+  color: var(--tos-subtle);
+}
+
+/* Secondary header actions (e.g. Bulk Upload) are outline pills; only "Create New" is primary */
+.list-header .btn.btn--size-small:not(.list-create-new-doc__create-new-button) {
+  background: #fff !important;
+  color: var(--tos-ink) !important;
+  border: 1px solid var(--tos-line-strong) !important;
+  box-shadow: none;
+  .btn__label::before {
+    content: none;
+  }
+  &:hover {
+    background: #fff !important;
+    border-color: var(--tos-ink) !important;
+  }
+}
+/* History is written by the system; changes are made from the Inventory screen */
+.collection-list--stock-movements .list-create-new-doc__create-new-button {
+  display: none !important;
+}
+
+/* Phones: Payload hides the floating toggle's icon but keeps the button, which then covers the
+   header's own menu button. Hide the floating one so the header button is the only toggle. */
+@media (max-width: 768px) {
+  .template-default__nav-toggler-wrapper {
+    display: none !important;
+  }
+}
+/* Eyebrow stays left-aligned when Payload stacks the document header on phones */
+.doc-header__header::before {
+  align-self: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+/* Menu buttons: the hamburger icon is centred in our 36px square, without Payload's inner ring.
+   (Display is left to Payload: the header's button only shows on phones.) */
+.template-default__nav-toggler,
+.app-header__mobile-nav-toggler {
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+  .hamburger {
+    position: static;
+    left: auto;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .hamburger__open-icon,
+  .hamburger__close-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Tablets and phones: the sidebar slides over the page instead of squeezing it */
+@media (max-width: 1024px) {
+  .template-default--nav-hydrated.template-default--nav-open,
+  .template-default--nav-open {
+    grid-template-columns: 0 auto !important;
+  }
+  .nav.tos-nav {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: calc(var(--z-modal) + 1);
+    width: min(300px, 86vw);
+    height: 100dvh;
+    transform: translateX(-100%);
+    transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: none;
+  }
+  .nav.tos-nav.nav--nav-open {
+    transform: none;
+    box-shadow: 0 0 0 100vmax rgb(7 14 31 / 0.35), 16px 0 40px -16px rgb(7 14 31 / 0.35);
+  }
+}
+@media (max-width: 1024px) and (prefers-reduced-motion: reduce) {
+  .nav.tos-nav {
+    transition: none;
+  }
+}
+
+/* Several status pills in one cell stack neatly, left-aligned */
+.tos-pill-stack {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }

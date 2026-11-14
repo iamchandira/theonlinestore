@@ -5,7 +5,7 @@ import { allowRoles, anyone } from '../access/roles'
 /** Product photos, banners and editorial images. Sizes match storefront usage (4:5 product cards). */
 export const Media: CollectionConfig = {
   slug: 'media',
-  admin: { group: 'Content' },
+  admin: { group: 'Content', description: 'Product photos, banners and logos. Uploads are converted to WebP automatically.' },
   access: {
     read: anyone,
     create: allowRoles('store-manager', 'inventory-manager', 'marketing'),

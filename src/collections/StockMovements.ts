@@ -8,12 +8,12 @@ import { allowRoles } from '../access/roles'
  */
 export const StockMovements: CollectionConfig = {
   slug: 'stock-movements',
-  labels: { singular: 'Stock movement', plural: 'Stock movements' },
+  labels: { singular: 'Stock movement', plural: 'Stock history' },
   admin: {
     group: 'Catalogue',
     useAsTitle: 'sku',
     defaultColumns: ['createdAt', 'product', 'variantLabel', 'change', 'resultingStock', 'reason', 'user'],
-    description: 'Every stock change, who made it and why. Written automatically.',
+    description: 'Every stock change, who made it and why. Written automatically; adjust stock from Inventory.',
   },
   access: {
     read: allowRoles('store-manager', 'inventory-manager', 'order-fulfillment', 'support'),

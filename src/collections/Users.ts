@@ -13,6 +13,7 @@ export const Users: CollectionConfig = {
     useAsTitle: 'email',
     defaultColumns: ['fullName', 'email', 'roles', 'phone', 'createdAt'],
     group: 'Customers & Staff',
+    description: 'Customers and staff accounts. Roles control what each staff member can see and do.',
   },
   auth: {
     tokenExpiration: 60 * 60 * 24 * 7, // 7 days

@@ -59,4 +59,37 @@ test.describe('Custom admin', () => {
       body: JSON.stringify({ productId: doc.id, changes: [{ sku, stock: before }], reason: 'count', note: 'E2E revert' }),
     })
   })
+
+  test('Payload screens use the TOS design (eyebrow, card toolbar, primary Create)', async () => {
+    await page.goto(`${BASE}/admin/collections/categories`)
+    const eyebrow = await page.locator('.list-header').evaluate((el) => getComputedStyle(el, '::before').content)
+    expect(eyebrow).toBe('"Catalogue"')
+    await expect(page.locator('.list-controls')).toHaveCSS('background-color', 'rgb(255, 255, 255)')
+    await expect(page.locator('.list-create-new-doc__create-new-button')).toHaveCSS('background-color', 'rgb(217, 57, 10)')
+  })
+
+  test('sidebar collapse is remembered on laptops and reopens from the menu button', async ({ browser }) => {
+    // Fresh context so the preference change can't leak into the tests above
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    const p = await ctx.newPage()
+    await login({ page: p, user: testUser })
+    const isOpen = () => p.locator('.template-default').evaluate((el) => el.classList.contains('template-default--nav-open'))
+
+    await p.goto(`${BASE}/admin/collections/tags`)
+    await expect.poll(isOpen).toBe(true) // open by default on a 1280px laptop (Payload alone would close it)
+    await expect(p.locator('.template-default__nav-toggler-wrapper')).toBeHidden() // no stray toggle over the logo
+
+    await p.getByRole('button', { name: 'Collapse sidebar' }).click()
+    await expect.poll(isOpen).toBe(false)
+    await p.waitForTimeout(500) // preference is saved asynchronously
+    await p.reload()
+    await expect.poll(isOpen).toBe(false)
+
+    await p.locator('.template-default__nav-toggler').click()
+    await expect.poll(isOpen).toBe(true)
+    await p.waitForTimeout(500)
+    await p.reload()
+    await expect.poll(isOpen).toBe(true)
+    await ctx.close()
+  })
 })

@@ -165,5 +165,17 @@ The admin is designed as its own product UI, taking ideas from Shopify, Linear, 
 - **Responsive:** header actions become icon-only below 768 px, and KPI cards reflow (`minmax(148px, 1fr)`).
 - **Motion:** 150 ms fades and slides only, switched off under `prefers-reduced-motion`.
 
+**Admin polish (0.3.1):**
+- **Sidebar:**
+  - One 12 px inset for every row. The logo row is the header height and holds the collapse button.
+  - The search is a field with ⌘ / K key caps.
+  - Collapse is remembered. On screens up to 1024 px the sidebar becomes a drawer over the page.
+- **Payload's own screens (lists, edit views, globals, account) share the custom-page design:**
+  - Section eyebrow, display title and subtitle.
+  - A "+ Create New" primary pill.
+  - The search, Columns and Filters toolbar, table and pager read as one card.
+  - Fields sit in white cards: the main column and the sidebar.
+- Selects use a drawn chevron with 36 px right padding, never the native arrow.
+
 ### Lifestyle tints (storefront)
 Each department keeps its mood tint: beauty blush, fragrance lilac, footwear sand, gifts peach, chocolates cocoa cream. Home rails can use the `lilac` style (fragrances) as well as cream and blush. Demo products carry a neutral "Sample" badge.

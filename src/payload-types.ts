@@ -342,6 +342,8 @@ export interface Product {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Brands on the store. Featured brands appear on the home page and in the Brands menu.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brands".
  */
@@ -372,6 +374,8 @@ export interface Brand {
   createdAt: string;
 }
 /**
+ * Product photos, banners and logos. Uploads are converted to WebP automatically.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
@@ -429,6 +433,8 @@ export interface Media {
   };
 }
 /**
+ * Departments and sub-categories shoppers browse by. Nest a category under a parent to build the menu.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
@@ -543,7 +549,7 @@ export interface Concern {
   createdAt: string;
 }
 /**
- * Every stock change, who made it and why. Written automatically.
+ * Every stock change, who made it and why. Written automatically; adjust stock from Inventory.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "stock-movements".
@@ -568,6 +574,8 @@ export interface StockMovement {
   createdAt: string;
 }
 /**
+ * Customers and staff accounts. Roles control what each staff member can see and do.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */

@@ -2,6 +2,27 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.3.1] - 2026-11-15 · Admin polish (before Sprint 2)
+### Changed
+- **Admin sidebar layout:**
+  - Spacing and alignment redone: one 12 px inset for the logo row, search, links and footer; even group spacing; links no longer wrap.
+  - Payload's extra header-height padding removed.
+  - "Occasions & recipients" split into two links.
+- **Sidebar toggle:**
+  - The collapse button now sits in the logo row. Payload's floating "<" toggle no longer covers the logo.
+  - When collapsed, a centred menu button in the header reopens it.
+  - The choice is remembered, and the sidebar stays open by default on 1025–1440 px laptops, where Payload used to close it.
+  - On phones and tablets it slides over the page, and closes on an outside tap or Esc.
+- **Sidebar search:** redesigned as a field with a search icon and separate ⌘ / K key caps.
+- **Every remaining admin screen now uses the new design:**
+  - Screens: Categories, Brands, Tags, Occasions, Recipients, Beauty concerns, Media, Users, Stock history, every edit screen (including the product editor), the Home page global and Account.
+  - Shared look: section eyebrow, display title, subtitle, primary "+ Create New" pill, toolbar/table/pager card, white field cards, clean tabs and repeatable rows.
+- "Stock movements" is renamed **Stock history** (as in the sidebar). Its manual "Create New" button is hidden, because stock is changed from Inventory.
+### Fixed
+- Select dropdowns (products toolbar) showed the browser's arrow squeezed against the pill edge. They now have an evenly spaced chevron and hover and focus states.
+- Status pills ("Active" + "Price TBC") stack left-aligned.
+- Inventory SKUs no longer break across lines.
+
 ## [0.3.0] - 2026-11-15 · Sprint 1.5: Lifestyle store & custom admin
 ### Added
 - **Lifestyle catalogue:**

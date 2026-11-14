@@ -12,7 +12,12 @@ const paths = (doc: Record<string, unknown>) => {
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
-  admin: { useAsTitle: 'name', group: 'Catalogue', defaultColumns: ['name', 'slug', 'parent', 'order'] },
+  admin: {
+    useAsTitle: 'name',
+    group: 'Catalogue',
+    defaultColumns: ['name', 'slug', 'parent', 'order'],
+    description: 'Departments and sub-categories shoppers browse by. Nest a category under a parent to build the menu.',
+  },
   access: { read: anyone, create: catalogEditors, update: catalogEditors, delete: catalogEditors },
   defaultSort: 'order',
   hooks: { afterChange: [revalidateStorefront(paths)], afterDelete: [revalidateStorefrontOnDelete(paths)] },
