@@ -1,18 +1,60 @@
-import React from 'react'
-import './styles.css'
+import type { Metadata, Viewport } from 'next'
+import type { ReactNode } from 'react'
 
-export const metadata = {
-  description: 'A blank template using Payload in a Next.js app.',
-  title: 'Payload Blank Template',
+import { AnnouncementBar } from '@/components/layout/AnnouncementBar'
+import { CartDrawer } from '@/components/layout/CartDrawer'
+import { Footer } from '@/components/layout/Footer'
+import { Header } from '@/components/layout/Header'
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav'
+import { Providers } from '@/components/layout/Providers'
+import { WhatsAppFab } from '@/components/layout/WhatsAppFab'
+import { QuickAddSheet } from '@/components/product/QuickAddSheet'
+import { site } from '@/config/site'
+
+import { fontVariables } from './fonts'
+import './globals.css'
+
+export const metadata: Metadata = {
+  metadataBase: new URL(site.url),
+  title: {
+    default: `${site.name}: Beauty, Fragrances, Gifts & More in Sri Lanka`,
+    template: `%s | ${site.name}`,
+  },
+  description: site.description,
+  applicationName: site.name,
+  openGraph: {
+    type: 'website',
+    siteName: site.name,
+    locale: 'en_LK',
+    images: [{ url: '/brand/og-default.jpg', width: 1200, height: 480, alt: site.name }],
+  },
+  twitter: { card: 'summary_large_image' },
+  alternates: { canonical: '/' },
 }
 
-export default async function RootLayout(props: { children: React.ReactNode }) {
-  const { children } = props
+export const viewport: Viewport = {
+  themeColor: '#ff5a1f',
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
 
+export default function FrontendLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en-LK" className={fontVariables}>
       <body>
-        <main>{children}</main>
+        <Providers>
+          <AnnouncementBar />
+          <Header />
+          <main id="main" className="min-h-[60vh]">
+            {children}
+          </main>
+          <Footer />
+          <CartDrawer />
+          <QuickAddSheet />
+          <MobileBottomNav />
+          <WhatsAppFab />
+        </Providers>
       </body>
     </html>
   )

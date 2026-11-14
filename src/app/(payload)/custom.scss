@@ -1,0 +1,41 @@
+/* The Online Store: Payload admin brand theme.
+   Keeps Payload's own structure; only swaps the accent colour, radii and font to match the storefront. */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --style-radius-s: 6px;
+  --style-radius-m: 10px;
+  --style-radius-l: 14px;
+
+  /* Accent ("success" scale is Payload's primary action colour) */
+  --theme-success-50: #fff4ed;
+  --theme-success-100: #ffe6d5;
+  --theme-success-150: #ffd7bd;
+  --theme-success-200: #ffc9a8;
+  --theme-success-250: #ffb68c;
+  --theme-success-300: #ffa370;
+  --theme-success-350: #ff8e56;
+  --theme-success-400: #ff7a3d;
+  --theme-success-450: #ff6a2e;
+  --theme-success-500: #ff5a1f;
+  --theme-success-550: #ec4a14;
+  --theme-success-600: #d9390a;
+  --theme-success-650: #c73409;
+  --theme-success-700: #b52e08;
+  --theme-success-750: #a22a0a;
+  --theme-success-800: #8f260b;
+  --theme-success-850: #82230c;
+  --theme-success-900: #74210d;
+  --theme-success-950: #3f0e04;
+}
+
+.template-default__nav,
+.nav {
+  --theme-elevation-0: #ffffff;
+}
+
+.login__brand img,
+.graphic-logo {
+  max-width: 260px;
+}

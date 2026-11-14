@@ -1,0 +1,2714 @@
+{
+  "_note": "Seed catalogue extracted from client PDF catalogues (cosmetic-products/). Prices, ratings and stock are realistic PLACEHOLDERS (priceTBC) to be confirmed by admins in Sprint 1.",
+  "generatedAt": "2026-11-14",
+  "products": [
+    {
+      "id": 1,
+      "slug": "dr-althea-345-relief-cream",
+      "brand": "Dr. Althea",
+      "name": "345 Relief Cream",
+      "category": "skincare",
+      "subcategory": "moisturizers",
+      "concerns": [
+        "sensitive",
+        "redness"
+      ],
+      "tags": [
+        "k-beauty",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4,
+      "reviewCount": 12,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-001-1",
+          "option": "Size",
+          "label": "50 ml",
+          "price": 6950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/dr-althea-345-relief-cream.png"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "dr-althea-345-relief-cream-mist",
+      "brand": "Dr. Althea",
+      "name": "345 Relief Cream Mist",
+      "category": "skincare",
+      "subcategory": "toners-mists",
+      "concerns": [
+        "sensitive",
+        "hydration"
+      ],
+      "tags": [
+        "k-beauty",
+        "new"
+      ],
+      "badge": "new",
+      "rating": 4.7,
+      "reviewCount": 65,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-002-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 5450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/dr-althea-345-relief-cream-mist.png"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "slug": "celimax-vita-a-retinal-shot-booster",
+      "brand": "Celimax",
+      "name": "The Vita-A Retinal Shot Tightening Booster",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "anti-aging",
+        "pores"
+      ],
+      "tags": [
+        "k-beauty"
+      ],
+      "badge": null,
+      "rating": 4.4,
+      "reviewCount": 118,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-003-1",
+          "option": "Size",
+          "label": "15 ml",
+          "price": 5250,
+          "compareAtPrice": 6250,
+          "stock": 24,
+          "image": "/catalogue/celimax-vita-a-retinal-shot-booster.png"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "slug": "cosrx-advanced-snail-96-mucin-essence",
+      "brand": "COSRX",
+      "name": "Advanced Snail 96 Mucin Power Essence",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "hydration",
+        "repair"
+      ],
+      "tags": [
+        "k-beauty",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.1,
+      "reviewCount": 171,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-004-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 4950,
+          "compareAtPrice": 5950,
+          "stock": 24,
+          "image": "/catalogue/cosrx-advanced-snail-96-mucin-essence.png"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "slug": "medicube-deep-vita-c-capsule-cream",
+      "brand": "Medicube",
+      "name": "Deep Vita C Capsule Cream",
+      "category": "skincare",
+      "subcategory": "moisturizers",
+      "concerns": [
+        "brightening",
+        "dullness"
+      ],
+      "tags": [
+        "k-beauty"
+      ],
+      "badge": null,
+      "rating": 4.8,
+      "reviewCount": 224,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-005-1",
+          "option": "Size",
+          "label": "55 g",
+          "price": 8450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/medicube-deep-vita-c-capsule-cream.png"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "slug": "medicube-kojic-acid-turmeric-niacinamide-serum",
+      "brand": "Medicube",
+      "name": "Kojic Acid Turmeric Niacinamide Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "brightening",
+        "dark-spots"
+      ],
+      "tags": [
+        "k-beauty",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.5,
+      "reviewCount": 37,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-006-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 7450,
+          "compareAtPrice": 8950,
+          "stock": 24,
+          "image": "/catalogue/medicube-kojic-acid-turmeric-niacinamide-serum.png"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "slug": "medicube-txa-niacinamide-15-serum",
+      "brand": "Medicube",
+      "name": "TXA Niacinamide 15% Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "dark-spots",
+        "brightening"
+      ],
+      "tags": [
+        "k-beauty"
+      ],
+      "badge": null,
+      "rating": 4.2,
+      "reviewCount": 90,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-007-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 7950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/medicube-txa-niacinamide-15-serum.png"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "slug": "medicube-collagen-night-wrapping-mask",
+      "brand": "Medicube",
+      "name": "Collagen Night Wrapping Mask",
+      "category": "skincare",
+      "subcategory": "masks",
+      "concerns": [
+        "anti-aging",
+        "firming"
+      ],
+      "tags": [
+        "k-beauty",
+        "trending"
+      ],
+      "badge": "trending",
+      "rating": 4.9,
+      "reviewCount": 143,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-008-1",
+          "option": "Size",
+          "label": "75 ml",
+          "price": 8950,
+          "compareAtPrice": 10500,
+          "stock": 24,
+          "image": "/catalogue/medicube-collagen-night-wrapping-mask.png"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "slug": "medicube-turmeric-overnight-wrapping-mask",
+      "brand": "Medicube",
+      "name": "Turmeric Overnight Wrapping Mask",
+      "category": "skincare",
+      "subcategory": "masks",
+      "concerns": [
+        "brightening",
+        "dullness"
+      ],
+      "tags": [
+        "k-beauty",
+        "new"
+      ],
+      "badge": "new",
+      "rating": 4.6,
+      "reviewCount": 196,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-009-1",
+          "option": "Size",
+          "label": "75 ml",
+          "price": 8950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/medicube-turmeric-overnight-wrapping-mask.png"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "slug": "medicube-collagen-jelly-cream",
+      "brand": "Medicube",
+      "name": "Collagen Jelly Cream",
+      "category": "skincare",
+      "subcategory": "moisturizers",
+      "concerns": [
+        "firming",
+        "hydration"
+      ],
+      "tags": [
+        "k-beauty",
+        "trending"
+      ],
+      "badge": null,
+      "rating": 4.3,
+      "reviewCount": 249,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-010-1",
+          "option": "Size",
+          "label": "50 ml",
+          "price": 8750,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/medicube-collagen-jelly-cream.png"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "slug": "skin1004-centella-poremizing-fresh-ampoule",
+      "brand": "SKIN1004",
+      "name": "Centella Poremizing Fresh Ampoule",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "pores",
+        "oil-control"
+      ],
+      "tags": [
+        "k-beauty"
+      ],
+      "badge": null,
+      "rating": 4,
+      "reviewCount": 62,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-011-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 6450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/skin1004-centella-poremizing-fresh-ampoule.png"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "slug": "skin1004-madagascar-centella-ampoule",
+      "brand": "SKIN1004",
+      "name": "Madagascar Centella Ampoule",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "sensitive",
+        "repair"
+      ],
+      "tags": [
+        "k-beauty",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.7,
+      "reviewCount": 115,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-012-1",
+          "option": "Size",
+          "label": "55 ml",
+          "price": 4950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/skin1004-madagascar-centella-ampoule-1.png"
+        },
+        {
+          "sku": "TOS-012-2",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 7250,
+          "compareAtPrice": 8450,
+          "stock": 24,
+          "image": "/catalogue/skin1004-madagascar-centella-ampoule-2.png"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "slug": "skin1004-centella-tea-trica-relief-ampoule",
+      "brand": "SKIN1004",
+      "name": "Centella Tea-Trica Relief Ampoule",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "acne",
+        "sensitive"
+      ],
+      "tags": [
+        "k-beauty"
+      ],
+      "badge": null,
+      "rating": 4.4,
+      "reviewCount": 168,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-013-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 6750,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/skin1004-centella-tea-trica-relief-ampoule.png"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "slug": "skin1004-centella-hyalu-cica-blue-serum",
+      "brand": "SKIN1004",
+      "name": "Centella Hyalu-Cica Blue Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "hydration"
+      ],
+      "tags": [
+        "k-beauty",
+        "new"
+      ],
+      "badge": "new",
+      "rating": 4.1,
+      "reviewCount": 221,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-014-1",
+          "option": "Size",
+          "label": "50 ml",
+          "price": 6250,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/skin1004-centella-hyalu-cica-blue-serum.png"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "slug": "skin1004-centella-probio-cica-intensive-ampoule",
+      "brand": "SKIN1004",
+      "name": "Centella Probio-Cica Intensive Ampoule",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "repair",
+        "anti-aging"
+      ],
+      "tags": [
+        "k-beauty"
+      ],
+      "badge": null,
+      "rating": 4.8,
+      "reviewCount": 34,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-015-1",
+          "option": "Size",
+          "label": "50 ml",
+          "price": 6650,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/skin1004-centella-probio-cica-intensive-ampoule.png"
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "slug": "skin1004-centella-tone-brightening-capsule-ampoule",
+      "brand": "SKIN1004",
+      "name": "Centella Tone Brightening Capsule Ampoule",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "brightening"
+      ],
+      "tags": [
+        "k-beauty"
+      ],
+      "badge": null,
+      "rating": 4.5,
+      "reviewCount": 87,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-016-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 6950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/skin1004-centella-tone-brightening-capsule-ampoule.png"
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "slug": "anua-peach-70-niacin-serum",
+      "brand": "Anua",
+      "name": "Peach 70% Niacinamide Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "brightening",
+        "hydration"
+      ],
+      "tags": [
+        "k-beauty",
+        "trending"
+      ],
+      "badge": "trending",
+      "rating": 4.2,
+      "reviewCount": 140,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-017-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 6850,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/anua-peach-70-niacin-serum.png"
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "slug": "anua-niacinamide-10-txa-4-dark-spot-serum",
+      "brand": "Anua",
+      "name": "Niacinamide 10% + TXA 4% Dark Spot Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "dark-spots"
+      ],
+      "tags": [
+        "k-beauty",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.9,
+      "reviewCount": 193,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-018-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 7250,
+          "compareAtPrice": 8250,
+          "stock": 24,
+          "image": "/catalogue/anua-niacinamide-10-txa-4-dark-spot-serum.png"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "slug": "lrp-anthelios-ultra-fluid-spf50",
+      "brand": "La Roche-Posay",
+      "name": "Anthelios Ultra Fluid SPF 50+",
+      "category": "skincare",
+      "subcategory": "sunscreen",
+      "concerns": [
+        "sun-protection",
+        "sensitive"
+      ],
+      "tags": [
+        "derm",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.6,
+      "reviewCount": 246,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-019-1",
+          "option": "Size",
+          "label": "50 ml",
+          "price": 9850,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/lrp-anthelios-ultra-fluid-spf50.jpg"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "slug": "lrp-effaclar-purifying-foaming-gel",
+      "brand": "La Roche-Posay",
+      "name": "Effaclar Purifying Foaming Gel",
+      "category": "skincare",
+      "subcategory": "cleansers",
+      "concerns": [
+        "acne",
+        "oil-control"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.3,
+      "reviewCount": 59,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-020-1",
+          "option": "Size",
+          "label": "200 ml",
+          "price": 8450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/lrp-effaclar-purifying-foaming-gel.jpg"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "slug": "lrp-hyalu-b5-repulping-gift-set",
+      "brand": "La Roche-Posay",
+      "name": "Hyalu B5 Repulping Gift Set",
+      "category": "skincare",
+      "subcategory": "gift-sets",
+      "concerns": [
+        "hydration",
+        "anti-aging"
+      ],
+      "tags": [
+        "derm",
+        "gift"
+      ],
+      "badge": "gift",
+      "rating": 4,
+      "reviewCount": 112,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-021-1",
+          "option": "Set",
+          "label": "Gift Set",
+          "price": 18500,
+          "compareAtPrice": 21500,
+          "stock": 8,
+          "image": "/catalogue/lrp-hyalu-b5-repulping-gift-set.jpg"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "slug": "lrp-anthelios-mineral-tinted-ultra-fluid-spf50",
+      "brand": "La Roche-Posay",
+      "name": "Anthelios Mineral Tinted Ultra Fluid SPF 50",
+      "category": "skincare",
+      "subcategory": "sunscreen",
+      "concerns": [
+        "sun-protection"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.7,
+      "reviewCount": 165,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-022-1",
+          "option": "Size",
+          "label": "50 ml",
+          "price": 10950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/lrp-anthelios-mineral-tinted-ultra-fluid-spf50.jpg"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "slug": "lrp-pure-vitamin-c12-serum",
+      "brand": "La Roche-Posay",
+      "name": "Pure Vitamin C12 Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "brightening",
+        "anti-aging"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.4,
+      "reviewCount": 218,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-023-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 14950,
+          "compareAtPrice": null,
+          "stock": 6,
+          "image": "/catalogue/lrp-pure-vitamin-c12-serum.jpg"
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "slug": "lrp-cicaplast-baume-b5-spf50",
+      "brand": "La Roche-Posay",
+      "name": "Cicaplast Baume B5+ SPF50",
+      "category": "skincare",
+      "subcategory": "moisturizers",
+      "concerns": [
+        "repair",
+        "sensitive"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.1,
+      "reviewCount": 31,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-024-1",
+          "option": "Size",
+          "label": "40 ml",
+          "price": 7950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/lrp-cicaplast-baume-b5-spf50.png"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "slug": "the-ordinary-multi-peptide-lash-brow-serum",
+      "brand": "The Ordinary",
+      "name": "Multi-Peptide Lash and Brow Serum",
+      "category": "skincare",
+      "subcategory": "eye-care",
+      "concerns": [
+        "lash-brow"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.8,
+      "reviewCount": 84,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-025-1",
+          "option": "Size",
+          "label": "5 ml",
+          "price": 7450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/the-ordinary-multi-peptide-lash-brow-serum.jpg"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "slug": "the-ordinary-caffeine-3-escin-1-serum",
+      "brand": "The Ordinary",
+      "name": "Caffeine 3% + Escin 1% Face Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "puffiness"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.5,
+      "reviewCount": 137,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-026-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 4250,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/the-ordinary-caffeine-3-escin-1-serum.jpg"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "slug": "the-ordinary-multi-peptide-ha-serum",
+      "brand": "The Ordinary",
+      "name": "Multi-Peptide + HA Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "anti-aging",
+        "hydration"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.2,
+      "reviewCount": 190,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-027-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 6950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/the-ordinary-multi-peptide-ha-serum.jpg"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "slug": "the-ordinary-multi-peptide-eye-serum",
+      "brand": "The Ordinary",
+      "name": "Multi-Peptide Eye Serum",
+      "category": "skincare",
+      "subcategory": "eye-care",
+      "concerns": [
+        "dark-circles"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.9,
+      "reviewCount": 243,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-028-1",
+          "option": "Size",
+          "label": "15 ml",
+          "price": 5950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/the-ordinary-multi-peptide-eye-serum.jpg"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "slug": "the-ordinary-multi-peptide-copper-peptides-serum",
+      "brand": "The Ordinary",
+      "name": "Multi-Peptide + Copper Peptides 1% Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "anti-aging",
+        "firming"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.6,
+      "reviewCount": 56,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-029-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 11450,
+          "compareAtPrice": null,
+          "stock": 5,
+          "image": "/catalogue/the-ordinary-multi-peptide-copper-peptides-serum.jpg"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "slug": "the-ordinary-hyaluronic-acid-2-b5",
+      "brand": "The Ordinary",
+      "name": "Hyaluronic Acid 2% + B5 (with Ceramides)",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "hydration"
+      ],
+      "tags": [
+        "derm",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.3,
+      "reviewCount": 109,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-030-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 3950,
+          "compareAtPrice": 4650,
+          "stock": 24,
+          "image": "/catalogue/the-ordinary-hyaluronic-acid-2-b5.jpg"
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "slug": "the-ordinary-glycolic-acid-7-toner",
+      "brand": "The Ordinary",
+      "name": "Glycolic Acid 7% Exfoliating Toner",
+      "category": "skincare",
+      "subcategory": "toners-mists",
+      "concerns": [
+        "dullness",
+        "texture"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4,
+      "reviewCount": 162,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-031-1",
+          "option": "Size",
+          "label": "240 ml",
+          "price": 5450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/the-ordinary-glycolic-acid-7-toner.jpg"
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "slug": "cerave-brightening-vitamin-c-lotion",
+      "brand": "CeraVe",
+      "name": "Brightening Vitamin C Lotion",
+      "category": "skincare",
+      "subcategory": "moisturizers",
+      "concerns": [
+        "brightening"
+      ],
+      "tags": [
+        "derm",
+        "new"
+      ],
+      "badge": "new",
+      "rating": 4.7,
+      "reviewCount": 215,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-032-1",
+          "option": "Size",
+          "label": "Standard",
+          "price": 7950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-brightening-vitamin-c-lotion.jpg"
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "slug": "cerave-foaming-facial-cleanser",
+      "brand": "CeraVe",
+      "name": "Foaming Facial Cleanser",
+      "category": "skincare",
+      "subcategory": "cleansers",
+      "concerns": [
+        "oil-control"
+      ],
+      "tags": [
+        "derm",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.4,
+      "reviewCount": 28,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-033-1",
+          "option": "Size",
+          "label": "236 ml",
+          "price": 5950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-foaming-facial-cleanser.jpg"
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "slug": "cerave-hydrating-facial-cleanser",
+      "brand": "CeraVe",
+      "name": "Hydrating Facial Cleanser",
+      "category": "skincare",
+      "subcategory": "cleansers",
+      "concerns": [
+        "dryness",
+        "hydration"
+      ],
+      "tags": [
+        "derm",
+        "bestseller"
+      ],
+      "badge": null,
+      "rating": 4.1,
+      "reviewCount": 81,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-034-1",
+          "option": "Size",
+          "label": "236 ml",
+          "price": 5950,
+          "compareAtPrice": 6950,
+          "stock": 24,
+          "image": "/catalogue/cerave-hydrating-facial-cleanser.jpg"
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "slug": "cerave-intensive-moisturizing-cream",
+      "brand": "CeraVe",
+      "name": "Intensive Moisturizing Cream",
+      "category": "skincare",
+      "subcategory": "moisturizers",
+      "concerns": [
+        "dryness"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.8,
+      "reviewCount": 134,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-035-1",
+          "option": "Size",
+          "label": "Standard",
+          "price": 7450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-intensive-moisturizing-cream.jpg"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "slug": "cerave-renewing-sa-cleanser",
+      "brand": "CeraVe",
+      "name": "Renewing SA Cleanser",
+      "category": "skincare",
+      "subcategory": "cleansers",
+      "concerns": [
+        "texture",
+        "acne"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.5,
+      "reviewCount": 187,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-036-1",
+          "option": "Size",
+          "label": "236 ml",
+          "price": 6450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-renewing-sa-cleanser.jpg"
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "slug": "cerave-hydrating-mineral-sunscreen-spf50",
+      "brand": "CeraVe",
+      "name": "Hydrating Mineral Sunscreen SPF 50 Face Lotion",
+      "category": "skincare",
+      "subcategory": "sunscreen",
+      "concerns": [
+        "sun-protection",
+        "sensitive"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.2,
+      "reviewCount": 240,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-037-1",
+          "option": "Size",
+          "label": "75 ml",
+          "price": 7950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-hydrating-mineral-sunscreen-spf50.jpg"
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "slug": "cetaphil-moisturizing-cream",
+      "brand": "Cetaphil",
+      "name": "Moisturizing Cream",
+      "category": "skincare",
+      "subcategory": "moisturizers",
+      "concerns": [
+        "dryness",
+        "sensitive"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.9,
+      "reviewCount": 53,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-038-1",
+          "option": "Size",
+          "label": "453 g",
+          "price": 8950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cetaphil-moisturizing-cream.jpg"
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "slug": "cetaphil-dermacontrol-oil-removing-foam-wash",
+      "brand": "Cetaphil",
+      "name": "DermaControl Oil Removing Foam Wash",
+      "category": "skincare",
+      "subcategory": "cleansers",
+      "concerns": [
+        "oil-control",
+        "acne"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.6,
+      "reviewCount": 106,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-039-1",
+          "option": "Size",
+          "label": "237 ml",
+          "price": 5950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cetaphil-dermacontrol-oil-removing-foam-wash.jpg"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "slug": "cetaphil-vitamin-c-serum",
+      "brand": "Cetaphil",
+      "name": "Vitamin C Serum",
+      "category": "skincare",
+      "subcategory": "serums",
+      "concerns": [
+        "brightening"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.3,
+      "reviewCount": 159,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-040-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 8950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cetaphil-vitamin-c-serum.jpg"
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "slug": "cetaphil-sheer-mineral-sunscreen-face-drops-spf50",
+      "brand": "Cetaphil",
+      "name": "Sheer Mineral Sunscreen Face Drops SPF 50",
+      "category": "skincare",
+      "subcategory": "sunscreen",
+      "concerns": [
+        "sun-protection"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4,
+      "reviewCount": 212,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-041-1",
+          "option": "Size",
+          "label": "30 ml",
+          "price": 8450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cetaphil-sheer-mineral-sunscreen-face-drops-spf50.jpg"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "slug": "cetaphil-daily-facial-moisturizer-spf35",
+      "brand": "Cetaphil",
+      "name": "Daily Facial Moisturizer SPF 35",
+      "category": "skincare",
+      "subcategory": "moisturizers",
+      "concerns": [
+        "sun-protection",
+        "hydration"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.7,
+      "reviewCount": 25,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-042-1",
+          "option": "Size",
+          "label": "88 ml",
+          "price": 6950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cetaphil-daily-facial-moisturizer-spf35.jpg"
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "slug": "cetaphil-daily-facial-cleanser",
+      "brand": "Cetaphil",
+      "name": "Daily Facial Cleanser",
+      "category": "skincare",
+      "subcategory": "cleansers",
+      "concerns": [
+        "oil-control"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.4,
+      "reviewCount": 78,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-043-1",
+          "option": "Size",
+          "label": "237 ml",
+          "price": 5250,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cetaphil-daily-facial-cleanser.jpg"
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "slug": "cetaphil-gentle-skin-cleanser",
+      "brand": "Cetaphil",
+      "name": "Gentle Skin Cleanser",
+      "category": "skincare",
+      "subcategory": "cleansers",
+      "concerns": [
+        "sensitive"
+      ],
+      "tags": [
+        "derm",
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.1,
+      "reviewCount": 131,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-044-1",
+          "option": "Size",
+          "label": "237 ml",
+          "price": 4950,
+          "compareAtPrice": 5650,
+          "stock": 24,
+          "image": "/catalogue/cetaphil-gentle-skin-cleanser.jpg"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "slug": "cerave-sa-body-wash",
+      "brand": "CeraVe",
+      "name": "SA Body Wash for Rough & Bumpy Skin",
+      "category": "body-care",
+      "subcategory": "body-wash",
+      "concerns": [
+        "texture"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.8,
+      "reviewCount": 184,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-045-1",
+          "option": "Size",
+          "label": "296 ml",
+          "price": 6950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-sa-body-wash.jpg"
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "slug": "cerave-sa-lotion",
+      "brand": "CeraVe",
+      "name": "SA Lotion for Rough & Bumpy Skin",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "texture",
+        "dryness"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.5,
+      "reviewCount": 237,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-046-1",
+          "option": "Size",
+          "label": "237 ml",
+          "price": 7450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-sa-lotion.jpg"
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "slug": "cerave-sa-cream",
+      "brand": "CeraVe",
+      "name": "SA Cream for Rough & Bumpy Skin",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "texture",
+        "dryness"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.2,
+      "reviewCount": 50,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-047-1",
+          "option": "Size",
+          "label": "340 g",
+          "price": 8450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-sa-cream.jpg"
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "slug": "cerave-daily-moisturizing-lotion",
+      "brand": "CeraVe",
+      "name": "Daily Moisturizing Lotion",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "dryness"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.9,
+      "reviewCount": 103,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-048-1",
+          "option": "Size",
+          "label": "236 ml",
+          "price": 6250,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cerave-daily-moisturizing-lotion.jpg"
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "slug": "cetaphil-moisturizing-lotion",
+      "brand": "Cetaphil",
+      "name": "Moisturizing Lotion",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "dryness",
+        "sensitive"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.6,
+      "reviewCount": 156,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-049-1",
+          "option": "Size",
+          "label": "591 ml",
+          "price": 7950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/cetaphil-moisturizing-lotion.jpg"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "slug": "vaseline-original-petroleum-jelly",
+      "brand": "Vaseline",
+      "name": "Original Petroleum Jelly",
+      "category": "body-care",
+      "subcategory": "petroleum-jelly",
+      "concerns": [
+        "dryness"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.3,
+      "reviewCount": 209,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-050-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 1250,
+          "compareAtPrice": null,
+          "stock": 60,
+          "image": "/catalogue/vaseline-original-petroleum-jelly.png"
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "slug": "vaseline-aloe-fresh-petroleum-jelly",
+      "brand": "Vaseline",
+      "name": "Aloe Fresh Petroleum Jelly",
+      "category": "body-care",
+      "subcategory": "petroleum-jelly",
+      "concerns": [
+        "dryness"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4,
+      "reviewCount": 22,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-051-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 1350,
+          "compareAtPrice": null,
+          "stock": 60,
+          "image": "/catalogue/vaseline-aloe-fresh-petroleum-jelly.png"
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "slug": "vaseline-cocoa-butter-petroleum-jelly",
+      "brand": "Vaseline",
+      "name": "Cocoa Butter Petroleum Jelly",
+      "category": "body-care",
+      "subcategory": "petroleum-jelly",
+      "concerns": [
+        "dryness"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.7,
+      "reviewCount": 75,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-052-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 1350,
+          "compareAtPrice": null,
+          "stock": 60,
+          "image": "/catalogue/vaseline-cocoa-butter-petroleum-jelly-1.png"
+        },
+        {
+          "sku": "TOS-052-2",
+          "option": "Size",
+          "label": "450 ml",
+          "price": 3450,
+          "compareAtPrice": 3950,
+          "stock": 30,
+          "image": "/catalogue/vaseline-cocoa-butter-petroleum-jelly-2.png"
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "slug": "dove-exfoliating-body-polish",
+      "brand": "Dove",
+      "name": "Exfoliating Body Polish",
+      "category": "body-care",
+      "subcategory": "body-scrubs",
+      "concerns": [
+        "texture",
+        "glow"
+      ],
+      "tags": [
+        "bestseller",
+        "gift"
+      ],
+      "badge": "bestseller",
+      "rating": 4.4,
+      "reviewCount": 128,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-053-1",
+          "option": "Scent",
+          "label": "Brown Sugar & Coconut Butter",
+          "price": 3950,
+          "compareAtPrice": 4450,
+          "stock": 24,
+          "image": "/catalogue/dove-exfoliating-body-polish-1.png"
+        },
+        {
+          "sku": "TOS-053-2",
+          "option": "Scent",
+          "label": "Pomegranate & Shea Butter",
+          "price": 3950,
+          "compareAtPrice": 4450,
+          "stock": 24,
+          "image": "/catalogue/dove-exfoliating-body-polish-2.png"
+        },
+        {
+          "sku": "TOS-053-3",
+          "option": "Scent",
+          "label": "Crushed Almond & Mango Butter",
+          "price": 3950,
+          "compareAtPrice": 4450,
+          "stock": 24,
+          "image": "/catalogue/dove-exfoliating-body-polish-3.png"
+        },
+        {
+          "sku": "TOS-053-4",
+          "option": "Scent",
+          "label": "Crushed Lavender & Coconut Milk",
+          "price": 3950,
+          "compareAtPrice": 4450,
+          "stock": 24,
+          "image": "/catalogue/dove-exfoliating-body-polish-4.png"
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "slug": "dove-nourishing-intensive-body-cream",
+      "brand": "Dove",
+      "name": "Nourishing Body Care Intensive Body Cream",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "dryness"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.1,
+      "reviewCount": 181,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-054-1",
+          "option": "Size",
+          "label": "150 ml",
+          "price": 2250,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/dove-nourishing-intensive-body-cream.jpg"
+        }
+      ]
+    },
+    {
+      "id": 55,
+      "slug": "nivea-rich-nourishing-body-lotion",
+      "brand": "NIVEA",
+      "name": "Rich Nourishing Body Lotion",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "dryness"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.8,
+      "reviewCount": 234,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-055-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2650,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/nivea-rich-nourishing-body-lotion.png"
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "slug": "nivea-express-hydration-body-lotion",
+      "brand": "NIVEA",
+      "name": "Express Hydration Body Lotion",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "hydration"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.5,
+      "reviewCount": 47,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-056-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2650,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/nivea-express-hydration-body-lotion.png"
+        }
+      ]
+    },
+    {
+      "id": 57,
+      "slug": "nivea-aloe-hydration-body-lotion",
+      "brand": "NIVEA",
+      "name": "Aloe & Hydration Body Lotion",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "hydration"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.2,
+      "reviewCount": 100,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-057-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2650,
+          "compareAtPrice": 2950,
+          "stock": 24,
+          "image": "/catalogue/nivea-aloe-hydration-body-lotion.png"
+        }
+      ]
+    },
+    {
+      "id": 58,
+      "slug": "nivea-natural-glow-body-lotion",
+      "brand": "NIVEA",
+      "name": "Natural Glow Body Lotion",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "glow"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.9,
+      "reviewCount": 153,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-058-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2750,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/nivea-natural-glow-body-lotion.png"
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "slug": "nivea-cocoa-nourish-body-lotion",
+      "brand": "NIVEA",
+      "name": "Cocoa Nourish Body Lotion",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "dryness"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.6,
+      "reviewCount": 206,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-059-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2750,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/nivea-cocoa-nourish-body-lotion.png"
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "slug": "nivea-super-10-glow-body-serum",
+      "brand": "NIVEA",
+      "name": "Super 10 Glow Body Serum",
+      "category": "body-care",
+      "subcategory": "body-lotion",
+      "concerns": [
+        "glow"
+      ],
+      "tags": [
+        "new",
+        "trending"
+      ],
+      "badge": "new",
+      "rating": 4.3,
+      "reviewCount": 19,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-060-1",
+          "option": "Size",
+          "label": "200 ml",
+          "price": 3450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/nivea-super-10-glow-body-serum.png"
+        }
+      ]
+    },
+    {
+      "id": 61,
+      "slug": "nivea-fresh-natural-deodorant",
+      "brand": "NIVEA",
+      "name": "Fresh Natural Deodorant",
+      "category": "body-care",
+      "subcategory": "deodorants",
+      "concerns": [],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4,
+      "reviewCount": 72,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-061-1",
+          "option": "Size",
+          "label": "150 ml",
+          "price": 1450,
+          "compareAtPrice": null,
+          "stock": 50,
+          "image": "/catalogue/nivea-fresh-natural-deodorant.png"
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "slug": "nivea-natural-radiance-deodorant",
+      "brand": "NIVEA",
+      "name": "Natural Radiance Deodorant",
+      "category": "body-care",
+      "subcategory": "deodorants",
+      "concerns": [],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.7,
+      "reviewCount": 125,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-062-1",
+          "option": "Size",
+          "label": "150 ml",
+          "price": 1450,
+          "compareAtPrice": null,
+          "stock": 50,
+          "image": "/catalogue/nivea-natural-radiance-deodorant.png"
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "slug": "the-ordinary-multi-peptide-serum-hair-density",
+      "brand": "The Ordinary",
+      "name": "Multi-Peptide Serum for Hair Density",
+      "category": "hair-care",
+      "subcategory": "hair-treatments",
+      "concerns": [
+        "hair-fall"
+      ],
+      "tags": [
+        "derm",
+        "trending"
+      ],
+      "badge": "trending",
+      "rating": 4.4,
+      "reviewCount": 178,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-063-1",
+          "option": "Size",
+          "label": "60 ml",
+          "price": 8950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/the-ordinary-multi-peptide-serum-hair-density.jpg"
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "slug": "dove-biotin-strength-hair-serum-cream",
+      "brand": "Dove",
+      "name": "Biotin Strength Hair Serum Cream",
+      "category": "hair-care",
+      "subcategory": "hair-treatments",
+      "concerns": [
+        "hair-fall"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.1,
+      "reviewCount": 231,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-064-1",
+          "option": "Size",
+          "label": "200 ml",
+          "price": 2450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/dove-biotin-strength-hair-serum-cream.jpg"
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "slug": "dove-hyaluronic-daily-hydration-conditioner",
+      "brand": "Dove",
+      "name": "Hyaluronic Acid Daily Hydration Conditioner",
+      "category": "hair-care",
+      "subcategory": "conditioners",
+      "concerns": [
+        "dry-hair"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.8,
+      "reviewCount": 44,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-065-1",
+          "option": "Size",
+          "label": "350 ml",
+          "price": 2350,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/dove-hyaluronic-daily-hydration-conditioner.jpg"
+        }
+      ]
+    },
+    {
+      "id": 66,
+      "slug": "dove-hyaluronic-daily-hydration-shampoo",
+      "brand": "Dove",
+      "name": "Hyaluronic Acid Daily Hydration Shampoo",
+      "category": "hair-care",
+      "subcategory": "shampoos",
+      "concerns": [
+        "dry-hair"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.5,
+      "reviewCount": 97,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-066-1",
+          "option": "Size",
+          "label": "350 ml",
+          "price": 2450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/dove-hyaluronic-daily-hydration-shampoo.jpg"
+        }
+      ]
+    },
+    {
+      "id": 67,
+      "slug": "dove-biotin-hair-fall-rescue-conditioner",
+      "brand": "Dove",
+      "name": "Biotin Hair Fall Rescue Conditioner",
+      "category": "hair-care",
+      "subcategory": "conditioners",
+      "concerns": [
+        "hair-fall"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.2,
+      "reviewCount": 150,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-067-1",
+          "option": "Size",
+          "label": "340 ml",
+          "price": 2350,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/dove-biotin-hair-fall-rescue-conditioner.jpg"
+        }
+      ]
+    },
+    {
+      "id": 68,
+      "slug": "dove-biotin-hair-fall-rescue-shampoo",
+      "brand": "Dove",
+      "name": "Biotin Hair Fall Rescue Shampoo",
+      "category": "hair-care",
+      "subcategory": "shampoos",
+      "concerns": [
+        "hair-fall"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.9,
+      "reviewCount": 203,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-068-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2450,
+          "compareAtPrice": 2750,
+          "stock": 24,
+          "image": "/catalogue/dove-biotin-hair-fall-rescue-shampoo.jpg"
+        }
+      ]
+    },
+    {
+      "id": 69,
+      "slug": "mielle-rosemary-mint-leave-in-conditioner",
+      "brand": "Mielle",
+      "name": "Rosemary Mint Strengthening Leave-In Conditioner",
+      "category": "hair-care",
+      "subcategory": "conditioners",
+      "concerns": [
+        "hair-fall",
+        "growth"
+      ],
+      "tags": [
+        "trending"
+      ],
+      "badge": null,
+      "rating": 4.6,
+      "reviewCount": 16,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-069-1",
+          "option": "Pack",
+          "label": "Twin Pack (2 × 355 ml)",
+          "price": 9950,
+          "compareAtPrice": 11500,
+          "stock": 12,
+          "image": "/catalogue/mielle-rosemary-mint-leave-in-conditioner.jpg"
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "slug": "mielle-rosemary-mint-shampoo",
+      "brand": "Mielle",
+      "name": "Rosemary Mint Strengthening Shampoo",
+      "category": "hair-care",
+      "subcategory": "shampoos",
+      "concerns": [
+        "hair-fall",
+        "growth"
+      ],
+      "tags": [
+        "trending"
+      ],
+      "badge": null,
+      "rating": 4.3,
+      "reviewCount": 69,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-070-1",
+          "option": "Pack",
+          "label": "Twin Pack (2 × 355 ml)",
+          "price": 9450,
+          "compareAtPrice": 10950,
+          "stock": 12,
+          "image": "/catalogue/mielle-rosemary-mint-shampoo.jpg"
+        }
+      ]
+    },
+    {
+      "id": 71,
+      "slug": "mielle-rosemary-mint-scalp-hair-oil",
+      "brand": "Mielle",
+      "name": "Rosemary Mint Scalp & Hair Strengthening Oil",
+      "category": "hair-care",
+      "subcategory": "hair-oils",
+      "concerns": [
+        "hair-fall",
+        "growth"
+      ],
+      "tags": [
+        "bestseller",
+        "trending"
+      ],
+      "badge": "bestseller",
+      "rating": 4,
+      "reviewCount": 122,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-071-1",
+          "option": "Size",
+          "label": "59 ml",
+          "price": 3950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/mielle-rosemary-mint-scalp-hair-oil-1.jpg"
+        },
+        {
+          "sku": "TOS-071-2",
+          "option": "Size",
+          "label": "Twin Pack (2 × 59 ml)",
+          "price": 7450,
+          "compareAtPrice": 7900,
+          "stock": 14,
+          "image": "/catalogue/mielle-rosemary-mint-scalp-hair-oil-2.jpg"
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "slug": "loreal-elvive-extraordinary-oil-shampoo",
+      "brand": "L'Oréal Paris",
+      "name": "Elvive Extraordinary Oil Nourishing Shampoo",
+      "category": "hair-care",
+      "subcategory": "shampoos",
+      "concerns": [
+        "dry-hair"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.7,
+      "reviewCount": 175,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-072-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2650,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/loreal-elvive-extraordinary-oil-shampoo.jpg"
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "slug": "loreal-elvive-extraordinary-oil-conditioner",
+      "brand": "L'Oréal Paris",
+      "name": "Elvive Extraordinary Oil Nourishing Conditioner",
+      "category": "hair-care",
+      "subcategory": "conditioners",
+      "concerns": [
+        "dry-hair"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.4,
+      "reviewCount": 228,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-073-1",
+          "option": "Size",
+          "label": "200 ml",
+          "price": 1950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/loreal-elvive-extraordinary-oil-conditioner.jpg"
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "slug": "loreal-elvive-extraordinary-oil-hair-oil",
+      "brand": "L'Oréal Paris",
+      "name": "Elvive Extraordinary Oil for Dry & Damaged Hair",
+      "category": "hair-care",
+      "subcategory": "hair-oils",
+      "concerns": [
+        "dry-hair",
+        "frizz"
+      ],
+      "tags": [
+        "bestseller"
+      ],
+      "badge": "bestseller",
+      "rating": 4.1,
+      "reviewCount": 41,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-074-1",
+          "option": "Size",
+          "label": "100 ml",
+          "price": 3950,
+          "compareAtPrice": 4450,
+          "stock": 24,
+          "image": "/catalogue/loreal-elvive-extraordinary-oil-hair-oil.jpg"
+        }
+      ]
+    },
+    {
+      "id": 75,
+      "slug": "loreal-elvive-total-repair-5-shampoo",
+      "brand": "L'Oréal Paris",
+      "name": "Elvive Total Repair 5 Repairing Shampoo",
+      "category": "hair-care",
+      "subcategory": "shampoos",
+      "concerns": [
+        "damage"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.8,
+      "reviewCount": 94,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-075-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2650,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/loreal-elvive-total-repair-5-shampoo.jpg"
+        }
+      ]
+    },
+    {
+      "id": 76,
+      "slug": "loreal-elvive-total-repair-5-conditioner",
+      "brand": "L'Oréal Paris",
+      "name": "Elvive Total Repair 5 Repairing Conditioner",
+      "category": "hair-care",
+      "subcategory": "conditioners",
+      "concerns": [
+        "damage"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.5,
+      "reviewCount": 147,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-076-1",
+          "option": "Size",
+          "label": "200 ml",
+          "price": 1950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/loreal-elvive-total-repair-5-conditioner.jpg"
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "slug": "loreal-elvive-fall-resist-cream",
+      "brand": "L'Oréal Paris",
+      "name": "Elvive Fall Resist Oil Replacement Cream",
+      "category": "hair-care",
+      "subcategory": "hair-treatments",
+      "concerns": [
+        "hair-fall"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.2,
+      "reviewCount": 200,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-077-1",
+          "option": "Size",
+          "label": "300 ml",
+          "price": 2450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/loreal-elvive-fall-resist-cream.jpg"
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "slug": "loreal-elvive-color-vive-shampoo",
+      "brand": "L'Oréal Paris",
+      "name": "Elvive Color Vive Shampoo",
+      "category": "hair-care",
+      "subcategory": "shampoos",
+      "concerns": [
+        "color-care"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.9,
+      "reviewCount": 13,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-078-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 2450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/loreal-elvive-color-vive-shampoo-1.jpg"
+        },
+        {
+          "sku": "TOS-078-2",
+          "option": "Size",
+          "label": "600 ml",
+          "price": 3450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/loreal-elvive-color-vive-shampoo-2.jpg"
+        }
+      ]
+    },
+    {
+      "id": 79,
+      "slug": "loreal-elnett-satin-hair-spray",
+      "brand": "L'Oréal Paris",
+      "name": "Elnett Satin Normal Hold Hair Spray",
+      "category": "hair-care",
+      "subcategory": "styling",
+      "concerns": [
+        "styling"
+      ],
+      "tags": [],
+      "badge": null,
+      "rating": 4.6,
+      "reviewCount": 66,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-079-1",
+          "option": "Size",
+          "label": "400 ml",
+          "price": 4450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/loreal-elnett-satin-hair-spray.jpg"
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "slug": "shiseido-fino-premium-touch-set",
+      "brand": "Shiseido Fino",
+      "name": "Premium Touch Shampoo + Conditioner Set",
+      "category": "hair-care",
+      "subcategory": "shampoos",
+      "concerns": [
+        "damage",
+        "frizz"
+      ],
+      "tags": [
+        "gift",
+        "j-beauty"
+      ],
+      "badge": null,
+      "rating": 4.3,
+      "reviewCount": 119,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-080-1",
+          "option": "Set",
+          "label": "550 ml + 550 ml",
+          "price": 7950,
+          "compareAtPrice": 8950,
+          "stock": 10,
+          "image": "/catalogue/shiseido-fino-premium-touch-set.jpg"
+        }
+      ]
+    },
+    {
+      "id": 81,
+      "slug": "shiseido-fino-premium-touch-hair-mask",
+      "brand": "Shiseido Fino",
+      "name": "Premium Touch Hair Mask",
+      "category": "hair-care",
+      "subcategory": "hair-treatments",
+      "concerns": [
+        "frizz",
+        "dry-hair"
+      ],
+      "tags": [
+        "bestseller",
+        "j-beauty"
+      ],
+      "badge": "bestseller",
+      "rating": 4,
+      "reviewCount": 172,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-081-1",
+          "option": "Size",
+          "label": "230 g",
+          "price": 3950,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/shiseido-fino-premium-touch-hair-mask.jpg"
+        }
+      ]
+    },
+    {
+      "id": 82,
+      "slug": "ogx-argan-oil-of-morocco-shampoo",
+      "brand": "OGX",
+      "name": "Argan Oil of Morocco Shampoo",
+      "category": "hair-care",
+      "subcategory": "shampoos",
+      "concerns": [
+        "dry-hair"
+      ],
+      "tags": [],
+      "badge": null,
+      "rating": 4.7,
+      "reviewCount": 225,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-082-1",
+          "option": "Size",
+          "label": "385 ml",
+          "price": 4250,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/ogx-argan-oil-of-morocco-shampoo.png"
+        }
+      ]
+    },
+    {
+      "id": 83,
+      "slug": "ogx-argan-oil-of-morocco-conditioner",
+      "brand": "OGX",
+      "name": "Argan Oil of Morocco Conditioner",
+      "category": "hair-care",
+      "subcategory": "conditioners",
+      "concerns": [
+        "dry-hair"
+      ],
+      "tags": [],
+      "badge": null,
+      "rating": 4.4,
+      "reviewCount": 38,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-083-1",
+          "option": "Size",
+          "label": "385 ml",
+          "price": 4250,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/ogx-argan-oil-of-morocco-conditioner.png"
+        }
+      ]
+    },
+    {
+      "id": 84,
+      "slug": "esse-naturals-lip-balm",
+      "brand": "Esse Naturals",
+      "name": "Lip Balm",
+      "category": "lips",
+      "subcategory": "lip-balm",
+      "concerns": [
+        "dry-lips"
+      ],
+      "tags": [
+        "new",
+        "gift"
+      ],
+      "badge": "new",
+      "rating": 4.1,
+      "reviewCount": 91,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-084-1",
+          "option": "Flavour",
+          "label": "Strawberry Glow",
+          "price": 950,
+          "compareAtPrice": null,
+          "stock": 40,
+          "image": "/catalogue/esse-naturals-lip-balm-1.png"
+        },
+        {
+          "sku": "TOS-084-2",
+          "option": "Flavour",
+          "label": "Cherry Blossom",
+          "price": 950,
+          "compareAtPrice": null,
+          "stock": 40,
+          "image": "/catalogue/esse-naturals-lip-balm-2.png"
+        }
+      ]
+    },
+    {
+      "id": 85,
+      "slug": "vaseline-emily-in-paris-tinted-lip-oil",
+      "brand": "Vaseline",
+      "name": "Emily in Paris Tinted Lip Oil",
+      "category": "lips",
+      "subcategory": "lip-oil",
+      "concerns": [
+        "dry-lips"
+      ],
+      "tags": [
+        "trending",
+        "limited"
+      ],
+      "badge": "limited",
+      "rating": 4.8,
+      "reviewCount": 144,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-085-1",
+          "option": "Shade",
+          "label": "Nude Crème",
+          "price": 2450,
+          "compareAtPrice": null,
+          "stock": 20,
+          "image": "/catalogue/vaseline-emily-in-paris-tinted-lip-oil-1.png"
+        },
+        {
+          "sku": "TOS-085-2",
+          "option": "Shade",
+          "label": "Rose Amour",
+          "price": 2450,
+          "compareAtPrice": null,
+          "stock": 20,
+          "image": "/catalogue/vaseline-emily-in-paris-tinted-lip-oil-2.png"
+        }
+      ]
+    },
+    {
+      "id": 86,
+      "slug": "vaseline-emily-in-paris-tinted-lip-balm",
+      "brand": "Vaseline",
+      "name": "Emily in Paris Tinted Lip Balm",
+      "category": "lips",
+      "subcategory": "lip-balm",
+      "concerns": [
+        "dry-lips"
+      ],
+      "tags": [
+        "trending",
+        "limited"
+      ],
+      "badge": null,
+      "rating": 4.5,
+      "reviewCount": 197,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-086-1",
+          "option": "Shade",
+          "label": "Nude Nouveau",
+          "price": 1950,
+          "compareAtPrice": null,
+          "stock": 20,
+          "image": "/catalogue/vaseline-emily-in-paris-tinted-lip-balm-1.png"
+        },
+        {
+          "sku": "TOS-086-2",
+          "option": "Shade",
+          "label": "Parisian Pink",
+          "price": 1950,
+          "compareAtPrice": null,
+          "stock": 20,
+          "image": "/catalogue/vaseline-emily-in-paris-tinted-lip-balm-2.png"
+        }
+      ]
+    },
+    {
+      "id": 87,
+      "slug": "vaseline-lip-therapy",
+      "brand": "Vaseline",
+      "name": "Lip Therapy Lip Balm",
+      "category": "lips",
+      "subcategory": "lip-balm",
+      "concerns": [
+        "dry-lips"
+      ],
+      "tags": [
+        "everyday"
+      ],
+      "badge": null,
+      "rating": 4.2,
+      "reviewCount": 250,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-087-1",
+          "option": "Flavour",
+          "label": "Aloe Vera",
+          "price": 1150,
+          "compareAtPrice": null,
+          "stock": 50,
+          "image": "/catalogue/vaseline-lip-therapy-1.png"
+        },
+        {
+          "sku": "TOS-087-2",
+          "option": "Flavour",
+          "label": "Cocoa Butter",
+          "price": 1150,
+          "compareAtPrice": null,
+          "stock": 50,
+          "image": "/catalogue/vaseline-lip-therapy-2.png"
+        }
+      ]
+    },
+    {
+      "id": 88,
+      "slug": "lrp-cicaplast-levres-lip-balm",
+      "brand": "La Roche-Posay",
+      "name": "Cicaplast Lèvres Lip Balm",
+      "category": "lips",
+      "subcategory": "lip-balm",
+      "concerns": [
+        "dry-lips",
+        "repair"
+      ],
+      "tags": [
+        "derm"
+      ],
+      "badge": null,
+      "rating": 4.9,
+      "reviewCount": 63,
+      "priceTBC": true,
+      "variants": [
+        {
+          "sku": "TOS-088-1",
+          "option": "Size",
+          "label": "7.5 ml",
+          "price": 3450,
+          "compareAtPrice": null,
+          "stock": 24,
+          "image": "/catalogue/lrp-cicaplast-levres-lip-balm.png"
+        }
+      ]
+    }
+  ]
+}
