@@ -52,6 +52,8 @@ Set up the project, create the brand and UX system, build an animated storefront
 |---|---|---|---|
 | Page jumped and jittered while scrolling; Quick add clicks sometimes did nothing | The sticky header changed its **layout height** on scroll (compact padding and logo, collapsing category row). Scroll anchoring then moved the page, which flipped the scroll direction and toggled the header back: a feedback loop. Clicks were lost because cards moved under the cursor between mouse-down and mouse-up. | Constant header height. The category row is out of flow and slides with `transform`, an in-flow spacer reserves its space, and direction changes need a 12 px threshold. | New Playwright test `Header scroll stability` passes at 1280 px and 390 px (0 px drift, 1 header height). It fails against the old header (9 px drift, 5 heights). Quick add verified straight after scrolling. |
 
+**Card polish (v0.1.2):** product card action buttons were re-aligned to one shared inset, with a centered desktop Quick add bar and matching 36 px touch buttons. See CHANGELOG.
+
 **Lesson, added to the motion rules:** never animate or toggle the *layout* size of sticky or fixed UI in response to scroll. Use transforms, opacity or shadows.
 
 ## Known issues and follow-ups

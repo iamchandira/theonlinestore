@@ -114,7 +114,7 @@ All fonts load through `next/font` (self-hosted, `display: swap`, no layout shif
 | `ProgressBar` | Spring-animated, with `role="progressbar"` |
 | `Drawer` | Right side, left side or bottom sheet. Focus trap, Escape to close, scroll lock, swipe down to close the sheet. |
 | `SectionHeader` | Eyebrow, title, smile underline, description, action link, extra slot |
-| `ProductCard` | White 4:5 image area, badges, wishlist heart, quick add (always visible on touch, slides up on desktop hover), brand → 2-line name → rating → price → BNPL or variant count |
+| `ProductCard` | White 4:5 image area. **Card inset `--ci` (12 px on phones, 14 px from 640 px) is shared by every overlay and the text block, so all edges align:**<br>• Badges sit top-left.<br>• The wishlist heart sits top-right.<br>• Quick add is bottom-right on touch, or a full-width centered bar on desktop hover.<br>• Round actions are 36 px circles inside 44 px tap targets.<br>• Text order: brand → 2-line name → rating → price → BNPL or variant count.<br>• The whole card shows a focus ring when its link is keyboard-focused. |
 | `BrandLoader` | Pure SVG and CSS (works in Suspense fallbacks) |
 
 ## 6. Motion
