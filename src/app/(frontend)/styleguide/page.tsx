@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/Input'
 import { InstalmentLine, Price } from '@/components/ui/Price'
 import { Rating } from '@/components/ui/Rating'
 import { SectionHeader } from '@/components/ui/SectionHeader'
-import { getProducts } from '@/lib/catalog'
+import { listProducts } from '@/lib/catalog/server'
 
 import { MotionDemos } from './MotionDemos'
 
@@ -52,8 +52,11 @@ function Block({ id, title, children, note }: { id: string; title: string; note?
 }
 
 /** Living design system: every token and component rendered from the real source. */
-export default function StyleguidePage() {
-  const sample = getProducts(['skin1004-madagascar-centella-ampoule', 'cerave-hydrating-facial-cleanser', 'vaseline-emily-in-paris-tinted-lip-oil', 'lrp-pure-vitamin-c12-serum'])
+export default async function StyleguidePage() {
+  const { products: sample } = await listProducts({
+    slugs: ['skin1004-madagascar-centella-ampoule', 'cerave-hydrating-facial-cleanser', 'vaseline-emily-in-paris-tinted-lip-oil', 'lrp-pure-vitamin-c12-serum'],
+    limit: 4,
+  })
   return (
     <div className="container-site py-10">
       <header className="mb-6 flex flex-col gap-3">

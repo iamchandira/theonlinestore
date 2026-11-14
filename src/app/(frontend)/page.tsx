@@ -12,55 +12,54 @@ import { PromoBanners } from '@/components/home/PromoBanners'
 import { RailSection } from '@/components/home/RailSection'
 import { UspStrip } from '@/components/home/UspStrip'
 import { Countdown } from '@/components/ui/Countdown'
-import { collections } from '@/lib/catalog'
+import { getBrands, getHomeData, type HomeData } from '@/lib/catalog/server'
 
-/**
- * Home page section order follows the shopper's questions:
- * what do you sell → can I trust you → what's a good deal → what's popular → help me choose → stay in touch.
- */
-export default function HomePage() {
-  return (
-    <>
-      <Hero />
-      <CategoryTiles />
-      <UspStrip />
-      <RailSection
-        id="deals-title"
-        eyebrow="Today only"
-        title="Deals of the day"
-        action={{ label: 'All offers', href: '/offers' }}
-        products={collections.deals}
-        headerExtra={
+/** Re-rendered at most every 10 minutes; catalogue and Home page edits revalidate it immediately. */
+export const revalidate = 600
+
+function Rails({ rails }: { rails: HomeData['railsTop'] }) {
+  return rails.map((r) => (
+    <RailSection
+      key={r.id}
+      id={`rail-${r.id}`}
+      eyebrow={r.eyebrow ?? undefined}
+      title={r.title}
+      description={r.description ?? undefined}
+      action={{ label: r.linkLabel || 'View all', href: r.href }}
+      products={r.products}
+      tone={r.style}
+      headerExtra={
+        r.countdown ? (
           <div className="flex items-center gap-2 whitespace-nowrap rounded-full bg-rose-50 py-1 pl-3 pr-1 text-sm font-semibold text-rose-700">
             <IconClockHour4 size={18} /> Ends in
             <Countdown endsAt="midnight" tone="dark" compact />
           </div>
-        }
-      />
-      <RailSection
-        id="kbeauty-title"
-        eyebrow="Seoul to Colombo"
-        title="Trending in K-Beauty"
-        description="Centella, snail mucin and niacinamide heroes from SKIN1004, Medicube, Anua and COSRX."
-        action={{ label: 'Shop K-Beauty', href: '/c/skincare?tag=k-beauty' }}
-        products={collections.kbeauty}
-        tone="blush"
-      />
+        ) : undefined
+      }
+    />
+  ))
+}
+
+/**
+ * Home page section order follows the shopper's questions:
+ * what do you sell → can I trust you → what's a good deal → what's popular → help me choose → stay in touch.
+ * Hero products and rails are managed in the admin (Content › Home page).
+ */
+export default async function HomePage() {
+  const [data, brands] = await Promise.all([getHomeData(), getBrands()])
+  return (
+    <>
+      <Hero picks={data.heroPicks} />
+      <CategoryTiles tileImages={data.tileImages} />
+      <UspStrip />
+      <Rails rails={data.railsTop} />
       <ConcernChips />
-      <PromoBanners />
-      <BestSellers />
-      <DermSpotlight />
-      <BrandMarquee />
+      <PromoBanners sale={data.saleFeature} gift={data.giftFeature} />
+      <BestSellers products={data.bestsellers} />
+      <DermSpotlight products={data.derm} />
+      <BrandMarquee brands={brands.map((b) => ({ name: b.name, slug: b.slug }))} />
       <GiftFinder />
-      <RailSection
-        id="under3000-title"
-        eyebrow="Little luxuries"
-        title="Under Rs 2,999"
-        action={{ label: 'See more', href: '/c/beauty?max=2999' }}
-        products={collections.under3000}
-        tone="cream"
-      />
-      <RailSection id="new-title" eyebrow="Just landed" title="New arrivals" action={{ label: 'View all', href: '/c/beauty?sort=new' }} products={collections.newArrivals} />
+      <Rails rails={data.railsBottom} />
       <Newsletter />
     </>
   )

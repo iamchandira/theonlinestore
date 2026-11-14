@@ -51,14 +51,16 @@ theonlinestore/
 │  ├─ app/(frontend)/          Storefront: layout, globals.css (tokens), fonts, pages
 │  ├─ app/(payload)/           Payload admin + API routes (generated), custom.scss (admin theme)
 │  ├─ access/roles.ts          RBAC roles and access helpers
-│  ├─ collections/             Payload collections (Users, Media; more from Sprint 1)
+│  ├─ collections/             Products, Categories, Brands, Tags, Concerns, StockMovements, Media, Users
+│  ├─ globals/                 HomePage (hero products + product rails)
 │  ├─ components/ui/           Design-system primitives
 │  ├─ components/layout/       Header, search, mega-menu, bag drawer, footer, bottom nav
 │  ├─ components/home/         Home page sections
 │  ├─ components/product/      ProductCard, ProductRail, QuickAddSheet
 │  ├─ components/brand/        Logo, BrandLoader
 │  ├─ config/                  site.ts (store settings), navigation.ts (IA)
-│  ├─ lib/catalog.ts           Catalogue data access (seed now, Payload from Sprint 1)
+│  ├─ lib/catalog/             types.ts + utils.ts (browser-safe), server.ts (Payload Local API, server-only), params.ts
+│  ├─ lib/payload/             revalidate.ts (refresh cached pages after admin edits)
 │  ├─ lib/store/shop.tsx       Bag, wishlist and UI state (client)
 │  ├─ lib/motion/              Motion tokens, GSAP setup, Reveal helper
 │  └─ payload.config.ts
@@ -72,7 +74,33 @@ theonlinestore/
 - Bag and wishlist: `localStorage` for guests now. From Sprint 4 they are server-side `carts` and `wishlists`, merged at sign-in.
 - Relative timers (deal countdowns) are resolved in the browser so static pages never show stale times.
 
-## 5. Data model (target, built across Sprints 1–7)
+## 5. Data model
+
+### Built in Sprint 1
+| Collection / global | Purpose | Key fields |
+|---|---|---|
+| `products` | Sellable products (drafts, versions, scheduled publish) | name, slug, brand, categories, short description, rich description, benefits, how to use, ingredients, optionName, **variants[]** (label, sku, barcode, price, compareAtPrice, cost, weight, stock, lowStockThreshold, image), gallery, badge, tags, concerns, crossSells, upsells, priceTBC, SEO meta; **computed:** minPrice, maxPrice, totalStock, lowStock, onSale, searchText, salesCount, rating*, reviewCount* |
+| `categories` | Category tree (nested-docs plugin) | name, slug, parent, breadcrumbs (`/skincare/serums`), blurb, description, tint, image, order, SEO meta |
+| `brands` | Brands | name, slug, group (K-Beauty, Derm…), featured, logo, description, SEO meta |
+| `tags`, `concerns` | Merchandising tags and shopper concerns | name, slug |
+| `stock-movements` | Inventory audit log, written automatically and never edited | product, sku, variantLabel, change, resultingStock, reason, note, user |
+| `home-page` (global) | Home merchandising | heroProducts (≤ 4), rails[] (source: manual, sale, bestsellers, new, tag, category, under price; placement; style; countdown) |
+
+\* rating and reviewCount are placeholders until reviews launch in Sprint 2.
+
+**How data reaches pages:**
+- Server Components call `src/lib/catalog/server.ts` (Payload Local API, wrapped in React `cache()`), which maps documents into plain `Product` / `ProductDetail` objects.
+- Client Components only ever receive those objects as props.
+- The bag stores a snapshot per line (name, photo, price), so the browser never loads the catalogue. Prices are re-checked on the server at checkout (Sprint 4).
+
+**Caching:**
+- Product pages are pre-rendered for every published product and revalidate hourly. The home page, brands and category directory revalidate every 10 minutes.
+- **Admin edits revalidate immediately** through `afterChange` hooks (`lib/payload/revalidate.ts`). Seed scripts pass `context.disableRevalidate`.
+- Measured on a production build: home 4 ms, product page 2 ms, filtered listings about 20 ms.
+
+**Endpoints:** `GET /api/products/suggest?q=` returns header autosuggest results (published products and brands, cached 60 s at the edge).
+
+### Target (Sprints 2–7)
 ```mermaid
 erDiagram
   USERS ||--o{ ADDRESSES : has

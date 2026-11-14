@@ -52,5 +52,20 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 - Bootstrap: the very first user becomes `super-admin`.
 - `media`: anyone can read. Store manager, inventory and marketing can create and update. Store manager (and admin) can delete.
 
+## Rules implemented in Sprint 1 (catalogue)
+- `products`: the public reads **published** products only; staff read drafts too.
+  - Create and delete: store-manager, marketing (and admin).
+  - Update: store-manager, inventory-manager, marketing.
+  - **Field level:**
+    - `price`: store-manager only.
+    - `compareAtPrice`: store-manager and marketing.
+    - `cost`: read by store-manager and inventory-manager, edited by store-manager only.
+    - `stock` and `lowStockThreshold`: store-manager and inventory-manager.
+  - Edits a role isn't allowed to make are ignored, not saved.
+- `categories`, `brands`, `tags`, `concerns`: public read. Store-manager and marketing edit.
+- `stock-movements`: read by store-manager, inventory-manager, order-fulfillment and support. Nobody can edit or delete history.
+- `home-page` global: store-manager and marketing.
+- Covered by integration tests (`tests/int/catalog.int.spec.ts`): an inventory manager changing stock is logged with their user, and their price edits are ignored; drafts are hidden from the public.
+
 ## Testing
 From Sprint 3 (TOS-401), each cell in the table above gets an automated integration test (`tests/int/rbac.int.spec.ts`) that logs in as each role and checks the allowed and denied operations.

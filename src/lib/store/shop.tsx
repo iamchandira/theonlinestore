@@ -1,9 +1,11 @@
 'use client'
 
 /**
- * Client shop state for Sprint 0: bag (cart), wishlist and UI panels.
+ * Client shop state: bag (cart), wishlist and UI panels.
  * Persisted to localStorage (wrapped in try/catch so private mode still works).
- * Sprint 4 moves the cart to a server-side Payload `carts` collection; this API stays the same.
+ * Each bag line stores a snapshot of what the shopper saw (name, photo, price), so the browser never
+ * needs the whole catalogue. Prices are re-checked on the server at checkout (Sprint 4), when the cart
+ * moves to a server-side Payload `carts` collection; this API stays the same.
  */
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import {
@@ -19,9 +21,24 @@ import {
 } from 'react'
 import { toast } from 'sonner'
 
-import { getProduct, type Product, type Variant } from '@/lib/catalog'
+import type { Product, Variant } from '@/lib/catalog'
 
-export type CartLine = { slug: string; sku: string; qty: number }
+export type CartLine = {
+  slug: string
+  sku: string
+  qty: number
+  name: string
+  brand: string
+  category: string
+  image: string
+  option: string
+  label: string
+  /** True when the product has more than one variant (shows "Size: 100 ml" in the bag) */
+  multi: boolean
+  price: number
+  compareAtPrice: number | null
+  stock: number
+}
 
 type Flight = { id: number; src: string; from: DOMRect; to: DOMRect }
 
@@ -48,7 +65,7 @@ type ShopState = {
 
 const ShopContext = createContext<ShopState | null>(null)
 
-const CART_KEY = 'tos.cart.v1'
+const CART_KEY = 'tos.cart.v2' // v2 = snapshot lines (v1 Sprint 0 bags are ignored)
 const WISH_KEY = 'tos.wishlist.v1'
 
 function readJSON<T>(key: string, fallback: T): T {
@@ -67,11 +84,8 @@ function writeJSON(key: string, value: unknown) {
   }
 }
 
-export function resolveLine(line: CartLine) {
-  const product = getProduct(line.slug)
-  const variant = product?.variants.find((v) => v.sku === line.sku)
-  return product && variant ? { product, variant, qty: line.qty } : null
-}
+const isLine = (l: unknown): l is CartLine =>
+  Boolean(l && typeof l === 'object' && 'sku' in l && 'price' in l && 'name' in l && Number((l as CartLine).qty) > 0)
 
 export function ShopProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([])
@@ -88,7 +102,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Hydrate persisted state after mount (avoids SSR mismatch)
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLines(readJSON<CartLine[]>(CART_KEY, []))
+    setLines(readJSON<unknown[]>(CART_KEY, []).filter(isLine))
     setWishlist(readJSON<string[]>(WISH_KEY, []))
     setHydrated(true)
   }, [])
@@ -118,9 +132,28 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       setLines((prev) => {
         const existing = prev.find((l) => l.sku === variant.sku)
         if (existing) {
-          return prev.map((l) => (l.sku === variant.sku ? { ...l, qty: Math.min(l.qty + qty, variant.stock) } : l))
+          return prev.map((l) =>
+            l.sku === variant.sku ? { ...l, qty: Math.min(l.qty + qty, variant.stock), price: variant.price, stock: variant.stock } : l,
+          )
         }
-        return [...prev, { slug: product.slug, sku: variant.sku, qty }]
+        return [
+          ...prev,
+          {
+            slug: product.slug,
+            sku: variant.sku,
+            qty: Math.min(qty, variant.stock),
+            name: product.name,
+            brand: product.brand,
+            category: product.category,
+            image: variant.image,
+            option: variant.option,
+            label: variant.label,
+            multi: product.variants.length > 1,
+            price: variant.price,
+            compareAtPrice: variant.compareAtPrice,
+            stock: variant.stock,
+          },
+        ]
       })
       setAddPulse((n) => n + 1)
       launchFlight(variant.image, opts?.fromEl)
@@ -153,11 +186,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo<ShopState>(() => {
-    const resolved = lines.map(resolveLine).filter(Boolean) as NonNullable<ReturnType<typeof resolveLine>>[]
     return {
       lines,
-      itemCount: resolved.reduce((n, l) => n + l.qty, 0),
-      subtotal: resolved.reduce((n, l) => n + l.qty * l.variant.price, 0),
+      itemCount: lines.reduce((n, l) => n + l.qty, 0),
+      subtotal: lines.reduce((n, l) => n + l.qty * l.price, 0),
       addToCart,
       setQty,
       removeLine,

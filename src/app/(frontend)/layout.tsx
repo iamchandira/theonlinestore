@@ -10,6 +10,7 @@ import { Providers } from '@/components/layout/Providers'
 import { WhatsAppFab } from '@/components/layout/WhatsAppFab'
 import { QuickAddSheet } from '@/components/product/QuickAddSheet'
 import { site } from '@/config/site'
+import { getBagSuggestions, getNavData } from '@/lib/catalog/server'
 
 import { fontVariables } from './fonts'
 import './globals.css'
@@ -39,18 +40,19 @@ export const viewport: Viewport = {
   viewportFit: 'cover',
 }
 
-export default function FrontendLayout({ children }: { children: ReactNode }) {
+export default async function FrontendLayout({ children }: { children: ReactNode }) {
+  const [nav, bagSuggestions] = await Promise.all([getNavData(), getBagSuggestions()])
   return (
     <html lang="en-LK" className={fontVariables}>
       <body>
         <Providers>
           <AnnouncementBar />
-          <Header />
+          <Header nav={nav} />
           <main id="main" className="min-h-[60vh]">
             {children}
           </main>
           <Footer />
-          <CartDrawer />
+          <CartDrawer suggestions={bagSuggestions} />
           <QuickAddSheet />
           <MobileBottomNav />
           <WhatsAppFab />

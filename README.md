@@ -10,7 +10,8 @@ docker compose up -d          # Postgres 16 on localhost:5434
 pnpm install
 cp .env.example .env          # set PAYLOAD_SECRET (openssl rand -hex 32) and the SEED_ADMIN_* values
 pnpm dev                      # storefront http://localhost:3000 · admin http://localhost:3000/admin
-pnpm seed:admin               # optional: create the local super-admin from .env
+pnpm seed:admin               # create the local super-admin from .env
+pnpm seed:catalog             # import the 88-product seed catalogue into Payload
 ```
 
 ## Useful scripts
@@ -20,6 +21,8 @@ pnpm seed:admin               # optional: create the local super-admin from .env
 | `pnpm lint` · `pnpm typecheck` | Code quality |
 | `pnpm check:contrast` | WCAG AA check of the brand colour pairs |
 | `pnpm test:int` · `pnpm test:e2e` | Vitest integration tests · Playwright end-to-end tests |
+| `pnpm seed:catalog` | Import / refresh the seed catalogue (products, brands, categories, photos, home rails) |
+| `pnpm prune:media` | List unused media (`--apply` deletes them) |
 | `node scripts/screenshots.mjs screenshots /` | Desktop + mobile full-page screenshots for visual QA |
 | `pnpm generate:types` · `pnpm generate:importmap` | Regenerate Payload types and the admin import map |
 
@@ -32,4 +35,4 @@ pnpm seed:admin               # optional: create the local super-admin from .env
 - **Docs:** [`docs/`](docs/README.md): charter, SRS, backlog, sprint plan, architecture, design system, RBAC, UX
 
 ## Status
-Sprint 0 (foundation) is complete. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.
+Sprint 0 (foundation) and Sprint 1 (catalogue live) are complete. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.

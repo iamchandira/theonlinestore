@@ -5,7 +5,7 @@
 - [ ] `pnpm lint`, `pnpm typecheck` and `pnpm build` pass with no new warnings.
 - [ ] Tests are added or updated: integration tests for business rules (pricing, access, stock), Playwright for user flows.
 - [ ] Works at **390 px mobile and 1440 px desktop**. Keyboard-only flow checked. Visible focus. 44 px tap targets.
-- [ ] Respects `prefers-reduced-motion`. No layout shift from animations. Sticky and fixed elements never change their layout size on scroll.
+- [ ] Respects `prefers-reduced-motion`. No layout shift from animations. Sticky and fixed elements never change their layout size on scroll. Scroll-triggered UI is tested with a fast jump/fling, not just slow scrolling.
 - [ ] Colour pairs pass `pnpm check:contrast` (add any new pair to the script).
 - [ ] RBAC reviewed for any new collection or field (`06-rbac-matrix.md` updated).
 - [ ] SEO: title, description and structured data where relevant.

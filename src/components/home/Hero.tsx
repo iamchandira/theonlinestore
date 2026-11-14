@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useRef } from 'react'
 
 import { ButtonLink } from '@/components/ui/Button'
-import { collections, minPrice, productHref } from '@/lib/catalog'
+import { minPrice, productHref, type Product } from '@/lib/catalog'
 import { formatLKR, instalment } from '@/lib/format'
 import { gsap, prefersReducedMotion, ScrollTrigger, useGSAP } from '@/lib/motion/gsap'
 
@@ -14,9 +14,9 @@ import { gsap, prefersReducedMotion, ScrollTrigger, useGSAP } from '@/lib/motion
  * Hero: GSAP intro timeline (headline lines rise, products pop, floating cards settle),
  * then gentle idle float + scroll parallax. Content is fully visible without JS / with reduced motion.
  */
-export function Hero() {
+export function Hero({ picks }: { picks: Product[] }) {
   const root = useRef<HTMLElement>(null)
-  const [a, b, c, d] = collections.heroPicks
+  const [a, b, c, d] = picks
 
   useGSAP(
     () => {
@@ -144,7 +144,7 @@ export function Hero() {
                 <Image src={d.variants[0].image} alt="" fill sizes="48px" className="object-contain p-1 mix-blend-multiply" />
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-xs font-semibold">{d.brand} Snail 96</span>
+                <span className="block truncate text-xs font-semibold">{d.brand} {d.name}</span>
                 <span className="flex items-center gap-1 text-[0.6875rem] text-ink-500">
                   <IconStarFilled size={11} className="text-star" /> {d.rating} · {formatLKR(minPrice(d))}
                 </span>

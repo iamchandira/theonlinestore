@@ -1,6 +1,6 @@
 # 02 · Product Backlog
 
-Version 1.0 · 15 Nov 2026 · Owner: Product Owner. Ordered by priority within each epic.
+Version 1.1 · 15 Nov 2026 (after Sprint 1) · Owner: Product Owner. Ordered by priority within each epic.
 
 **Priority (MoSCoW):** M = Must, S = Should, C = Could, Sug = Suggested (an idea from the delivery team, needs PO approval).
 **Points:** Fibonacci (1, 2, 3, 5, 8, 13). **Status:** ✅ Done · 🔄 In progress · ⬜ To do.
@@ -10,8 +10,8 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 | Epic | Name | Stories | Points | Sprint(s) |
 |---|---|---|---|---|
 | E00 | Foundation & design system | 8 | 34 | 0 ✅ |
-| E01 | Catalogue, variants & inventory | 10 | 55 | 1 |
-| E02 | Discovery: search, filters, wishlist, recommendations | 8 | 42 | 2 |
+| E01 | Catalogue, variants & inventory | 10 | 55 | 1 ✅ (52 pts done; TOS-109 moved to Sprint 2) |
+| E02 | Discovery: search, filters, wishlist, recommendations | 9 | 45 | 2 (+TOS-109 carried over) |
 | E03 | Customer accounts | 7 | 29 | 3 |
 | E04 | RBAC & admin security | 4 | 18 | 3 |
 | E05 | Bag & checkout | 9 | 52 | 4 |
@@ -37,19 +37,19 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 | TOS-007 | As staff, I want a branded admin with user roles defined. | M | 2 | ✅ |
 | TOS-008 | As the team, I want a charter, SRS, backlog, sprint plan, architecture, design system, RBAC matrix and UX guidelines. | M | 1 | ✅ |
 
-## E01 · Catalogue, variants & inventory (Sprint 1)
-| ID | Story | P | Pts |
-|---|---|---|---|
-| TOS-101 | As a store manager, I want to create and publish products with rich content and images so that customers see complete information. | M | 8 |
-| TOS-102 | As a store manager, I want variants (size, shade, scent, pack) with their own SKU, price, compare-at price, image and stock. | M | 8 |
-| TOS-103 | As a store manager, I want hierarchical categories, brands, tags and concerns so that products are organised and filterable. | M | 5 |
-| TOS-104 | As an inventory manager, I want stock tracked per variant with low-stock thresholds and a movement log. | M | 8 |
-| TOS-105 | As a shopper, I want category and brand listing pages (PLP) with sort and pagination. | M | 5 |
-| TOS-106 | As a shopper, I want a product page (PDP) with a gallery and zoom, variant selector, stock status, delivery estimate, BNPL line, accordions and a sticky add-to-bag bar on mobile. | M | 8 |
-| TOS-107 | As the owner, I want the 88 catalogue products imported automatically from `seed/catalogue/products.json`. | M | 3 |
-| TOS-108 | As marketing, I want the home page sections (hero, banners, product rails) managed from the CMS. | S | 5 |
-| TOS-109 | As a store manager, I want CSV import and export for products and stock. | S | 3 |
-| TOS-110 | As a store manager, I want to schedule product publishing and sale prices. | C | 2 |
+## E01 · Catalogue, variants & inventory (Sprint 1) ✅
+| ID | Story | P | Pts | Status |
+|---|---|---|---|---|
+| TOS-101 | As a store manager, I want to create and publish products with rich content and images so that customers see complete information. | M | 8 | ✅ |
+| TOS-102 | As a store manager, I want variants (size, shade, scent, pack) with their own SKU, price, compare-at price, image and stock. | M | 8 | ✅ |
+| TOS-103 | As a store manager, I want hierarchical categories, brands, tags and concerns so that products are organised and filterable. | M | 5 | ✅ |
+| TOS-104 | As an inventory manager, I want stock tracked per variant with low-stock thresholds and a movement log. | M | 8 | ✅ (alerts are logged now; email/SMS delivery in Sprint 7) |
+| TOS-105 | As a shopper, I want category and brand listing pages (PLP) with sort and pagination. | M | 5 | ✅ |
+| TOS-106 | As a shopper, I want a product page (PDP) with a gallery and zoom, variant selector, stock status, delivery estimate, BNPL line, accordions and a sticky add-to-bag bar on mobile. | M | 8 | ✅ (district-specific delivery estimate comes with shipping zones in Sprint 4) |
+| TOS-107 | As the owner, I want the 88 catalogue products imported automatically from `seed/catalogue/products.json`. | M | 3 | ✅ |
+| TOS-108 | As marketing, I want the home page sections (hero, banners, product rails) managed from the CMS. | S | 5 | ✅ (hero products and product rails; banner copy stays in code until Sprint 9 CMS blocks) |
+| TOS-109 | As a store manager, I want CSV import and export for products and stock. | S | 3 | ➡️ Moved to Sprint 2 |
+| TOS-110 | As a store manager, I want to schedule product publishing and sale prices. | C | 2 | ✅ (drafts + scheduled publish) |
 
 **AC (TOS-102):**
 - The admin can add up to 3 option types.

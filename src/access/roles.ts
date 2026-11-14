@@ -51,3 +51,19 @@ export const isAdminOrSelf: Access = ({ req }) => {
 /* ---------- Field-level helpers ---------- */
 export const fieldAdminOnly: FieldAccess = ({ req }) => hasRole(req.user, 'admin')
 export const fieldSuperAdminOnly: FieldAccess = ({ req }) => userRoles(req.user).includes('super-admin')
+
+/** Drafts-aware public read: staff see everything, everyone else only published documents. */
+export const publishedOrStaff: Access = ({ req }) => {
+  if (isStaff(req.user)) return true
+  return { _status: { equals: 'published' } }
+}
+
+/** Catalogue editors (content, pricing, merchandising). */
+export const catalogEditors = allowRoles('store-manager', 'marketing')
+/** Catalogue + stock editors. */
+export const catalogAndStock = allowRoles('store-manager', 'inventory-manager', 'marketing')
+
+export const fieldRoles =
+  (...roles: Role[]): FieldAccess =>
+  ({ req }) =>
+    hasRole(req.user, 'admin', ...roles)

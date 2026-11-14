@@ -67,18 +67,32 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
+    products: Product;
+    categories: Category;
+    brands: Brand;
+    tags: Tag;
+    concerns: Concern;
+    'stock-movements': StockMovement;
     media: Media;
+    users: User;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    brands: BrandsSelect<false> | BrandsSelect<true>;
+    tags: TagsSelect<false> | TagsSelect<true>;
+    concerns: ConcernsSelect<false> | ConcernsSelect<true>;
+    'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -87,15 +101,25 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'home-page': HomePage;
+  };
+  globalsSelect: {
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
   };
   user: User;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      schedulePublish: TaskSchedulePublish;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
@@ -118,49 +142,162 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Prices are in LKR. A product flagged "Price to be confirmed" shows a warning until its prices are checked.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "products".
  */
-export interface User {
+export interface Product {
   id: number;
-  fullName?: string | null;
   /**
-   * Sri Lankan mobile, e.g. +94 77 123 4567. Used for SMS / WhatsApp order updates.
+   * Without the brand, e.g. "Hydrating Facial Cleanser".
    */
-  phone?: string | null;
+  name: string;
+  brand: number | Brand;
   /**
-   * Controls what this person can see and do. See docs/06-rbac-matrix.md.
+   * Pick the most specific category (e.g. Serums). The first one is the main category.
    */
-  roles: (
-    | 'super-admin'
-    | 'admin'
-    | 'store-manager'
-    | 'inventory-manager'
-    | 'order-fulfillment'
-    | 'marketing'
-    | 'support'
-    | 'customer'
-  )[];
-  marketingOptIn?: boolean | null;
+  categories: (number | Category)[];
+  /**
+   * One or two sentences shown near the price.
+   */
+  shortDescription?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * One benefit per line.
+   */
+  benefits?: string | null;
+  howToUse?: string | null;
+  ingredients?: string | null;
+  /**
+   * What the variants differ by.
+   */
+  optionName: 'Size' | 'Shade' | 'Scent' | 'Flavour' | 'Pack' | 'Set' | 'Colour' | 'Shoe size';
+  variants: {
+    /**
+     * e.g. 100 ml, Rose Amour
+     */
+    label: string;
+    sku: string;
+    barcode?: string | null;
+    /**
+     * Selling price (Rs)
+     */
+    price: number;
+    /**
+     * "Was" price (Rs), for sales
+     */
+    compareAtPrice?: number | null;
+    /**
+     * Cost price (staff only)
+     */
+    cost?: number | null;
+    /**
+     * Grams (for delivery fees)
+     */
+    weight?: number | null;
+    stock: number;
+    /**
+     * Flag as low stock at or below this
+     */
+    lowStockThreshold?: number | null;
+    image?: (number | null) | Media;
+    id?: string | null;
+  }[];
+  /**
+   * Extra photos shown after the variant photo.
+   */
+  gallery?: (number | Media)[] | null;
+  badge?: ('bestseller' | 'new' | 'trending' | 'gift' | 'limited') | null;
+  tags?: (number | Tag)[] | null;
+  concerns?: (number | Concern)[] | null;
+  /**
+   * Shown as "Pairs well with". Leave empty to suggest automatically from the same concerns.
+   */
+  crossSells?: (number | Product)[] | null;
+  upsells?: (number | Product)[] | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Imported with placeholder prices. Untick once prices are checked.
+   */
+  priceTBC?: boolean | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
+  totalStock?: number | null;
+  /**
+   * A variant is at or below its threshold.
+   */
+  lowStock?: boolean | null;
+  onSale?: boolean | null;
+  /**
+   * Units sold (updated by orders from Sprint 6). Drives "Bestsellers" sorting.
+   */
+  salesCount?: number | null;
+  /**
+   * Placeholder until reviews launch (Sprint 2).
+   */
+  rating?: number | null;
+  reviewCount?: number | null;
+  searchText?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands".
+ */
+export interface Brand {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Used to group brands in the Brands menu.
+   */
+  group: 'k-beauty' | 'derm' | 'everyday' | 'fragrance' | 'footwear' | 'gifts';
+  featured?: boolean | null;
+  logo?: (number | null) | Media;
+  description?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -221,6 +358,156 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Short line shown on category tiles, e.g. "K-beauty and derm favourites".
+   */
+  blurb?: string | null;
+  /**
+   * Intro shown at the top of the category page (also used for SEO).
+   */
+  description?: string | null;
+  /**
+   * Category mood tint (design system).
+   */
+  tint?: ('skincare' | 'hair' | 'body' | 'lips' | 'fragrance' | 'chocolate' | 'footwear' | 'gifts' | 'sky') | null;
+  image?: (number | null) | Media;
+  order?: number | null;
+  parent?: (number | null) | Category;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Category;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Merchandising tags such as K-beauty, Derm, Bestseller, New, Gift.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Skin and hair concerns shoppers filter by, e.g. Acne, Brightening, Hair fall.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "concerns".
+ */
+export interface Concern {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Every stock change, who made it and why. Written automatically.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements".
+ */
+export interface StockMovement {
+  id: number;
+  product: number | Product;
+  sku: string;
+  variantLabel?: string | null;
+  /**
+   * Positive = stock in, negative = stock out
+   */
+  change: number;
+  resultingStock: number;
+  reason: 'initial' | 'adjustment' | 'restock' | 'sale' | 'return' | 'damaged' | 'count';
+  note?: string | null;
+  /**
+   * Who made the change (empty = system).
+   */
+  user?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  fullName?: string | null;
+  /**
+   * Sri Lankan mobile, e.g. +94 77 123 4567. Used for SMS / WhatsApp order updates.
+   */
+  phone?: string | null;
+  /**
+   * Controls what this person can see and do. See docs/06-rbac-matrix.md.
+   */
+  roles: (
+    | 'super-admin'
+    | 'admin'
+    | 'store-manager'
+    | 'inventory-manager'
+    | 'order-fulfillment'
+    | 'marketing'
+    | 'support'
+    | 'customer'
+  )[];
+  marketingOptIn?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -238,18 +525,134 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'schedulePublish') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: number | User;
+        relationTo: 'products';
+        value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'brands';
+        value: number | Brand;
+      } | null)
+    | ({
+        relationTo: 'tags';
+        value: number | Tag;
+      } | null)
+    | ({
+        relationTo: 'concerns';
+        value: number | Concern;
+      } | null)
+    | ({
+        relationTo: 'stock-movements';
+        value: number | StockMovement;
       } | null)
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -295,30 +698,153 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "products_select".
  */
-export interface UsersSelect<T extends boolean = true> {
-  fullName?: T;
-  phone?: T;
-  roles?: T;
-  marketingOptIn?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
+export interface ProductsSelect<T extends boolean = true> {
+  name?: T;
+  brand?: T;
+  categories?: T;
+  shortDescription?: T;
+  description?: T;
+  benefits?: T;
+  howToUse?: T;
+  ingredients?: T;
+  optionName?: T;
+  variants?:
     | T
     | {
+        label?: T;
+        sku?: T;
+        barcode?: T;
+        price?: T;
+        compareAtPrice?: T;
+        cost?: T;
+        weight?: T;
+        stock?: T;
+        lowStockThreshold?: T;
+        image?: T;
         id?: T;
-        createdAt?: T;
-        expiresAt?: T;
       };
+  gallery?: T;
+  badge?: T;
+  tags?: T;
+  concerns?: T;
+  crossSells?: T;
+  upsells?: T;
+  generateSlug?: T;
+  slug?: T;
+  priceTBC?: T;
+  minPrice?: T;
+  maxPrice?: T;
+  totalStock?: T;
+  lowStock?: T;
+  onSale?: T;
+  salesCount?: T;
+  rating?: T;
+  reviewCount?: T;
+  searchText?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  blurb?: T;
+  description?: T;
+  tint?: T;
+  image?: T;
+  order?: T;
+  parent?: T;
+  breadcrumbs?:
+    | T
+    | {
+        doc?: T;
+        url?: T;
+        label?: T;
+        id?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands_select".
+ */
+export interface BrandsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  group?: T;
+  featured?: T;
+  logo?: T;
+  description?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "concerns_select".
+ */
+export interface ConcernsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements_select".
+ */
+export interface StockMovementsSelect<T extends boolean = true> {
+  product?: T;
+  sku?: T;
+  variantLabel?: T;
+  change?: T;
+  resultingStock?: T;
+  reason?: T;
+  note?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -385,11 +911,69 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  fullName?: T;
+  phone?: T;
+  roles?: T;
+  marketingOptIn?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -424,6 +1008,76 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Hero products and product rails on the home page.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: number;
+  /**
+   * Up to 4. The first three float in the hero; the fourth appears on the small rating card.
+   */
+  heroProducts?: (number | Product)[] | null;
+  /**
+   * Shown in this order, in the upper or lower part of the page.
+   */
+  rails?:
+    | {
+        /**
+         * Small label, e.g. "Today only"
+         */
+        eyebrow?: string | null;
+        title: string;
+        linkLabel?: string | null;
+        description?: string | null;
+        source: 'manual' | 'sale' | 'bestsellers' | 'new' | 'tag' | 'category' | 'under';
+        limit?: number | null;
+        style?: ('plain' | 'blush' | 'cream') | null;
+        placement?: ('top' | 'bottom') | null;
+        countdown?: boolean | null;
+        products?: (number | Product)[] | null;
+        tag?: (number | null) | Tag;
+        category?: (number | null) | Category;
+        /**
+         * Rs
+         */
+        maxPrice?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  heroProducts?: T;
+  rails?:
+    | T
+    | {
+        eyebrow?: T;
+        title?: T;
+        linkLabel?: T;
+        description?: T;
+        source?: T;
+        limit?: T;
+        style?: T;
+        placement?: T;
+        countdown?: T;
+        products?: T;
+        tag?: T;
+        category?: T;
+        maxPrice?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
@@ -432,6 +1086,26 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    doc?: {
+      relationTo: 'products';
+      value: number | Product;
+    } | null;
+    global?: string | null;
+    user?: {
+      relationTo: 'users';
+      value: number | User;
+    } | null;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

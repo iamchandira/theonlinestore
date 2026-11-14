@@ -9,8 +9,8 @@
 | Sprint | Dates | Goal | Key stories | Demo at review |
 |---|---|---|---|---|
 | **0** ✅ | 15 Nov 2026 | Foundation, brand and UX system, storefront shell, catalogue extraction, docs | TOS-001 → 008 | Home page, styleguide, branded admin |
-| **1** | 16 – 27 Nov 2026 | **Catalogue live**: products, variants, categories, brands, inventory; listing and product pages | TOS-101 → 110 | Staff add a product; shoppers browse real listing and product pages |
-| **2** | 30 Nov – 11 Dec | **Find it fast**: search, filters, wishlist, cross-sell and upsell, reviews | TOS-201 → 208 | Search "centella", filter by concern, save to wishlist |
+| **1** ✅ | 15 Nov 2026 (started early) | **Catalogue live**: products, variants, categories, brands, inventory; listing and product pages | TOS-101 → 110 | Staff add a product; shoppers browse real listing and product pages |
+| **2** | 16 – 27 Nov 2026 | **Find it fast**: search, filters, wishlist, cross-sell and upsell, reviews, CSV import/export | TOS-201 → 208, TOS-109 | Search "centella", filter by concern, save to wishlist |
 | **3** | 14 – 24 Dec | **Accounts & security**: register, login, reset, addresses, order history shell; RBAC enforced; audit log | TOS-301 → 307, 401 → 404 | A customer signs up; each staff role sees the right admin |
 | — | 25 Dec – 1 Jan | Holiday buffer (bug fixes, content entry) | | |
 | **4** | 4 – 15 Jan 2027 | **Checkout**: server bag, coupons, discount engine, delivery fees, notes, T&C, gift options, confirmation | TOS-501 → 509 | Full COD order with a coupon and district delivery fee |
@@ -36,7 +36,24 @@
 | TOS-007 Admin | Branded Payload admin, 8 roles, access helpers, dev admin seed |
 | TOS-008 Docs | This folder |
 
-## Sprint 1 plan (next)
+## Sprint 1 (complete): catalogue live
+All Must stories done (52 of 55 points). TOS-109 (CSV import/export) moved to Sprint 2. See `sprint-reports/sprint-01.md`.
+
+## Sprint 2 plan (next)
+**Goal:** find it fast. Shoppers can find any product by name, brand or concern, even with typos, narrow results with filters, and save favourites.
+
+| # | Task | Story |
+|---|---|---|
+| 1 | Postgres full-text search with trigram typo tolerance, behind `/api/products/suggest` and `/search` | TOS-201, 207 |
+| 2 | Faceted filters with counts (category, brand, price, concern, rating, in stock, on sale), sticky sidebar on desktop, bottom sheet on mobile, kept in the URL | TOS-202 |
+| 3 | Wishlist page, plus a server-side wishlist that merges at sign-in (account sign-in itself lands in Sprint 3; the guest wishlist ships now) | TOS-203 |
+| 4 | Upsells on the product page (cross-sells shipped in Sprint 1) | TOS-204 |
+| 5 | Recently viewed products | TOS-205 |
+| 6 | Reviews: collection, moderation, verified buyer, photos; replace placeholder ratings | TOS-206 |
+| 7 | Search analytics, including zero-result searches | TOS-208 |
+| 8 | CSV import and export for products and stock (carried over) | TOS-109 |
+
+## Sprint 1 plan (as planned)
 **Goal:** staff can manage the real catalogue in the admin, and shoppers can browse real category and product pages.
 
 | # | Task | Story |

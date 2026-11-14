@@ -6,7 +6,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { categories, type Tint } from '@/config/navigation'
-import { getProducts } from '@/lib/catalog'
 import { fadeUp, stagger } from '@/lib/motion/variants'
 import { cn } from '@/lib/utils/cn'
 
@@ -33,7 +32,7 @@ const icons = { perfume: IconPerfume, shoe: IconShoe, gift: IconGift, candy: Ico
  * Quick-access category tiles (Noor-style): big, rounded and colour-coded so each department
  * is recognisable at a glance. Horizontal snap scroll on phones, 4 × 2 grid on desktop.
  */
-export function CategoryTiles() {
+export function CategoryTiles({ tileImages = {} }: { tileImages?: Record<string, string[]> }) {
   return (
     <section aria-labelledby="cat-title" className="container-site py-10 md:py-14">
       <div className="mb-5 flex items-end justify-between">
@@ -52,7 +51,7 @@ export function CategoryTiles() {
         className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0"
       >
         {categories.map((c, i) => {
-          const imgs = c.heroProducts ? getProducts(c.heroProducts) : []
+          const imgs = tileImages[c.slug] ?? []
           const Icon = c.icon ? icons[c.icon] : null
           return (
             <motion.li key={c.slug} variants={fadeUp} className="w-[42%] shrink-0 snap-start xs:w-[38%] sm:w-[30%] md:w-auto">
@@ -73,15 +72,15 @@ export function CategoryTiles() {
                 </span>
                 {imgs.length > 0 ? (
                   <span aria-hidden className="absolute -bottom-2 -right-2 flex h-[62%] w-[70%] items-end justify-end">
-                    {imgs.map((p, j) => (
+                    {imgs.map((src, j) => (
                       <span
-                        key={p.slug}
+                        key={src}
                         className={cn(
                           'relative h-full w-1/2 transition-transform duration-500 ease-[var(--ease-out-soft)]',
                           j === 0 ? 'z-10 group-hover:-translate-y-2 group-hover:-rotate-3' : '-ml-[12%] h-[85%] group-hover:-translate-y-1 group-hover:rotate-3',
                         )}
                       >
-                        <Image src={p.variants[0].image} alt="" fill sizes="120px" className="object-contain object-bottom mix-blend-multiply" />
+                        <Image src={src} alt="" fill sizes="120px" className="object-contain object-bottom mix-blend-multiply" />
                       </span>
                     ))}
                   </span>

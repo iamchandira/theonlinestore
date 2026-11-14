@@ -3,12 +3,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { ButtonLink } from '@/components/ui/Button'
-import { collections, minPrice, productHref } from '@/lib/catalog'
+import { minPrice, productHref, type Product } from '@/lib/catalog'
 import { formatLKR } from '@/lib/format'
 import { Reveal, RevealItem } from '@/lib/motion/Reveal'
 
 /** Glowora-inspired editorial panel: serif accent, soft blush surface, curated derm picks. */
-export function DermSpotlight() {
+export function DermSpotlight({ products }: { products: Product[] }) {
+  if (!products.length) return null
   return (
     <section aria-labelledby="derm-title" className="container-site py-10 md:py-14">
       <div className="relative overflow-hidden rounded-2xl bg-[linear-gradient(135deg,#fdeef0_0%,#fbe4e9_45%,#fff3ea_100%)] p-6 md:p-10 lg:p-12">
@@ -38,7 +39,7 @@ export function DermSpotlight() {
             </ButtonLink>
           </Reveal>
           <Reveal staggerChildren={0.08} className="grid grid-cols-2 gap-3 md:gap-4">
-            {collections.derm.map((p) => (
+            {products.map((p) => (
               <RevealItem key={p.slug}>
                 <Link href={productHref(p)} className="group flex h-full flex-col rounded-xl bg-white/85 p-3 shadow-soft backdrop-blur transition-shadow hover:shadow-card md:p-4">
                   <span className="relative mb-3 aspect-square overflow-hidden rounded-lg bg-white">

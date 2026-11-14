@@ -4,14 +4,13 @@ import Link from 'next/link'
 import { useRef } from 'react'
 
 import { SectionHeader } from '@/components/ui/SectionHeader'
-import { brands, brandSlug } from '@/lib/catalog'
 import { gsap, prefersReducedMotion, useGSAP } from '@/lib/motion/gsap'
 
 /**
  * Two counter-scrolling rows of brand "wordmark" chips. Speed eases down on hover so links stay clickable.
  * With reduced motion the rows become a static, wrapping list.
  */
-export function BrandMarquee() {
+export function BrandMarquee({ brands }: { brands: { name: string; slug: string }[] }) {
   const root = useRef<HTMLElement>(null)
   const half = Math.ceil(brands.length / 2)
   const rows = [brands.slice(0, half), brands.slice(half)]
@@ -39,13 +38,13 @@ export function BrandMarquee() {
           <div key={i} data-marquee className="flex w-max gap-3 motion-reduce:w-auto motion-reduce:flex-wrap motion-reduce:px-4">
             {[...row, ...row].map((b, j) => (
               <Link
-                key={`${b}-${j}`}
-                href={`/brands/${brandSlug(b)}`}
+                key={`${b.slug}-${j}`}
+                href={`/brands/${b.slug}`}
                 tabIndex={j >= row.length ? -1 : undefined}
                 aria-hidden={j >= row.length ? true : undefined}
                 className="flex h-16 shrink-0 items-center rounded-xl border border-line bg-surface px-7 font-display text-lg font-bold tracking-tight text-ink-800 transition-[color,border-color,box-shadow] hover:border-ink-900 hover:text-sunset-600 hover:shadow-card md:h-20 md:px-9 md:text-xl"
               >
-                {b}
+                {b.name}
               </Link>
             ))}
           </div>

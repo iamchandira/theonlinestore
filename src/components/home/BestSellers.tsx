@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 import { ProductCard } from '@/components/product/ProductCard'
 import { SectionHeader } from '@/components/ui/SectionHeader'
-import { collections } from '@/lib/catalog'
+import type { Product } from '@/lib/catalog'
 import { cn } from '@/lib/utils/cn'
 
 const tabs = [
@@ -16,9 +16,9 @@ const tabs = [
 ] as const
 
 /** Bestseller grid with category tabs. Tab indicator and grid items animate with shared layout. */
-export function BestSellers() {
+export function BestSellers({ products }: { products: Product[] }) {
   const [tab, setTab] = useState<(typeof tabs)[number]['key']>('all')
-  const list = collections.bestsellers.filter((p) => tab === 'all' || p.category === tab).slice(0, 8)
+  const list = products.filter((p) => tab === 'all' || p.category === tab).slice(0, 8)
 
   return (
     <section aria-labelledby="bestsellers-title" className="container-site py-10 md:py-14">

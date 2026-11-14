@@ -6,12 +6,10 @@ import Image from 'next/image'
 
 import { ButtonLink } from '@/components/ui/Button'
 import { Countdown } from '@/components/ui/Countdown'
-import { getProduct } from '@/lib/catalog'
+import type { Product } from '@/lib/catalog'
 
 /** Two promotional panels (NovaTrend-inspired): flash sale on the brand gradient, gift edit on ink. */
-export function PromoBanners() {
-  const sale = getProduct('dove-exfoliating-body-polish')
-  const gift = getProduct('lrp-hyalu-b5-repulping-gift-set')
+export function PromoBanners({ sale, gift }: { sale: Product | null; gift: Product | null }) {
   return (
     <section aria-label="Current promotions" className="container-site grid gap-4 py-4 md:grid-cols-2 md:gap-5">
       <motion.article

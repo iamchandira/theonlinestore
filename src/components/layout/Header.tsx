@@ -17,6 +17,7 @@ import { Logo } from '@/components/brand/Logo'
 import { CountBadge } from '@/components/ui/IconButton'
 import { primaryNav } from '@/config/navigation'
 import { site } from '@/config/site'
+import type { NavData } from '@/lib/catalog/server'
 import { formatLKR } from '@/lib/format'
 import { useShop } from '@/lib/store/shop'
 import { cn } from '@/lib/utils/cn'
@@ -37,7 +38,7 @@ import { SearchBox } from './SearchBox'
  * The category row is therefore absolutely positioned and moved with transforms only, and an in-flow spacer
  * reserves its space at the top of the page.
  */
-export function Header() {
+export function Header({ nav }: { nav: NavData }) {
   const { itemCount, subtotal, wishlist, setCartOpen, cartIconRef, addPulse } = useShop()
   const [mega, setMega] = useState<null | 'beauty' | 'brands'>(null)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -185,7 +186,11 @@ export function Header() {
           <AnimatePresence>
             {mega && (
               <div className="absolute inset-x-0 top-full" onMouseEnter={() => openMega(mega)} onMouseLeave={scheduleClose}>
-                {mega === 'beauty' ? <BeautyMega onNavigate={() => setMega(null)} /> : <BrandsMega onNavigate={() => setMega(null)} />}
+                {mega === 'beauty' ? (
+                  <BeautyMega feature={nav.megaFeature} onNavigate={() => setMega(null)} />
+                ) : (
+                  <BrandsMega groups={nav.brandGroups} onNavigate={() => setMega(null)} />
+                )}
               </div>
             )}
           </AnimatePresence>

@@ -6,11 +6,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { beautyCategories, concerns } from '@/config/navigation'
-import { brandGroups, brandSlug, getProduct } from '@/lib/catalog'
+import { productHref, type Product } from '@/lib/catalog'
 import { dropdown } from '@/lib/motion/variants'
 
-export function BeautyMega({ onNavigate }: { onNavigate: () => void }) {
-  const feature = getProduct('medicube-collagen-night-wrapping-mask')
+export function BeautyMega({ onNavigate, feature }: { onNavigate: () => void; feature: Product | null }) {
   return (
     <motion.div variants={dropdown} initial="hidden" animate="show" exit="exit" className="container-site">
       <div className="grid grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.3fr)] gap-8 rounded-b-2xl border border-t-0 border-line bg-surface p-8 shadow-lift">
@@ -42,7 +41,7 @@ export function BeautyMega({ onNavigate }: { onNavigate: () => void }) {
             </div>
           </div>
           {feature && (
-            <Link href={`/p/${feature.slug}`} onClick={onNavigate} className="group relative mt-auto flex items-center gap-4 overflow-hidden rounded-xl bg-tint-skincare p-4">
+            <Link href={productHref(feature)} onClick={onNavigate} className="group relative mt-auto flex items-center gap-4 overflow-hidden rounded-xl bg-tint-skincare p-4">
               <span className="relative size-24 shrink-0">
                 <Image src={feature.variants[0].image} alt="" fill sizes="96px" className="object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110" />
               </span>
@@ -61,18 +60,18 @@ export function BeautyMega({ onNavigate }: { onNavigate: () => void }) {
   )
 }
 
-export function BrandsMega({ onNavigate }: { onNavigate: () => void }) {
+export function BrandsMega({ onNavigate, groups }: { onNavigate: () => void; groups: Record<string, { name: string; slug: string }[]> }) {
   return (
     <motion.div variants={dropdown} initial="hidden" animate="show" exit="exit" className="container-site">
       <div className="grid grid-cols-3 gap-8 rounded-b-2xl border border-t-0 border-line bg-surface p-8 shadow-lift">
-        {Object.entries(brandGroups).map(([group, list]) => (
+        {Object.entries(groups).map(([group, list]) => (
           <div key={group}>
             <p className="mb-3 font-display text-base font-bold">{group}</p>
             <ul className="grid grid-cols-2 gap-1">
               {list.map((b) => (
-                <li key={b}>
-                  <Link href={`/brands/${brandSlug(b)}`} onClick={onNavigate} className="-mx-2 block rounded-md px-2 py-1.5 text-sm text-ink-600 hover:bg-ink-50 hover:text-ink-900">
-                    {b}
+                <li key={b.slug}>
+                  <Link href={`/brands/${b.slug}`} onClick={onNavigate} className="-mx-2 block rounded-md px-2 py-1.5 text-sm text-ink-600 hover:bg-ink-50 hover:text-ink-900">
+                    {b.name}
                   </Link>
                 </li>
               ))}

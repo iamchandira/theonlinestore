@@ -7,9 +7,14 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'react'
 
+type Suggest = {
+  products: { slug: string; name: string; brand: string; price: number | null; image: string | null }[]
+  brands: { name: string; slug: string }[]
+}
+const EMPTY: Suggest = { products: [], brands: [] }
+
 import { Price } from '@/components/ui/Price'
 import { categories, popularSearches } from '@/config/navigation'
-import { brands, brandSlug, minPrice, productHref, searchProducts } from '@/lib/catalog'
 import { dropdown } from '@/lib/motion/variants'
 import { cn } from '@/lib/utils/cn'
 
@@ -28,18 +33,36 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
   const inputRef = useRef<HTMLInputElement>(null)
   const listId = useId()
 
-  const results = useMemo(() => searchProducts(deferred, 5), [deferred])
-  const brandHits = useMemo(() => {
-    const t = deferred.trim().toLowerCase()
-    return t.length < 2 ? [] : brands.filter((b) => b.toLowerCase().includes(t)).slice(0, 3)
-  }, [deferred])
+  const [data, setData] = useState<{ q: string; res: Suggest }>({ q: '', res: EMPTY })
+  const term = deferred.trim()
+
+  // Debounced fetch from the server (GET /api/products/suggest); stale responses are ignored
+  useEffect(() => {
+    if (term.length < 2) return
+    const ctrl = new AbortController()
+    const t = window.setTimeout(() => {
+      fetch(`/api/products/suggest?q=${encodeURIComponent(term)}`, { signal: ctrl.signal })
+        .then((r) => (r.ok ? r.json() : EMPTY))
+        .then((res: Suggest) => setData({ q: term, res }))
+        .catch(() => {})
+    }, 140)
+    return () => {
+      window.clearTimeout(t)
+      ctrl.abort()
+    }
+  }, [term])
+
+  const current = data.q === term ? data.res : EMPTY
+  const loading = term.length >= 2 && data.q !== term
+  const results = current.products.slice(0, 5)
+  const brandHits = current.brands
   const catHits = useMemo(() => {
     const t = deferred.trim().toLowerCase()
     return t.length < 2 ? [] : categories.flatMap((c) => [c, ...(c.children ?? [])]).filter((c) => c.name.toLowerCase().includes(t)).slice(0, 3)
   }, [deferred])
 
   const hasQuery = deferred.trim().length >= 2
-  const options = hasQuery ? results.map((p) => productHref(p)) : []
+  const options = hasQuery ? results.map((p) => `/p/${p.slug}`) : []
 
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
@@ -132,7 +155,19 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
             className="absolute inset-x-0 top-[calc(100%+8px)] z-[70] overflow-hidden rounded-xl border border-line bg-surface shadow-lift"
           >
             <div id={listId} role="listbox" aria-label="Search suggestions" data-lenis-prevent className="max-h-[70dvh] overflow-y-auto overscroll-contain p-2">
-              {!hasQuery || (results.length === 0 && brandHits.length === 0 && catHits.length === 0) ? (
+              {hasQuery && loading && results.length === 0 ? (
+                <ul className="py-1" aria-busy="true">
+                  {[0, 1, 2].map((i) => (
+                    <li key={i} className="flex items-center gap-3 p-2">
+                      <span className="skeleton size-14 shrink-0 rounded-md" />
+                      <span className="flex-1 space-y-2">
+                        <span className="skeleton block h-3 w-16 rounded" />
+                        <span className="skeleton block h-4 w-3/4 rounded" />
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : !hasQuery || (results.length === 0 && brandHits.length === 0 && catHits.length === 0) ? (
                 <div className="p-3">
                   {hasQuery && (
                     <p className="mb-4 rounded-md bg-ink-50 px-3 py-2.5 text-sm text-ink-700">
@@ -163,8 +198,8 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
                   {(brandHits.length > 0 || catHits.length > 0) && (
                     <div className="flex flex-wrap gap-2 border-b border-line p-2 pb-3">
                       {brandHits.map((b) => (
-                        <Link key={b} href={`/brands/${brandSlug(b)}`} onClick={() => setOpen(false)} className="inline-flex h-9 items-center gap-1 rounded-full bg-ink-50 px-3.5 text-sm font-semibold hover:bg-ink-100">
-                          {b} <span className="font-normal text-ink-500">· Brand</span>
+                        <Link key={b.slug} href={`/brands/${b.slug}`} onClick={() => setOpen(false)} className="inline-flex h-9 items-center gap-1 rounded-full bg-ink-50 px-3.5 text-sm font-semibold hover:bg-ink-100">
+                          {b.name} <span className="font-normal text-ink-500">· Brand</span>
                         </Link>
                       ))}
                       {catHits.map((c) => (
@@ -178,19 +213,19 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
                     {results.map((p, i) => (
                       <li key={p.slug} id={`${listId}-opt-${i}`} role="option" aria-selected={active === i}>
                         <Link
-                          href={productHref(p)}
+                          href={`/p/${p.slug}`}
                           onClick={() => { setOpen(false); onNavigate?.() }}
                           onMouseEnter={() => setActive(i)}
                           className={cn('flex items-center gap-3 rounded-md p-2', active === i && 'bg-ink-50')}
                         >
                           <span className="relative size-14 shrink-0 overflow-hidden rounded-md bg-ink-50">
-                            <Image src={p.variants[0].image} alt="" fill sizes="56px" className="object-contain p-1 mix-blend-multiply" />
+                            {p.image && <Image src={p.image} alt="" fill sizes="56px" className="object-contain p-1 mix-blend-multiply" />}
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="block text-[0.6875rem] font-bold uppercase tracking-wider text-ink-500">{p.brand}</span>
                             <span className="line-clamp-1 text-sm font-semibold">{p.name}</span>
                           </span>
-                          <Price price={minPrice(p)} size="sm" />
+                          {p.price ? <Price price={p.price} size="sm" /> : null}
                         </Link>
                       </li>
                     ))}

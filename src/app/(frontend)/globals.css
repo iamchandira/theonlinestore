@@ -211,6 +211,16 @@
   }
 }
 
+/* Product page sticky add-to-bag bar is visible: lift the WhatsApp button clear of it (transform only, no layout shift) */
+.wa-fab {
+  transition: translate 300ms var(--ease-out-soft);
+}
+@media (width < 64rem) {
+  body[data-sticky-cta] .wa-fab {
+    translate: 0 -4.5rem;
+  }
+}
+
 /* Respect reduced-motion preferences globally (GSAP and Framer are guarded in code too) */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

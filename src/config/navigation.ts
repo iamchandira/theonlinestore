@@ -20,8 +20,6 @@ export type CategoryDef = {
   href: string
   tint: Tint
   blurb: string
-  /** Product slugs whose images represent the category (beauty categories). */
-  heroProducts?: string[]
   /** Tabler icon key for categories without catalogue photography yet. */
   icon?: 'perfume' | 'shoe' | 'gift' | 'candy'
   children?: { slug: string; name: string; href: string }[]
@@ -40,7 +38,6 @@ export const categories: CategoryDef[] = [
     href: '/c/skincare',
     tint: 'skincare',
     blurb: 'K-beauty and derm favourites',
-    heroProducts: ['skin1004-madagascar-centella-ampoule', 'anua-peach-70-niacin-serum'],
     children: [
       sub('skincare', 'cleansers', 'Cleansers'),
       sub('skincare', 'serums', 'Serums & Ampoules'),
@@ -58,7 +55,6 @@ export const categories: CategoryDef[] = [
     href: '/c/hair-care',
     tint: 'hair',
     blurb: 'Shampoos, oils and treatments',
-    heroProducts: ['mielle-rosemary-mint-scalp-hair-oil', 'shiseido-fino-premium-touch-hair-mask'],
     children: [
       sub('hair-care', 'shampoos', 'Shampoos'),
       sub('hair-care', 'conditioners', 'Conditioners'),
@@ -73,7 +69,6 @@ export const categories: CategoryDef[] = [
     href: '/c/body-care',
     tint: 'body',
     blurb: 'Lotions, polishes and daily care',
-    heroProducts: ['dove-exfoliating-body-polish', 'nivea-super-10-glow-body-serum'],
     children: [
       sub('body-care', 'body-lotion', 'Lotions & Creams'),
       sub('body-care', 'body-scrubs', 'Scrubs & Polishes'),
@@ -88,7 +83,6 @@ export const categories: CategoryDef[] = [
     href: '/c/lips',
     tint: 'lips',
     blurb: 'Balms, oils and tints',
-    heroProducts: ['vaseline-emily-in-paris-tinted-lip-oil', 'esse-naturals-lip-balm'],
     children: [sub('lips', 'lip-balm', 'Lip Balms'), sub('lips', 'lip-oil', 'Lip Oils & Tints')],
   },
   { slug: 'fragrances', name: 'Fragrances', href: '/c/fragrances', tint: 'fragrance', blurb: 'Perfumes and body mists', icon: 'perfume' },

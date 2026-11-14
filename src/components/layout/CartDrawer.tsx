@@ -11,20 +11,19 @@ import { Drawer } from '@/components/ui/Drawer'
 import { InstalmentLine } from '@/components/ui/Price'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { site } from '@/config/site'
-import { collections, productHref, primaryVariant } from '@/lib/catalog'
+import { primaryVariant, productHref, type Product } from '@/lib/catalog'
 import { formatLKR } from '@/lib/format'
-import { resolveLine, useShop } from '@/lib/store/shop'
+import { useShop } from '@/lib/store/shop'
 
 /**
  * Bag drawer: keeps shoppers on the page they were browsing.
  * Free-delivery progress nudges basket size; totals are shown upfront; checkout is one tap away.
  */
-export function CartDrawer() {
-  const { lines, itemCount, subtotal, cartOpen, setCartOpen, setQty, removeLine, addToCart } = useShop()
-  const items = lines.map(resolveLine).filter((x): x is NonNullable<typeof x> => Boolean(x))
+export function CartDrawer({ suggestions: pool = [] }: { suggestions?: Product[] }) {
+  const { lines: items, itemCount, subtotal, cartOpen, setCartOpen, setQty, removeLine, addToCart } = useShop()
   const remaining = Math.max(0, site.freeDeliveryThreshold - subtotal)
-  const inBag = new Set(items.map((i) => i.product.slug))
-  const suggestions = collections.under3000.filter((p) => !inBag.has(p.slug) && p.variants.length === 1).slice(0, 3)
+  const inBag = new Set(items.map((i) => i.slug))
+  const suggestions = pool.filter((p) => !inBag.has(p.slug)).slice(0, 3)
 
   return (
     <Drawer
@@ -88,9 +87,9 @@ export function CartDrawer() {
 
           <ul className="divide-y divide-line px-5">
             <AnimatePresence initial={false}>
-              {items.map(({ product, variant, qty }) => (
+              {items.map((line) => (
                 <motion.li
-                  key={variant.sku}
+                  key={line.sku}
                   layout
                   initial={{ opacity: 0, x: 24 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -98,27 +97,27 @@ export function CartDrawer() {
                   transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                   className="flex gap-3.5 py-4"
                 >
-                  <Link href={productHref(product)} onClick={() => setCartOpen(false)} className={`relative size-22 shrink-0 overflow-hidden rounded-md ${categoryTint[product.category] ?? 'bg-ink-50'}`}>
-                    <Image src={variant.image} alt={`${product.brand} ${product.name}`} fill sizes="88px" className="object-contain p-1.5 mix-blend-multiply" />
+                  <Link href={productHref(line)} onClick={() => setCartOpen(false)} className={`relative size-22 shrink-0 overflow-hidden rounded-md ${categoryTint[line.category] ?? 'bg-ink-50'}`}>
+                    <Image src={line.image} alt={`${line.brand} ${line.name}`} fill sizes="88px" className="object-contain p-1.5 mix-blend-multiply" />
                   </Link>
                   <div className="flex min-w-0 flex-1 flex-col">
-                    <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-500">{product.brand}</p>
-                    <p className="line-clamp-2 text-sm font-semibold leading-snug">{product.name}</p>
-                    {product.variants.length > 1 && <p className="text-xs text-ink-500">{variant.option}: {variant.label}</p>}
+                    <p className="text-[0.6875rem] font-bold uppercase tracking-wider text-ink-500">{line.brand}</p>
+                    <p className="line-clamp-2 text-sm font-semibold leading-snug">{line.name}</p>
+                    {line.multi && <p className="text-xs text-ink-500">{line.option}: {line.label}</p>}
                     <div className="mt-auto flex items-center justify-between pt-2">
                       <div className="flex h-9 items-center rounded-full border border-line-strong">
-                        <button type="button" aria-label={`Decrease quantity of ${product.name}`} onClick={() => setQty(variant.sku, qty - 1)} className="grid size-9 place-items-center rounded-full hover:bg-ink-50">
+                        <button type="button" aria-label={`Decrease quantity of ${line.name}`} onClick={() => setQty(line.sku, line.qty - 1)} className="grid size-9 place-items-center rounded-full hover:bg-ink-50">
                           <IconMinus size={15} />
                         </button>
-                        <span className="w-6 text-center text-sm font-semibold tabular-nums">{qty}</span>
-                        <button type="button" aria-label={`Increase quantity of ${product.name}`} onClick={() => setQty(variant.sku, Math.min(variant.stock, qty + 1))} disabled={qty >= variant.stock} className="grid size-9 place-items-center rounded-full hover:bg-ink-50 disabled:opacity-40">
+                        <span className="w-6 text-center text-sm font-semibold tabular-nums">{line.qty}</span>
+                        <button type="button" aria-label={`Increase quantity of ${line.name}`} onClick={() => setQty(line.sku, Math.min(line.stock, line.qty + 1))} disabled={line.qty >= line.stock} className="grid size-9 place-items-center rounded-full hover:bg-ink-50 disabled:opacity-40">
                           <IconPlus size={15} />
                         </button>
                       </div>
-                      <span className="font-display font-bold tabular-nums">{formatLKR(variant.price * qty)}</span>
+                      <span className="font-display font-bold tabular-nums">{formatLKR(line.price * line.qty)}</span>
                     </div>
                   </div>
-                  <button type="button" aria-label={`Remove ${product.name}`} onClick={() => removeLine(variant.sku)} className="-mr-2 -mt-1 grid size-10 shrink-0 place-items-center rounded-full text-ink-500 hover:bg-danger-50 hover:text-danger-600">
+                  <button type="button" aria-label={`Remove ${line.name}`} onClick={() => removeLine(line.sku)} className="-mr-2 -mt-1 grid size-10 shrink-0 place-items-center rounded-full text-ink-500 hover:bg-danger-50 hover:text-danger-600">
                     <IconTrash size={18} />
                   </button>
                 </motion.li>

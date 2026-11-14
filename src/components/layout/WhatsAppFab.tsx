@@ -19,7 +19,7 @@ export function WhatsAppFab() {
       transition={{ delay: 1.2, type: 'spring', stiffness: 300, damping: 18 }}
       whileHover={{ scale: 1.06 }}
       whileTap={{ scale: 0.94 }}
-      className="group fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-[50] flex h-13 items-center gap-2 rounded-full bg-[#1fa855] pl-3.5 pr-3.5 text-white shadow-lift md:bottom-6 md:right-6"
+      className="wa-fab group fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-4 z-[50] flex h-13 items-center gap-2 rounded-full bg-[#1fa855] pl-3.5 pr-3.5 text-white shadow-lift md:bottom-6 md:right-6"
     >
       <IconBrandWhatsapp size={26} />
       <span className="hidden max-w-0 overflow-hidden whitespace-nowrap text-sm font-semibold transition-[max-width] duration-300 group-hover:max-w-40 md:inline">

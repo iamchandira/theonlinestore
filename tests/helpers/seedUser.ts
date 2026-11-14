@@ -23,10 +23,14 @@ export async function seedTestUser(): Promise<void> {
     },
   })
 
-  // Create fresh test user
+  // Create fresh test user *as the seeded super-admin*: the Users hook only lets admins grant staff roles
+  // (public sign-ups are always customers), so the admin must be the acting user. Run `pnpm seed:admin` first.
+  const admins = await payload.find({ collection: 'users', where: { roles: { contains: 'super-admin' } }, limit: 1, depth: 0 })
+  if (!admins.docs[0]) throw new Error('No super-admin found. Run `pnpm seed:admin` first.')
   await payload.create({
     collection: 'users',
     data: testUser,
+    user: admins.docs[0],
   })
 }
 
