@@ -1,6 +1,13 @@
 import { getPayload } from 'payload'
 import config from '../../src/payload.config.js'
 
+/** A separate admin test user per spec file, so parallel specs never delete each other's account. */
+export const makeTestUser = (name: string) => ({
+  email: `e2e-${name}@theonlinestore.test`,
+  password: 'e2e-test-password',
+  roles: ['admin' as const],
+})
+
 export const testUser = {
   email: 'e2e-admin@theonlinestore.test',
   password: 'e2e-test-password',
@@ -10,7 +17,7 @@ export const testUser = {
 /**
  * Seeds a test user for e2e admin tests.
  */
-export async function seedTestUser(): Promise<void> {
+export async function seedTestUser(user: { email: string; password: string; roles: 'admin'[] } = testUser): Promise<void> {
   const payload = await getPayload({ config })
 
   // Delete existing test user if any
@@ -18,7 +25,7 @@ export async function seedTestUser(): Promise<void> {
     collection: 'users',
     where: {
       email: {
-        equals: testUser.email,
+        equals: user.email,
       },
     },
   })
@@ -29,7 +36,7 @@ export async function seedTestUser(): Promise<void> {
   if (!admins.docs[0]) throw new Error('No super-admin found. Run `pnpm seed:admin` first.')
   await payload.create({
     collection: 'users',
-    data: testUser,
+    data: user,
     user: admins.docs[0],
   })
 }
@@ -37,14 +44,14 @@ export async function seedTestUser(): Promise<void> {
 /**
  * Cleans up test user after tests
  */
-export async function cleanupTestUser(): Promise<void> {
+export async function cleanupTestUser(user: { email: string } = testUser): Promise<void> {
   const payload = await getPayload({ config })
 
   await payload.delete({
     collection: 'users',
     where: {
       email: {
-        equals: testUser.email,
+        equals: user.email,
       },
     },
   })

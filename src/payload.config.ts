@@ -12,7 +12,7 @@ import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
 import { StockMovements } from './collections/StockMovements'
-import { Concerns, Tags } from './collections/Taxonomies'
+import { Concerns, Occasions, Recipients, Tags } from './collections/Taxonomies'
 import { Users } from './collections/Users'
 import { HomePage } from './globals/HomePage'
 
@@ -37,10 +37,19 @@ export default buildConfig({
         Logo: '/components/admin/Graphics#AdminLogo',
         Icon: '/components/admin/Graphics#AdminIcon',
       },
+      // Fully custom admin UI (Sprint 1.5): sidebar, header actions, command palette, dashboard, inventory
+      Nav: '/components/admin/Nav#Nav',
+      actions: ['/components/admin/HeaderActions#HeaderActions'],
+      providers: ['/components/admin/CommandPalette#CommandPaletteProvider'],
+      beforeLogin: ['/components/admin/LoginIntro#LoginIntro'],
+      views: {
+        dashboard: { Component: '/components/admin/views/Dashboard#Dashboard' },
+        inventory: { Component: '/components/admin/views/Inventory#Inventory', path: '/inventory' },
+      },
     },
     theme: 'light',
   },
-  collections: [Products, Categories, Brands, Tags, Concerns, StockMovements, Media, Users],
+  collections: [Products, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, Media, Users],
   globals: [HomePage],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

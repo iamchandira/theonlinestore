@@ -25,7 +25,27 @@ export const categoryTint: Record<string, string> = {
   chocolates: 'bg-tint-chocolate',
 }
 
-const optionNoun: Record<string, string> = { Size: 'size', Shade: 'shade', Scent: 'scent', Flavour: 'flavour', Pack: 'pack', Set: 'set' }
+const optionNoun: Record<string, string> = {
+  Size: 'size',
+  'Shoe size': 'size',
+  Shade: 'shade',
+  Scent: 'scent',
+  Flavour: 'flavour',
+  Pack: 'pack',
+  Set: 'set',
+  Colour: 'colour',
+  Weight: 'weight',
+  Style: 'style',
+}
+
+/** "5 sizes · 2 colours" for two-option products, "3 shades" otherwise. */
+function variantSummary(p: Product) {
+  const v = p.variants[0]
+  const first = new Set(p.variants.map((x) => x.label)).size
+  if (!v.option2Name) return pluralize(first, optionNoun[v.option] ?? 'option')
+  const second = new Set(p.variants.map((x) => x.option2)).size
+  return `${pluralize(first, optionNoun[v.option] ?? 'option')} · ${pluralize(second, optionNoun[v.option2Name] ?? 'option')}`
+}
 
 type ProductCardProps = {
   product: Product
@@ -83,6 +103,11 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
         <div className="pointer-events-none absolute left-[var(--ci)] top-[var(--ci)] flex flex-col items-start gap-1">
           {off > 0 && <Badge tone="sale" size="sm">-{off}%</Badge>}
           {badge && <Badge tone={badge.tone} size="sm">{badge.label}</Badge>}
+          {product.isDemo && (
+            <Badge tone="outline" size="sm" title="Sample product for design and testing">
+              Sample
+            </Badge>
+          )}
         </div>
 
         {/*
@@ -158,7 +183,7 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
           <Price price={multi ? from : v.price} compareAt={multi ? null : v.compareAtPrice} prefix={multi ? 'From' : undefined} size="sm" showSaving={false} />
           <div className="mt-1 flex items-center justify-between gap-2">
             {multi ? (
-              <p className="text-xs font-medium text-ink-600">{pluralize(product.variants.length, optionNoun[v.option] ?? 'option')}</p>
+              <p className="text-xs font-medium text-ink-600">{variantSummary(product)}</p>
             ) : lowStock ? (
               <p className="text-xs font-semibold text-warning-600">Only a few left</p>
             ) : (

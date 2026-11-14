@@ -72,7 +72,7 @@ export function Hero({ picks }: { picks: Product[] }) {
         <div className="relative z-10 flex flex-col items-start gap-5">
           <p data-hero-eyebrow className="inline-flex items-center gap-2 rounded-full bg-white/80 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-ink-800 shadow-soft backdrop-blur">
             <span className="rounded-full bg-sunset-gradient px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-wide text-white">New</span>
-            K-beauty edit just landed
+            Fragrances, footwear & gift hampers just landed
           </p>
           <h1 id="hero-title" className="text-[2.35rem] font-extrabold leading-[1.02] tracking-[-0.035em] sm:text-5xl lg:text-[4.1rem]">
             <span className="block overflow-hidden pb-1">
@@ -88,11 +88,11 @@ export function Hero({ picks }: { picks: Product[] }) {
             </span>
           </h1>
           <p data-hero-copy className="max-w-md text-base text-ink-600 sm:text-[1.0625rem]">
-            Genuine skincare, haircare and lifestyle favourites from brands you trust, at your door anywhere in Sri Lanka.
+            Beauty, fragrances, footwear, gifts and chocolates from brands you trust, delivered to your door anywhere in Sri Lanka.
           </p>
           <div data-hero-copy className="flex w-full gap-2.5 sm:w-auto sm:gap-3">
-            <ButtonLink href="/c/beauty?sort=bestsellers" size="lg" className="flex-1 px-5 sm:flex-none sm:px-7">
-              Shop bestsellers <IconArrowRight size={19} />
+            <ButtonLink href="/categories" size="lg" className="flex-1 px-5 sm:flex-none sm:px-7">
+              Shop all <IconArrowRight size={19} />
             </ButtonLink>
             <ButtonLink href="/c/gifts" size="lg" variant="outline" className="flex-1 px-5 sm:flex-none sm:px-7">
               <IconGift size={19} /> Find a gift

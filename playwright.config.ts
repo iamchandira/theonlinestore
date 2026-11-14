@@ -22,6 +22,7 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   /* Dev-server pages compile on first visit; allow for that in assertions */
   expect: { timeout: 15_000 },
+  timeout: 90_000,
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     // baseURL: 'http://localhost:3000',

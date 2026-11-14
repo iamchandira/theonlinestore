@@ -13,14 +13,14 @@ type RailSectionProps = {
   action?: { label: string; href: string }
   products: Product[]
   /** Optional tinted panel behind the rail */
-  tone?: 'plain' | 'blush' | 'cream'
+  tone?: 'plain' | 'blush' | 'cream' | 'lilac'
   headerExtra?: ReactNode
 }
 
 /** Standard home-page product rail with section header. */
 export function RailSection({ id, eyebrow, title, description, action, products, tone = 'plain', headerExtra }: RailSectionProps) {
   return (
-    <section aria-labelledby={id} className={cn('py-10 md:py-14', tone === 'blush' && 'bg-tint-skincare/70', tone === 'cream' && 'bg-tint-body/60')}>
+    <section aria-labelledby={id} className={cn('py-10 md:py-14', tone === 'blush' && 'bg-tint-skincare/70', tone === 'cream' && 'bg-tint-body/60', tone === 'lilac' && 'bg-tint-fragrance/70')}>
       <div className="container-site">
         <SectionHeader eyebrow={eyebrow} title={<span id={id}>{title}</span>} description={description} action={action}>
           {headerExtra}

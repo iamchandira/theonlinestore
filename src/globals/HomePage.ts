@@ -80,6 +80,7 @@ export const HomePage: GlobalConfig = {
                 { label: 'Plain', value: 'plain' },
                 { label: 'Blush panel', value: 'blush' },
                 { label: 'Cream panel', value: 'cream' },
+                { label: 'Lilac panel', value: 'lilac' },
               ],
             },
           ],

@@ -150,3 +150,20 @@ All fonts load through `next/font` (self-hosted, `display: swap`, no layout shif
 
 ## 8. Admin theme
 The Payload admin uses the brand orange for its primary actions, Plus Jakarta Sans, the logo on the login screen and the bag icon in navigation (`src/app/(payload)/custom.scss`, `src/components/admin/Graphics.tsx`).
+
+### Custom admin design system (Sprint 1.5)
+The admin is designed as its own product UI, taking ideas from Shopify, Linear, Stripe and WooCommerce: calm, dense and fast.
+- **Surfaces:** a warm grey canvas with white cards (12 px radius, 1 px line, soft shadow). Payload's `--theme-elevation-*` scale is remapped to the brand neutrals, so built-in screens match the custom ones.
+- **Components** (`.tos-*` classes):
+  - Page header (eyebrow, title, subtitle, actions).
+  - Buttons: primary is brand orange, plus ghost and small variants. A disabled primary turns neutral grey.
+  - Status pills: Active, Draft, Low, Out, Demo, Price TBC.
+  - KPI cards, progress bar, checklist, bar chart.
+  - Tabs with counts, search field, select, data table with sticky header, floating bulk-action bar, pager, stock stepper, highlighted dirty rows, toast.
+- **Sidebar:** grouped sections with small caps headings, Tabler icons, count badges and "Soon" tags for features on the roadmap. Stays open on desktop; a drawer on phones.
+- **Command palette:** ⌘K / Ctrl+K, keyboard-first, arrow keys and Enter.
+- **Responsive:** header actions become icon-only below 768 px, and KPI cards reflow (`minmax(148px, 1fr)`).
+- **Motion:** 150 ms fades and slides only, switched off under `prefers-reduced-motion`.
+
+### Lifestyle tints (storefront)
+Each department keeps its mood tint: beauty blush, fragrance lilac, footwear sand, gifts peach, chocolates cocoa cream. Home rails can use the `lilac` style (fragrances) as well as cream and blush. Demo products carry a neutral "Sample" badge.

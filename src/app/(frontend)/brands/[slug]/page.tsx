@@ -28,7 +28,9 @@ export default async function BrandPage({ params, searchParams }: Props) {
   const brand = await getBrandBySlug(slug)
   if (!brand) notFound()
   const lp = parseListParams(sp)
-  const result = await listProducts({ brandSlug: slug, concernSlug: lp.concern, tagSlug: lp.tag, maxPrice: lp.maxPrice, sort: lp.sort, page: lp.page })
+  const result = await listProducts({ brandSlug: slug, concernSlug: lp.concern,
+    recipientSlug: lp.recipient,
+    occasionSlug: lp.occasion, tagSlug: lp.tag, maxPrice: lp.maxPrice, sort: lp.sort, page: lp.page })
   const basePath = `/brands/${slug}`
   return (
     <ListingPage

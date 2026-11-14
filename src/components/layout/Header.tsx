@@ -15,14 +15,14 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Logo } from '@/components/brand/Logo'
 import { CountBadge } from '@/components/ui/IconButton'
-import { primaryNav } from '@/config/navigation'
+import { primaryNav, type MegaKey } from '@/config/navigation'
 import { site } from '@/config/site'
 import type { NavData } from '@/lib/catalog/server'
 import { formatLKR } from '@/lib/format'
 import { useShop } from '@/lib/store/shop'
 import { cn } from '@/lib/utils/cn'
 
-import { BeautyMega, BrandsMega } from './MegaMenu'
+import { BeautyMega, BrandsMega, DepartmentMega } from './MegaMenu'
 import { MobileMenu } from './MobileMenu'
 import { SearchBox } from './SearchBox'
 
@@ -40,7 +40,7 @@ import { SearchBox } from './SearchBox'
  */
 export function Header({ nav }: { nav: NavData }) {
   const { itemCount, subtotal, wishlist, setCartOpen, cartIconRef, addPulse } = useShop()
-  const [mega, setMega] = useState<null | 'beauty' | 'brands'>(null)
+  const [mega, setMega] = useState<null | MegaKey>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [compact, setCompact] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
@@ -61,7 +61,7 @@ export function Header({ nav }: { nav: NavData }) {
 
   useEffect(() => () => window.clearTimeout(closeTimer.current), [])
 
-  const openMega = (m: 'beauty' | 'brands') => {
+  const openMega = (m: MegaKey) => {
     window.clearTimeout(closeTimer.current)
     setMega(m)
   }
@@ -156,7 +156,7 @@ export function Header({ nav }: { nav: NavData }) {
                         type="button"
                         aria-expanded={mega === item.mega}
                         aria-haspopup="true"
-                        onClick={() => setMega(mega === item.mega ? null : item.mega)}
+                        onClick={() => setMega(mega === item.mega ? null : (item.mega ?? null))}
                         className={cn('inline-flex h-12 items-center gap-1 rounded-md px-3.5 text-[0.9375rem] font-semibold transition-colors hover:text-sunset-600', mega === item.mega && 'text-sunset-600')}
                       >
                         {item.label}
@@ -188,8 +188,10 @@ export function Header({ nav }: { nav: NavData }) {
               <div className="absolute inset-x-0 top-full" onMouseEnter={() => openMega(mega)} onMouseLeave={scheduleClose}>
                 {mega === 'beauty' ? (
                   <BeautyMega feature={nav.megaFeature} onNavigate={() => setMega(null)} />
-                ) : (
+                ) : mega === 'brands' ? (
                   <BrandsMega groups={nav.brandGroups} onNavigate={() => setMega(null)} />
+                ) : (
+                  <DepartmentMega slug={mega} feature={nav.features[mega] ?? null} onNavigate={() => setMega(null)} />
                 )}
               </div>
             )}

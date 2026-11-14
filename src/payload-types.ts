@@ -72,6 +72,8 @@ export interface Config {
     brands: Brand;
     tags: Tag;
     concerns: Concern;
+    occasions: Occasion;
+    recipients: Recipient;
     'stock-movements': StockMovement;
     media: Media;
     users: User;
@@ -88,6 +90,8 @@ export interface Config {
     brands: BrandsSelect<false> | BrandsSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
     concerns: ConcernsSelect<false> | ConcernsSelect<true>;
+    occasions: OccasionsSelect<false> | OccasionsSelect<true>;
+    recipients: RecipientsSelect<false> | RecipientsSelect<true>;
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -184,14 +188,23 @@ export interface Product {
   howToUse?: string | null;
   ingredients?: string | null;
   /**
-   * What the variants differ by.
+   * What the variants differ by, e.g. Size.
    */
-  optionName: 'Size' | 'Shade' | 'Scent' | 'Flavour' | 'Pack' | 'Set' | 'Colour' | 'Shoe size';
+  optionName: 'Size' | 'Shade' | 'Scent' | 'Flavour' | 'Pack' | 'Set' | 'Colour' | 'Shoe size' | 'Weight' | 'Style';
+  /**
+   * A second dimension, e.g. Colour for shoes (size × colour).
+   */
+  option2Name?:
+    ('Size' | 'Shade' | 'Scent' | 'Flavour' | 'Pack' | 'Set' | 'Colour' | 'Shoe size' | 'Weight' | 'Style') | null;
   variants: {
     /**
-     * e.g. 100 ml, Rose Amour
+     * e.g. 100 ml, EU 38
      */
     label: string;
+    /**
+     * e.g. Black
+     */
+    option2?: string | null;
     sku: string;
     barcode?: string | null;
     /**
@@ -222,8 +235,59 @@ export interface Product {
    * Extra photos shown after the variant photo.
    */
   gallery?: (number | Media)[] | null;
+  details?: {
+    concentration?: ('Parfum' | 'Eau de Parfum' | 'Eau de Toilette' | 'Eau de Cologne' | 'Body mist') | null;
+    scentFamily?: ('Floral' | 'Fresh' | 'Citrus' | 'Woody' | 'Oriental' | 'Gourmand' | 'Aquatic' | 'Fruity') | null;
+    longevity?: ('Light (2–4 h)' | 'Moderate (4–6 h)' | 'Long-lasting (6–8 h)' | 'Very long (8 h+)') | null;
+    /**
+     * Comma separated
+     */
+    topNotes?: string | null;
+    heartNotes?: string | null;
+    baseNotes?: string | null;
+    /**
+     * Used for "For her / For him" filters.
+     */
+    gender?: ('women' | 'men' | 'unisex' | 'kids') | null;
+    footwearStyle?: ('Sneakers' | 'Sandals' | 'Slides' | 'Heels' | 'Flats' | 'Formal' | 'Boots') | null;
+    /**
+     * e.g. Canvas upper, rubber sole
+     */
+    material?: string | null;
+    sizeSystem?: ('EU' | 'UK' | 'US') | null;
+    /**
+     * e.g. True to size; half a size up for wide feet
+     */
+    fit?: string | null;
+    netWeight?: number | null;
+    cocoaPercent?: number | null;
+    /**
+     * e.g. Belgium, Sri Lanka
+     */
+    origin?: string | null;
+    dietary?: ('Vegan' | 'Vegetarian' | 'Gluten-free' | 'Sugar-free' | 'Halal' | 'Nut-free')[] | null;
+    /**
+     * e.g. Contains milk, soy; may contain nuts
+     */
+    allergens?: string | null;
+    /**
+     * e.g. Store below 25°C, away from sunlight
+     */
+    storage?: string | null;
+    /**
+     * One item per line.
+     */
+    contents?: string | null;
+    giftWrapped?: boolean | null;
+    personalisable?: boolean | null;
+  };
   badge?: ('bestseller' | 'new' | 'trending' | 'gift' | 'limited') | null;
   tags?: (number | Tag)[] | null;
+  recipients?: (number | Recipient)[] | null;
+  occasions?: (number | Occasion)[] | null;
+  /**
+   * Beauty products only.
+   */
   concerns?: (number | Concern)[] | null;
   /**
    * Shown as "Pairs well with". Leave empty to suggest automatically from the same concerns.
@@ -231,10 +295,18 @@ export interface Product {
   crossSells?: (number | Product)[] | null;
   upsells?: (number | Product)[] | null;
   /**
+   * Controls the detail fields, filters and page sections.
+   */
+  productType: 'beauty' | 'fragrance' | 'footwear' | 'gift' | 'chocolate' | 'accessory' | 'home';
+  /**
    * When enabled, the slug will auto-generate from the title field on save and autosave.
    */
   generateSlug?: boolean | null;
   slug: string;
+  /**
+   * Sample content for design and testing. Remove all with `pnpm seed:demo --remove` before launch.
+   */
+  isDemo?: boolean | null;
   /**
    * Imported with placeholder prices. Untick once prices are checked.
    */
@@ -409,6 +481,40 @@ export interface Category {
  * via the `definition` "tags".
  */
 export interface Tag {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Who a product suits, e.g. For her, For him, For kids. Powers the Gift Finder.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recipients".
+ */
+export interface Recipient {
+  id: number;
+  name: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Gifting occasions, e.g. Birthday, Avurudu, Valentine’s Day. Powers the Gift Finder.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "occasions".
+ */
+export interface Occasion {
   id: number;
   name: string;
   /**
@@ -643,6 +749,14 @@ export interface PayloadLockedDocument {
         value: number | Concern;
       } | null)
     | ({
+        relationTo: 'occasions';
+        value: number | Occasion;
+      } | null)
+    | ({
+        relationTo: 'recipients';
+        value: number | Recipient;
+      } | null)
+    | ({
         relationTo: 'stock-movements';
         value: number | StockMovement;
       } | null)
@@ -710,10 +824,12 @@ export interface ProductsSelect<T extends boolean = true> {
   howToUse?: T;
   ingredients?: T;
   optionName?: T;
+  option2Name?: T;
   variants?:
     | T
     | {
         label?: T;
+        option2?: T;
         sku?: T;
         barcode?: T;
         price?: T;
@@ -726,13 +842,41 @@ export interface ProductsSelect<T extends boolean = true> {
         id?: T;
       };
   gallery?: T;
+  details?:
+    | T
+    | {
+        concentration?: T;
+        scentFamily?: T;
+        longevity?: T;
+        topNotes?: T;
+        heartNotes?: T;
+        baseNotes?: T;
+        gender?: T;
+        footwearStyle?: T;
+        material?: T;
+        sizeSystem?: T;
+        fit?: T;
+        netWeight?: T;
+        cocoaPercent?: T;
+        origin?: T;
+        dietary?: T;
+        allergens?: T;
+        storage?: T;
+        contents?: T;
+        giftWrapped?: T;
+        personalisable?: T;
+      };
   badge?: T;
   tags?: T;
+  recipients?: T;
+  occasions?: T;
   concerns?: T;
   crossSells?: T;
   upsells?: T;
+  productType?: T;
   generateSlug?: T;
   slug?: T;
+  isDemo?: T;
   priceTBC?: T;
   minPrice?: T;
   maxPrice?: T;
@@ -824,6 +968,28 @@ export interface TagsSelect<T extends boolean = true> {
  * via the `definition` "concerns_select".
  */
 export interface ConcernsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "occasions_select".
+ */
+export interface OccasionsSelect<T extends boolean = true> {
+  name?: T;
+  generateSlug?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "recipients_select".
+ */
+export interface RecipientsSelect<T extends boolean = true> {
   name?: T;
   generateSlug?: T;
   slug?: T;
@@ -1033,7 +1199,7 @@ export interface HomePage {
         description?: string | null;
         source: 'manual' | 'sale' | 'bestsellers' | 'new' | 'tag' | 'category' | 'under';
         limit?: number | null;
-        style?: ('plain' | 'blush' | 'cream') | null;
+        style?: ('plain' | 'blush' | 'cream' | 'lilac') | null;
         placement?: ('top' | 'bottom') | null;
         countdown?: boolean | null;
         products?: (number | Product)[] | null;

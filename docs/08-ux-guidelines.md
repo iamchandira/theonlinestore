@@ -46,7 +46,11 @@
 │  ├─ /c/hair-care/{shampoos|conditioners|hair-oils|hair-treatments|styling}
 │  ├─ /c/body-care/{body-lotion|body-scrubs|body-wash|petroleum-jelly|deodorants}
 │  └─ /c/lips/{lip-balm|lip-oil}
-├─ /c/fragrances   /c/footwear   /c/gifts   /c/chocolates
+├─ /c/fragrances/{womens-perfume|mens-cologne|unisex-fragrance|body-mists}
+├─ /c/footwear/{sneakers|sandals-slides|heels-flats|kids-shoes}
+├─ /c/gifts/{gift-hampers|gift-boxes|personalised-gifts}
+├─ /c/chocolates/{chocolate-boxes|chocolate-bars|sweet-treats}
+├─ /gifts                          Gift shop (all departments)  ?recipient= ?occasion= ?max=
 ├─ /brands  →  /brands/{brand}
 ├─ /offers
 ├─ /p/{product-slug}               Product page (?variant=sku)
@@ -61,10 +65,17 @@
 ```
 
 **Navigation:**
+- Every department has a mega-menu with sub-categories, shortcuts (e.g. "For him", "Under Rs 5,000") and a featured product (Sprint 1.5).
+- Every listing accepts `?recipient=` and `?occasion=` as well as `?concern=` (beauty), `?tag=` and `?max=`.
 - 7 top-level items: Beauty ▾ · Fragrances · Footwear · Gifts · Chocolates · Brands ▾ · Offers.
 - Mobile bottom nav: Home · Categories · Wishlist · Bag · Account. Search is not in the bottom nav because it is already always visible at the top.
 
 ## 5. Page patterns
+**Lifestyle product pages (Sprint 1.5):**
+- **Variant picking follows the product:** a single option uses pills (with photo thumbnails for shades and scents). Two options pick the colour first using photo swatches, then the size from a grid. Unavailable sizes are disabled with a spoken reason.
+- **Details follow the type:** a notes pyramid for fragrance, fit advice for footwear, "What's inside" for gifts, allergens and storage for chocolates. Delivery and returns text also changes by type, e.g. unworn footwear can be exchanged, food can't be returned.
+- **"Perfect for" chips** link to the gift shop for that recipient or occasion.
+
 | Page | Must-haves |
 |---|---|
 | Home | Section order answers the shopper's questions: what do you sell → can I trust you → what's a good deal → what's popular → help me choose → stay in touch |

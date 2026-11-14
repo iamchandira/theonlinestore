@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
-import { VariantPill } from '@/components/ui/Chip'
 import { Drawer } from '@/components/ui/Drawer'
 import { InstalmentLine, Price } from '@/components/ui/Price'
 import { Rating } from '@/components/ui/Rating'
@@ -17,6 +16,7 @@ import { useShop } from '@/lib/store/shop'
 import { cn } from '@/lib/utils/cn'
 
 import { categoryTint } from './ProductCard'
+import { VariantSelector } from './VariantSelector'
 
 function useIsDesktop() {
   const [desktop, setDesktop] = useState(false)
@@ -85,18 +85,7 @@ function QuickAddBody({
         </div>
       </div>
 
-      <fieldset>
-        <legend className="mb-2 text-sm font-semibold">
-          {selected.option}: <span className="font-normal text-ink-600">{selected.label}</span>
-        </legend>
-        <div role="radiogroup" aria-label={selected.option} className="flex flex-wrap gap-2">
-          {product.variants.map((v) => (
-            <VariantPill key={v.sku} selected={v.sku === selected.sku} disabled={v.stock <= 0} onClick={() => setSelected(v)}>
-              {v.label}
-            </VariantPill>
-          ))}
-        </div>
-      </fieldset>
+      <VariantSelector variants={product.variants} selected={selected} onSelect={setSelected} />
 
       <div className="flex items-center gap-3">
         <div className="flex h-12 items-center rounded-full border border-line-strong">

@@ -5,10 +5,10 @@ import { SectionHeader } from '@/components/ui/SectionHeader'
 import { Reveal, RevealItem } from '@/lib/motion/Reveal'
 
 const finders = [
-  { title: 'For her', text: 'Skincare, lip oils, body polish', href: '/c/gifts?for=her', icon: IconHeart, tone: 'bg-tint-lips text-rose-700' },
-  { title: 'For him', text: 'Grooming, fragrance, footwear', href: '/c/gifts?for=him', icon: IconUser, tone: 'bg-tint-sky text-info-600' },
-  { title: 'Under Rs 5,000', text: 'Thoughtful and affordable', href: '/c/gifts?max=5000', icon: IconGift, tone: 'bg-tint-gifts text-sunset-700' },
-  { title: 'Birthdays & occasions', text: 'Hampers, chocolates, sets', href: '/c/gifts?occasion=birthday', icon: IconCake, tone: 'bg-tint-chocolate text-[#7a3f16]' },
+  { title: 'For her', text: 'Perfume, spa boxes, lip oils', href: '/gifts?recipient=for-her', icon: IconHeart, tone: 'bg-tint-lips text-rose-700' },
+  { title: 'For him', text: 'Colognes, grooming kits, sneakers', href: '/gifts?recipient=for-him', icon: IconUser, tone: 'bg-tint-sky text-info-600' },
+  { title: 'Under Rs 5,000', text: 'Thoughtful and affordable', href: '/gifts?max=5000', icon: IconGift, tone: 'bg-tint-gifts text-sunset-700' },
+  { title: 'Birthdays & occasions', text: 'Hampers, chocolates, sets', href: '/gifts?occasion=birthday', icon: IconCake, tone: 'bg-tint-chocolate text-[#7a3f16]' },
 ]
 
 /** Gift finder: answers the gift buyer's first question ("who is it for?") in one tap. */

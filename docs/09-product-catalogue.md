@@ -131,5 +131,28 @@ Generated from `seed/catalogue/products.json`, which was extracted in Sprint 0 f
 | 87 | Vaseline | Lip Therapy Lip Balm | lip-balm | Aloe Vera, Cocoa Butter | Rs 1,150 / Rs 1,150 | dry-lips |
 | 88 | La Roche-Posay | Cicaplast Lèvres Lip Balm | lip-balm | 7.5 ml | Rs 3,450 | dry-lips, repair |
 
-## Categories without catalogue products yet
-Fragrances, Footwear, Gifts and Chocolates are in the navigation and home page, using illustrated tiles. They will be filled when the client supplies product lists.
+## Demo products (Sprint 1.5)
+Fragrances, Footwear, Gifts and Chocolates have no client products yet. To design and test those departments, `pnpm seed:demo` adds **20 clearly-marked demo products** under four fictional brands:
+- Ceylon Scent Co.
+- Stride Lanka
+- Gift Studio
+- Kandy Cocoa Co.
+
+Each brand description starts with "Demo brand", and the photos are illustrations.
+
+| Department | Demo products | Variants |
+|---|---|---|
+| Fragrance | Velvet Jasmine EDP, Oud Monsoon EDP, Sea Breeze EDT, Pink Petal Body Mist, Cinnamon & Tea Discovery Set | Size or set |
+| Footwear | Cloud Runner Sneakers, Urban Court Sneakers, Island Comfort Slides, Pearl Strap Flats, Little Steps Sneakers | Shoe size × Colour (one sold-out combination to show the disabled state) |
+| Gifts | Ceylon Tea & Treats Hamper, Celebration Hamper, Self-Care Spa Box, Gentleman's Grooming Kit, Personalised Keepsake Box | Set or size |
+| Chocolates | Single-Origin Dark Chocolate 70%, Milk Chocolate Sea Salt Caramel, Assorted Pralines Box, Heart Truffles Gift Box, Kithul & Coconut Sweet Bites | Weight or size |
+
+**How demo products are kept apart from real ones:**
+- They are flagged `isDemo`, and the storefront shows a "Sample" badge.
+- Their pages are `noindex`.
+- The admin has a **Demo** tab in the products list.
+- SKUs start with `DEMO-`.
+
+**Before launch:** run `pnpm seed:demo --remove`. It deletes the demo products, their stock history, their photos and the demo brands.
+
+The 88 client products are now also typed as `beauty`. Lip and gift-set items are tagged with recipients and occasions, so they appear in the gift shop.

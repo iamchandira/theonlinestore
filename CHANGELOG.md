@@ -2,6 +2,38 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.3.0] - 2026-11-15 · Sprint 1.5: Lifestyle store & custom admin
+### Added
+- **Lifestyle catalogue:**
+  - Product types (beauty, fragrance, footwear, gift, chocolate, accessory, home), with a type-specific **Details** tab: fragrance notes, footwear fit and material, gift contents, chocolate allergens and storage.
+  - Two-option variants (e.g. Shoe size × Colour).
+  - New option types: Weight and Style.
+- **Gifting:**
+  - `recipients` and `occasions` collections.
+  - A `/gifts` shop across every department, with recipient and occasion filters on all listings.
+  - "Perfect for" chips on product pages.
+- **Shopping experience:**
+  - Colour-swatch + size-grid variant picker on product pages and in quick add.
+  - Department mega-menus.
+  - New sub-categories for fragrances, footwear, gifts and chocolates.
+  - Home: occasion chips, best-seller tabs by department, and lifestyle rails (gifts, fragrances, footwear, chocolates).
+- **Demo products:** `pnpm seed:demo` adds 20 clearly-marked demo products with illustrated photos; `--remove` deletes them. They carry a "Sample" badge and are `noindex`.
+- **Custom admin:**
+  - Grouped, role-aware sidebar with live badges.
+  - ⌘K command palette.
+  - Dashboard with KPIs, attention list, activity, launch checklist and catalogue mix.
+  - Shopify-style products list with tabs, search, type filter and bulk actions.
+  - `/admin/inventory` bulk stock screen with reasons and notes.
+  - Labelled variant rows and a branded login.
+- `POST /api/products/adjust-stock` endpoint.
+- **Tests:** e2e tests for the two-option picker, the gift shop and the custom admin (16 e2e tests in total).
+### Changed
+- The storefront copy, search placeholder and hero speak to the whole lifestyle range, not only beauty.
+- Concerns only appear for beauty products.
+- The bag shows both options on a line ("EU 40 / Black").
+### Fixed
+- Admin header actions overlapped the avatar on phones. They are now icon-only below 768 px.
+
 ## [0.2.1] - 2026-11-15
 ### Fixed
 - WhatsApp button rendered as an oval on tablet and desktop: the hidden "Chat with us" label still reserved a gap. It is now a 56 px circle, and the label is a tooltip bubble that doesn't change its shape.

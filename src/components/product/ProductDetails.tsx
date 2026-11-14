@@ -46,6 +46,69 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
           )}
         </Row>
       )}
+      {(product.facts.length > 0 || product.notes || product.contents.length > 0 || product.fit) && (
+        <Row title={product.productType === 'gift' ? 'What’s inside' : 'Details'} open={!hasDescription}>
+          {product.contents.length > 0 && (
+            <ul className="mb-4 flex flex-col gap-1.5">
+              {product.contents.map((c) => (
+                <li key={c} className="ml-5 list-disc">
+                  {c}
+                </li>
+              ))}
+            </ul>
+          )}
+          {product.facts.length > 0 && (
+            <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
+              {product.facts.map(([k, v]) => (
+                <div key={k} className="contents">
+                  <dt className="font-semibold text-ink-800">{k}</dt>
+                  <dd className="text-ink-700">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          {product.notes && (
+            <div className="mt-4 grid gap-2 sm:grid-cols-3">
+              {(
+                [
+                  ['Top notes', product.notes.top],
+                  ['Heart notes', product.notes.heart],
+                  ['Base notes', product.notes.base],
+                ] as const
+              )
+                .filter(([, v]) => v)
+                .map(([k, v]) => (
+                  <div key={k} className="rounded-lg bg-tint-fragrance p-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-ink-500">{k}</p>
+                    <p className="mt-1 text-sm font-medium text-ink-800">{v}</p>
+                  </div>
+                ))}
+            </div>
+          )}
+          {product.fit && (
+            <p className="mt-4 rounded-lg bg-tint-footwear p-3 text-sm">
+              <strong className="font-semibold">Fit advice: </strong>
+              {product.fit}
+            </p>
+          )}
+        </Row>
+      )}
+      {(product.allergens || product.storage) && (
+        <Row title="Allergens & storage">
+          {product.allergens && (
+            <p>
+              <strong className="font-semibold">Allergens: </strong>
+              {product.allergens}
+            </p>
+          )}
+          {product.storage && (
+            <p className="mt-2">
+              <strong className="font-semibold">Storage: </strong>
+              {product.storage}
+            </p>
+          )}
+        </Row>
+      )}
       {product.benefits.length > 0 && (
         <Row title="Benefits">
           <ul className="flex flex-col gap-1.5">
@@ -71,7 +134,13 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
         <ul className="flex flex-col gap-1.5">
           <li>Island-wide delivery in {site.deliveryEstimate}. Free on orders over {formatLKR(site.freeDeliveryThreshold)}.</li>
           <li>Pay by card, bank transfer, Koko, Mintpay or cash on delivery.</li>
-          <li>Unopened items can be returned within 7 days. Opened beauty products can’t be returned for hygiene reasons.</li>
+          <li>
+            {product.productType === 'footwear'
+              ? 'Wrong size? Exchange unworn shoes within 7 days.'
+              : product.productType === 'chocolate'
+                ? 'Food items can’t be returned once delivered, unless they arrive damaged.'
+                : 'Unopened items can be returned within 7 days. Opened beauty products can’t be returned for hygiene reasons.'}
+          </li>
         </ul>
       </Row>
     </div>

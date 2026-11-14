@@ -79,10 +79,11 @@ theonlinestore/
 ### Built in Sprint 1
 | Collection / global | Purpose | Key fields |
 |---|---|---|
-| `products` | Sellable products (drafts, versions, scheduled publish) | name, slug, brand, categories, short description, rich description, benefits, how to use, ingredients, optionName, **variants[]** (label, sku, barcode, price, compareAtPrice, cost, weight, stock, lowStockThreshold, image), gallery, badge, tags, concerns, crossSells, upsells, priceTBC, SEO meta; **computed:** minPrice, maxPrice, totalStock, lowStock, onSale, searchText, salesCount, rating*, reviewCount* |
+| `products` | Sellable products (drafts, versions, scheduled publish) | **productType** (beauty, fragrance, footwear, gift, chocolate, accessory, home), **isDemo**, name, slug, brand, categories, short description, rich description, benefits, how to use, ingredients, optionName, option2Name, **variants[]** (label, option2, sku, barcode, price, compareAtPrice, cost, weight, stock, lowStockThreshold, image), gallery, badge, tags, concerns, recipients, occasions, **details** (type-specific group: fragrance notes and concentration; footwear style, material, size system, fit; chocolate weight, cocoa %, origin, dietary, allergens, storage; gift contents, wrapping, personalisation; gender), crossSells, upsells, priceTBC, SEO meta; **computed:** minPrice, maxPrice, totalStock, lowStock, onSale, searchText, salesCount, rating*, reviewCount* |
 | `categories` | Category tree (nested-docs plugin) | name, slug, parent, breadcrumbs (`/skincare/serums`), blurb, description, tint, image, order, SEO meta |
 | `brands` | Brands | name, slug, group (K-Beauty, Derm…), featured, logo, description, SEO meta |
-| `tags`, `concerns` | Merchandising tags and shopper concerns | name, slug |
+| `tags`, `concerns` | Merchandising tags and shopper concerns (concerns apply to beauty) | name, slug |
+| `recipients`, `occasions` | Gift taxonomy (Sprint 1.5) | name, slug |
 | `stock-movements` | Inventory audit log, written automatically and never edited | product, sku, variantLabel, change, resultingStock, reason, note, user |
 | `home-page` (global) | Home merchandising | heroProducts (≤ 4), rails[] (source: manual, sale, bestsellers, new, tag, category, under price; placement; style; countdown) |
 
@@ -98,7 +99,25 @@ theonlinestore/
 - **Admin edits revalidate immediately** through `afterChange` hooks (`lib/payload/revalidate.ts`). Seed scripts pass `context.disableRevalidate`.
 - Measured on a production build: home 4 ms, product page 2 ms, filtered listings about 20 ms.
 
-**Endpoints:** `GET /api/products/suggest?q=` returns header autosuggest results (published products and brands, cached 60 s at the edge).
+**Endpoints:**
+- `GET /api/products/suggest?q=` returns header autosuggest results (published products and brands, cached 60 s at the edge).
+- `POST /api/products/adjust-stock` (Sprint 1.5) takes `{ productId, changes: [{ sku, stock }], reason, note }`. It is limited to admin, store-manager and inventory-manager, writes with `overrideAccess: false`, and passes the reason and note to the stock-movement hook. It returns `{ ok, totalStock, lowStock }`.
+
+### Custom admin (Sprint 1.5)
+The Payload admin is customised through its component API, without forking Payload. All of it is in `src/components/admin/` and is styled by `src/app/(payload)/custom.scss` (the admin doesn't load Tailwind).
+
+| Slot | Component | What it does |
+|---|---|---|
+| `admin.components.Nav` | `Nav.tsx` (server) + `NavClient.tsx` | Grouped sidebar (Home, Sales, Catalogue, Content, Insights, Settings), role-aware, with live badges for drafts and low stock |
+| `admin.components.actions` | `HeaderActions.tsx` | Search (⌘K) and View store |
+| `admin.components.providers` | `CommandPalette.tsx` | ⌘K palette: product search by name or SKU, pages, actions |
+| `admin.components.beforeLogin` | `LoginIntro.tsx` | Branded login |
+| `views.dashboard` | `views/Dashboard.tsx` | KPIs, needs attention, activity, launch checklist, catalogue mix |
+| `views.inventory` (`/admin/inventory`) | `views/Inventory.tsx` + `InventoryTable.tsx` | Bulk stock adjustment. Wraps Payload's `DefaultTemplate`. |
+| `products` list view | `views/ProductsList.tsx` + `ProductsToolbar` + `ProductsTable` | Status tabs, search, type filter, sort, bulk actions through the REST API |
+| Variant `RowLabel` | `VariantRowLabel.tsx` | Readable collapsed variant rows |
+
+**Demo data:** products with `isDemo` come from `pnpm seed:demo` (SKUs `DEMO-…`, media `demo-*.webp`, four fictional brands). Their pages are `noindex`. `pnpm seed:demo --remove` deletes the products, their stock history, their media and the demo brands.
 
 ### Target (Sprints 2–7)
 ```mermaid

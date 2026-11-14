@@ -29,7 +29,27 @@ test.describe('Catalogue pages (Sprint 1)', () => {
   test('search results and empty categories are friendly', async ({ page }) => {
     await page.goto(`${BASE}/search?q=centella`)
     await expect(page.locator('article').first()).toBeVisible()
-    await page.goto(`${BASE}/c/fragrances`)
-    await expect(page.getByRole('heading', { name: /coming soon/i })).toBeVisible()
+    // A filter with no matches shows a helpful empty state (every department has products now)
+    await page.goto(`${BASE}/c/chocolates?concern=acne`)
+    await expect(page.getByRole('heading', { name: /No matches for these filters/i })).toBeVisible()
+  })
+})
+
+test.describe('Lifestyle catalogue (Sprint 1.5)', () => {
+  test('two-option product: colour then size, sold-out size disabled', async ({ page }) => {
+    await page.goto(`${BASE}/p/demo-cloud-runner-sneakers`)
+    await page.getByRole('radio', { name: /^Black/ }).click()
+    await expect(page.getByRole('radio', { name: /EU 38 \(sold out\)/ })).toBeDisabled()
+    await page.getByRole('radio', { name: 'EU 39' }).click()
+    await page.getByRole('button', { name: 'Add to bag' }).click()
+    await page.getByRole('button', { name: /Open bag, 1 items/ }).click()
+    await expect(page.getByRole('dialog')).toContainText('Shoe size / Colour: EU 39 / Black')
+  })
+
+  test('gift shop spans departments and filters by recipient', async ({ page }) => {
+    await page.goto(`${BASE}/gifts?recipient=for-him`)
+    await expect(page.locator('h1')).toHaveText('Gifts for him')
+    const brands = await page.locator('article p').evaluateAll((els) => els.map((e) => e.textContent?.trim()).filter(Boolean))
+    expect(new Set(brands).size).toBeGreaterThan(1)
   })
 })

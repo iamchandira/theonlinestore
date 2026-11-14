@@ -7,6 +7,7 @@ type VariantRow = {
   id?: string
   sku?: string
   label?: string
+  option2?: string | null
   price?: number
   compareAtPrice?: number | null
   stock?: number
@@ -15,7 +16,23 @@ type VariantRow = {
 
 type StockReason = 'initial' | 'adjustment' | 'restock' | 'sale' | 'return' | 'damaged' | 'count'
 
-const OPTION_TYPES = ['Size', 'Shade', 'Scent', 'Flavour', 'Pack', 'Set', 'Colour', 'Shoe size'] as const
+const OPTION_TYPES = ['Size', 'Shade', 'Scent', 'Flavour', 'Pack', 'Set', 'Colour', 'Shoe size', 'Weight', 'Style'] as const
+
+/** Product types: drive which detail fields, filters and page sections apply (a lifestyle store, not only beauty). */
+export const PRODUCT_TYPES = [
+  { label: 'Beauty & personal care', value: 'beauty' },
+  { label: 'Fragrance', value: 'fragrance' },
+  { label: 'Footwear', value: 'footwear' },
+  { label: 'Gift / hamper', value: 'gift' },
+  { label: 'Chocolate & treats', value: 'chocolate' },
+  { label: 'Accessory', value: 'accessory' },
+  { label: 'Home & living', value: 'home' },
+] as const
+
+const isType =
+  (...types: string[]) =>
+  (data: Record<string, unknown>) =>
+    types.includes(String(data?.productType ?? 'beauty'))
 
 const paths = (doc: Record<string, unknown>) => [`/p/${doc.slug}`]
 
@@ -34,6 +51,7 @@ export const Products: CollectionConfig = {
     listSearchableFields: ['name', 'searchText'],
     preview: (doc) => `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/p/${doc.slug}`,
     description: 'Prices are in LKR. A product flagged "Price to be confirmed" shows a warning until its prices are checked.',
+    components: { views: { list: { Component: '/components/admin/views/ProductsList#ProductsList' } } },
   },
   // Drafts + scheduled publishing (TOS-110). The public only ever sees published products.
   versions: { drafts: { schedulePublish: true }, maxPerDoc: 25 },
@@ -72,7 +90,7 @@ export const Products: CollectionConfig = {
 
         // Search text: brand + name + taxonomy names, so search can match "cerave cleanser" or "dark spots"
         const brandId = typeof data.brand === 'object' ? data.brand?.id : data.brand
-        const lookup = async (collection: 'brands' | 'tags' | 'concerns' | 'categories', ids: unknown) => {
+        const lookup = async (collection: 'brands' | 'tags' | 'concerns' | 'categories' | 'recipients' | 'occasions', ids: unknown) => {
           const list = (Array.isArray(ids) ? ids : ids ? [ids] : []).map((x) => (typeof x === 'object' && x ? (x as { id: string | number }).id : x))
           if (!list.length) return []
           const res = await req.payload.find({ collection, where: { id: { in: list } }, limit: 50, depth: 0, overrideAccess: true, req })
@@ -84,7 +102,10 @@ export const Products: CollectionConfig = {
           ...(await lookup('categories', data.categories)),
           ...(await lookup('concerns', data.concerns)),
           ...(await lookup('tags', data.tags)),
-          ...variants.map((v) => v.label),
+          ...(await lookup('recipients', data.recipients)),
+          ...(await lookup('occasions', data.occasions)),
+          ...variants.flatMap((v) => [v.label, v.option2]),
+          PRODUCT_TYPES.find((t) => t.value === data.productType)?.label,
         ]
         data.searchText = words.filter(Boolean).join(' ').toLowerCase()
         return data
@@ -104,17 +125,18 @@ export const Products: CollectionConfig = {
             data: {
               product: doc.id,
               sku: String(v.sku ?? ""),
-              variantLabel: v.label,
+              variantLabel: [v.label, v.option2].filter(Boolean).join(' / '),
               change: next - prev,
               resultingStock: next,
               reason: operation === 'create' || !before.has(v.sku) ? 'initial' : ((context?.stockReason as StockReason | undefined) ?? 'adjustment'),
               user: req.user?.id,
+              note: (context?.stockNote as string | undefined) || undefined,
             },
             overrideAccess: true,
             req,
           })
           if (next <= Number(v.lowStockThreshold ?? 5)) {
-            req.payload.logger.warn(`Low stock: ${doc.name} (${v.label}, ${v.sku}) has ${next} left`)
+            req.payload.logger.warn(`Low stock: ${doc.name} (${[v.label, v.option2].filter(Boolean).join(' / ')}, ${v.sku}) has ${next} left`)
           }
         }
         return doc
@@ -124,6 +146,41 @@ export const Products: CollectionConfig = {
     afterDelete: [revalidateStorefrontOnDelete(paths)],
   },
   endpoints: [
+    {
+      // POST /api/products/adjust-stock  { productId, changes: [{ sku, stock }], reason, note }
+      // Used by the admin Inventory screen. Each change is logged as a stock movement with the reason and note.
+      path: '/adjust-stock',
+      method: 'post',
+      handler: async (req) => {
+        const { hasRole } = await import('../access/roles')
+        if (!req.user || !hasRole(req.user, 'admin', 'store-manager', 'inventory-manager')) {
+          return Response.json({ error: 'You don’t have permission to change stock.' }, { status: 403 })
+        }
+        const body = (await req.json?.()) as {
+          productId?: number
+          changes?: { sku: string; stock: number }[]
+          reason?: StockReason
+          note?: string
+        }
+        const reasons: StockReason[] = ['adjustment', 'restock', 'count', 'damaged', 'return']
+        if (!body?.productId || !Array.isArray(body.changes) || !body.changes.length) {
+          return Response.json({ error: 'productId and changes are required' }, { status: 400 })
+        }
+        const reason = reasons.includes(body.reason as StockReason) ? body.reason : 'adjustment'
+        const product = await req.payload.findByID({ collection: 'products', id: body.productId, depth: 0, req })
+        const bySku = new Map(body.changes.map((c) => [c.sku, Math.max(0, Math.floor(Number(c.stock)))]))
+        const variants = (product.variants ?? []).map((v) => (bySku.has(v.sku) ? { ...v, stock: bySku.get(v.sku)! } : v))
+        const updated = await req.payload.update({
+          collection: 'products',
+          id: product.id,
+          data: { variants },
+          req,
+          overrideAccess: false,
+          context: { stockReason: reason, stockNote: body.note?.slice(0, 200) },
+        })
+        return Response.json({ ok: true, totalStock: updated.totalStock, lowStock: updated.lowStock })
+      },
+    },
     {
       // GET /api/products/suggest?q=centella → autosuggest for the header search (public, published only)
       path: '/suggest',
@@ -200,12 +257,25 @@ export const Products: CollectionConfig = {
           description: 'Each variant is a sellable SKU with its own price, stock and photo.',
           fields: [
             {
-              name: 'optionName',
-              type: 'select',
-              required: true,
-              defaultValue: 'Size',
-              options: OPTION_TYPES.map((o) => ({ label: o, value: o })),
-              admin: { description: 'What the variants differ by.' },
+              type: 'row',
+              fields: [
+                {
+                  name: 'optionName',
+                  label: 'Option 1',
+                  type: 'select',
+                  required: true,
+                  defaultValue: 'Size',
+                  options: OPTION_TYPES.map((o) => ({ label: o, value: o })),
+                  admin: { width: '50%', description: 'What the variants differ by, e.g. Size.' },
+                },
+                {
+                  name: 'option2Name',
+                  label: 'Option 2 (optional)',
+                  type: 'select',
+                  options: OPTION_TYPES.map((o) => ({ label: o, value: o })),
+                  admin: { width: '50%', description: 'A second dimension, e.g. Colour for shoes (size × colour).' },
+                },
+              ],
             },
             {
               name: 'variants',
@@ -213,14 +283,20 @@ export const Products: CollectionConfig = {
               required: true,
               minRows: 1,
               labels: { singular: 'Variant', plural: 'Variants' },
-              admin: { initCollapsed: false },
+              admin: { initCollapsed: true, components: { RowLabel: '/components/admin/VariantRowLabel#VariantRowLabel' } },
               fields: [
                 {
                   type: 'row',
                   fields: [
-                    { name: 'label', type: 'text', required: true, admin: { width: '34%', description: 'e.g. 100 ml, Rose Amour' } },
-                    { name: 'sku', type: 'text', required: true, index: true, admin: { width: '33%' } },
-                    { name: 'barcode', type: 'text', admin: { width: '33%' } },
+                    { name: 'label', label: 'Option 1 value', type: 'text', required: true, admin: { width: '25%', description: 'e.g. 100 ml, EU 38' } },
+                    {
+                      name: 'option2',
+                      label: 'Option 2 value',
+                      type: 'text',
+                      admin: { width: '25%', description: 'e.g. Black', condition: (data) => Boolean(data?.option2Name) },
+                    },
+                    { name: 'sku', type: 'text', required: true, index: true, admin: { width: '25%' } },
+                    { name: 'barcode', type: 'text', admin: { width: '25%' } },
                   ],
                 },
                 {
@@ -280,6 +356,117 @@ export const Products: CollectionConfig = {
           ],
         },
         {
+          label: 'Details',
+          description: 'Fields here change with the product type (set in the sidebar).',
+          fields: [
+            {
+              name: 'details',
+              type: 'group',
+              label: false,
+              fields: [
+                // Fragrance
+                {
+                  type: 'row',
+                  admin: { condition: isType('fragrance') },
+                  fields: [
+                    {
+                      name: 'concentration',
+                      type: 'select',
+                      admin: { width: '33%' },
+                      options: ['Parfum', 'Eau de Parfum', 'Eau de Toilette', 'Eau de Cologne', 'Body mist'].map((v) => ({ label: v, value: v })),
+                    },
+                    {
+                      name: 'scentFamily',
+                      type: 'select',
+                      admin: { width: '33%' },
+                      options: ['Floral', 'Fresh', 'Citrus', 'Woody', 'Oriental', 'Gourmand', 'Aquatic', 'Fruity'].map((v) => ({ label: v, value: v })),
+                    },
+                    {
+                      name: 'longevity',
+                      type: 'select',
+                      admin: { width: '34%' },
+                      options: ['Light (2–4 h)', 'Moderate (4–6 h)', 'Long-lasting (6–8 h)', 'Very long (8 h+)'].map((v) => ({ label: v, value: v })),
+                    },
+                  ],
+                },
+                {
+                  type: 'row',
+                  admin: { condition: isType('fragrance') },
+                  fields: [
+                    { name: 'topNotes', type: 'text', admin: { width: '33%', description: 'Comma separated' } },
+                    { name: 'heartNotes', type: 'text', admin: { width: '33%' } },
+                    { name: 'baseNotes', type: 'text', admin: { width: '34%' } },
+                  ],
+                },
+                // Fragrance + footwear + accessory
+                {
+                  name: 'gender',
+                  type: 'select',
+                  admin: { condition: isType('fragrance', 'footwear', 'accessory'), description: 'Used for "For her / For him" filters.' },
+                  options: [
+                    { label: 'Women', value: 'women' },
+                    { label: 'Men', value: 'men' },
+                    { label: 'Unisex', value: 'unisex' },
+                    { label: 'Kids', value: 'kids' },
+                  ],
+                },
+                // Footwear
+                {
+                  type: 'row',
+                  admin: { condition: isType('footwear') },
+                  fields: [
+                    {
+                      name: 'footwearStyle',
+                      label: 'Style',
+                      type: 'select',
+                      admin: { width: '33%' },
+                      options: ['Sneakers', 'Sandals', 'Slides', 'Heels', 'Flats', 'Formal', 'Boots'].map((v) => ({ label: v, value: v })),
+                    },
+                    { name: 'material', type: 'text', admin: { width: '33%', description: 'e.g. Canvas upper, rubber sole' } },
+                    {
+                      name: 'sizeSystem',
+                      type: 'select',
+                      defaultValue: 'EU',
+                      admin: { width: '34%' },
+                      options: ['EU', 'UK', 'US'].map((v) => ({ label: v, value: v })),
+                    },
+                  ],
+                },
+                { name: 'fit', type: 'text', admin: { condition: isType('footwear'), description: 'e.g. True to size; half a size up for wide feet' } },
+                // Chocolate & treats
+                {
+                  type: 'row',
+                  admin: { condition: isType('chocolate') },
+                  fields: [
+                    { name: 'netWeight', label: 'Net weight (g)', type: 'number', admin: { width: '33%' } },
+                    { name: 'cocoaPercent', label: 'Cocoa %', type: 'number', min: 0, max: 100, admin: { width: '33%' } },
+                    { name: 'origin', type: 'text', admin: { width: '34%', description: 'e.g. Belgium, Sri Lanka' } },
+                  ],
+                },
+                {
+                  name: 'dietary',
+                  type: 'select',
+                  hasMany: true,
+                  admin: { condition: isType('chocolate') },
+                  options: ['Vegan', 'Vegetarian', 'Gluten-free', 'Sugar-free', 'Halal', 'Nut-free'].map((v) => ({ label: v, value: v })),
+                },
+                { name: 'allergens', type: 'text', admin: { condition: isType('chocolate'), description: 'e.g. Contains milk, soy; may contain nuts' } },
+                { name: 'storage', type: 'text', admin: { condition: isType('chocolate'), description: 'e.g. Store below 25°C, away from sunlight' } },
+                // Gifts
+                { name: 'contents', label: 'What’s inside', type: 'textarea', admin: { condition: isType('gift'), description: 'One item per line.' } },
+                {
+                  type: 'row',
+                  admin: { condition: isType('gift') },
+                  fields: [
+                    { name: 'giftWrapped', label: 'Arrives gift-wrapped', type: 'checkbox', admin: { width: '50%' } },
+                    { name: 'personalisable', label: 'Can be personalised (message card)', type: 'checkbox', admin: { width: '50%' } },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
           label: 'Merchandising',
           fields: [
             {
@@ -294,7 +481,21 @@ export const Products: CollectionConfig = {
               ],
             },
             { name: 'tags', type: 'relationship', relationTo: 'tags', hasMany: true },
-            { name: 'concerns', type: 'relationship', relationTo: 'concerns', hasMany: true },
+            {
+              type: 'row',
+              fields: [
+                { name: 'recipients', label: 'Good for (recipients)', type: 'relationship', relationTo: 'recipients', hasMany: true, admin: { width: '50%' } },
+                { name: 'occasions', type: 'relationship', relationTo: 'occasions', hasMany: true, admin: { width: '50%' } },
+              ],
+            },
+            {
+              name: 'concerns',
+              label: 'Skin / hair concerns',
+              type: 'relationship',
+              relationTo: 'concerns',
+              hasMany: true,
+              admin: { condition: isType('beauty'), description: 'Beauty products only.' },
+            },
             {
               name: 'crossSells',
               label: 'Pairs well with (cross-sells)',
@@ -314,7 +515,24 @@ export const Products: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'productType',
+      type: 'select',
+      required: true,
+      defaultValue: 'beauty',
+      index: true,
+      options: PRODUCT_TYPES.map((t) => ({ label: t.label, value: t.value })),
+      admin: { position: 'sidebar', description: 'Controls the detail fields, filters and page sections.' },
+    },
     slugField({ useAsSlug: 'name', overrides: (f) => ({ ...f, admin: { ...f.admin, position: 'sidebar' } }) }),
+    {
+      name: 'isDemo',
+      label: 'Demo product',
+      type: 'checkbox',
+      defaultValue: false,
+      index: true,
+      admin: { position: 'sidebar', description: 'Sample content for design and testing. Remove all with `pnpm seed:demo --remove` before launch.' },
+    },
     {
       name: 'priceTBC',
       label: 'Price to be confirmed',

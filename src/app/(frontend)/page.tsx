@@ -3,7 +3,7 @@ import { IconClockHour4 } from '@tabler/icons-react'
 import { BestSellers } from '@/components/home/BestSellers'
 import { BrandMarquee } from '@/components/home/BrandMarquee'
 import { CategoryTiles } from '@/components/home/CategoryTiles'
-import { ConcernChips } from '@/components/home/ConcernChips'
+import { OccasionChips } from '@/components/home/OccasionChips'
 import { DermSpotlight } from '@/components/home/DermSpotlight'
 import { GiftFinder } from '@/components/home/GiftFinder'
 import { Hero } from '@/components/home/Hero'
@@ -53,13 +53,13 @@ export default async function HomePage() {
       <CategoryTiles tileImages={data.tileImages} />
       <UspStrip />
       <Rails rails={data.railsTop} />
-      <ConcernChips />
+      <GiftFinder />
+      <OccasionChips />
       <PromoBanners sale={data.saleFeature} gift={data.giftFeature} />
       <BestSellers products={data.bestsellers} />
+      <Rails rails={data.railsBottom} />
       <DermSpotlight products={data.derm} />
       <BrandMarquee brands={brands.map((b) => ({ name: b.name, slug: b.slug }))} />
-      <GiftFinder />
-      <Rails rails={data.railsBottom} />
       <Newsletter />
     </>
   )

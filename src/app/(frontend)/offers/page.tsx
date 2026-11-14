@@ -12,7 +12,9 @@ export const metadata: Metadata = {
 
 export default async function OffersPage({ searchParams }: { searchParams: Promise<RawSearchParams> }) {
   const lp = parseListParams(await searchParams)
-  const result = await listProducts({ onSale: true, concernSlug: lp.concern, tagSlug: lp.tag, maxPrice: lp.maxPrice, sort: lp.sort, page: lp.page })
+  const result = await listProducts({ onSale: true, concernSlug: lp.concern,
+    recipientSlug: lp.recipient,
+    occasionSlug: lp.occasion, tagSlug: lp.tag, maxPrice: lp.maxPrice, sort: lp.sort, page: lp.page })
   return (
     <ListingPage
       eyebrow="Limited time"

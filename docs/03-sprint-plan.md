@@ -10,6 +10,7 @@
 |---|---|---|---|---|
 | **0** ✅ | 15 Nov 2026 | Foundation, brand and UX system, storefront shell, catalogue extraction, docs | TOS-001 → 008 | Home page, styleguide, branded admin |
 | **1** ✅ | 15 Nov 2026 (started early) | **Catalogue live**: products, variants, categories, brands, inventory; listing and product pages | TOS-101 → 110 | Staff add a product; shoppers browse real listing and product pages |
+| **1.5** ✅ | 15 Nov 2026 (inserted) | **Lifestyle store & custom admin**: product types, two-option variants, gift shop, demo products; custom dashboard, products list, inventory, ⌘K | TOS-131 → 142 | Footwear size × colour picker; gift shop; admin dashboard and bulk stock update |
 | **2** | 16 – 27 Nov 2026 | **Find it fast**: search, filters, wishlist, cross-sell and upsell, reviews, CSV import/export | TOS-201 → 208, TOS-109 | Search "centella", filter by concern, save to wishlist |
 | **3** | 14 – 24 Dec | **Accounts & security**: register, login, reset, addresses, order history shell; RBAC enforced; audit log | TOS-301 → 307, 401 → 404 | A customer signs up; each staff role sees the right admin |
 | — | 25 Dec – 1 Jan | Holiday buffer (bug fixes, content entry) | | |
@@ -39,13 +40,16 @@
 ## Sprint 1 (complete): catalogue live
 All Must stories done (52 of 55 points). TOS-109 (CSV import/export) moved to Sprint 2. See `sprint-reports/sprint-01.md`.
 
+## Sprint 1.5 (complete): lifestyle store & custom admin
+Inserted at the owner's request after Sprint 1 (47 points, all done). The store now models every department, not only beauty, and staff work in a purpose-built admin. Sprint 2 dates are unchanged. See `sprint-reports/sprint-01-5.md`.
+
 ## Sprint 2 plan (next)
 **Goal:** find it fast. Shoppers can find any product by name, brand or concern, even with typos, narrow results with filters, and save favourites.
 
 | # | Task | Story |
 |---|---|---|
 | 1 | Postgres full-text search with trigram typo tolerance, behind `/api/products/suggest` and `/search` | TOS-201, 207 |
-| 2 | Faceted filters with counts (category, brand, price, concern, rating, in stock, on sale), sticky sidebar on desktop, bottom sheet on mobile, kept in the URL | TOS-202 |
+| 2 | Faceted filters with counts (category, brand, price, concern, recipient, occasion, size, colour, scent family, dietary, rating, in stock, on sale), sticky sidebar on desktop, bottom sheet on mobile, kept in the URL | TOS-202 |
 | 3 | Wishlist page, plus a server-side wishlist that merges at sign-in (account sign-in itself lands in Sprint 3; the guest wishlist ships now) | TOS-203 |
 | 4 | Upsells on the product page (cross-sells shipped in Sprint 1) | TOS-204 |
 | 5 | Recently viewed products | TOS-205 |

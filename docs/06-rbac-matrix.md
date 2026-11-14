@@ -67,5 +67,10 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 - `home-page` global: store-manager and marketing.
 - Covered by integration tests (`tests/int/catalog.int.spec.ts`): an inventory manager changing stock is logged with their user, and their price edits are ignored; drafts are hidden from the public.
 
+## Rules implemented in Sprint 1.5 (admin & lifestyle)
+- `recipients`, `occasions`: public read. Store-manager and marketing edit.
+- `POST /api/products/adjust-stock` (Inventory screen): admin, store-manager and inventory-manager only. It runs with the caller's own access (`overrideAccess: false`), so field rules still apply. Each change is logged with the reason and note.
+- The custom admin sidebar and ⌘K palette only show sections the signed-in role can read. Bulk actions in the products list go through the REST API, so collection and field access are enforced on the server.
+
 ## Testing
 From Sprint 3 (TOS-401), each cell in the table above gets an automated integration test (`tests/int/rbac.int.spec.ts`) that logs in as each role and checks the allowed and denied operations.

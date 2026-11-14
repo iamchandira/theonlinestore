@@ -29,6 +29,8 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const result = await listProducts({
     categoryIds: ids,
     concernSlug: lp.concern,
+    recipientSlug: lp.recipient,
+    occasionSlug: lp.occasion,
     tagSlug: lp.tag,
     maxPrice: lp.maxPrice,
     sort: lp.sort,
@@ -63,7 +65,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       basePath={node.href}
       params={lp.keep}
       empty={
-        lp.concern || lp.tag || lp.maxPrice ? (
+        lp.concern || lp.tag || lp.maxPrice || lp.recipient || lp.occasion ? (
           <EmptyListing title="No matches for these filters" text="Try removing a filter above, or browse the full range." />
         ) : (
           <EmptyListing title={`Our ${node.name.toLowerCase()} range is coming soon`} />

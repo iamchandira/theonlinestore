@@ -7,6 +7,9 @@ export type Variant = {
   sku: string
   option: string
   label: string
+  /** Second option (e.g. Colour for shoes), or null for single-option products */
+  option2Name: string | null
+  option2: string | null
   price: number
   compareAtPrice: number | null
   stock: number
@@ -17,6 +20,8 @@ export type Variant = {
 }
 
 export type Badge = 'bestseller' | 'new' | 'trending' | 'gift' | 'limited' | null
+
+export type ProductType = 'beauty' | 'fragrance' | 'footwear' | 'gift' | 'chocolate' | 'accessory' | 'home'
 
 export type Product = {
   id: number
@@ -31,6 +36,11 @@ export type Product = {
   concerns: string[]
   tags: string[]
   badge: Badge
+  productType: ProductType
+  /** Sample content for design/testing (shown with a "Sample" tag; removed before launch) */
+  isDemo: boolean
+  recipients: string[]
+  occasions: string[]
   rating: number
   reviewCount: number
   priceTBC: boolean
@@ -49,6 +59,15 @@ export type ProductDetail = Product & {
   gallery: { image: string; imageLarge: string; alt: string }[]
   breadcrumbs: Crumb[]
   concernLabels: { slug: string; name: string }[]
+  recipientLabels: { slug: string; name: string }[]
+  occasionLabels: { slug: string; name: string }[]
+  /** Type-specific facts shown in a "Details" list, e.g. [["Concentration", "Eau de Parfum"], ["Cocoa", "70%"]] */
+  facts: [string, string][]
+  notes: { top: string; heart: string; base: string } | null
+  contents: string[]
+  fit: string
+  storage: string
+  allergens: string
   metaTitle: string | null
   metaDescription: string | null
   updatedAt: string

@@ -5,7 +5,7 @@ import { motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { beautyCategories, concerns } from '@/config/navigation'
+import { beautyCategories, categories, concerns, occasions, recipients } from '@/config/navigation'
 import { productHref, type Product } from '@/lib/catalog'
 import { dropdown } from '@/lib/motion/variants'
 
@@ -78,6 +78,92 @@ export function BrandsMega({ onNavigate, groups }: { onNavigate: () => void; gro
             </ul>
           </div>
         ))}
+      </div>
+    </motion.div>
+  )
+}
+
+const deptShortcuts: Record<string, { title: string; links: { label: string; href: string }[] }> = {
+  fragrances: {
+    title: 'Shop by',
+    links: [
+      { label: 'For her', href: '/c/fragrances?recipient=for-her' },
+      { label: 'For him', href: '/c/fragrances?recipient=for-him' },
+      { label: 'Gift-ready sets', href: '/c/fragrances?occasion=birthday' },
+      { label: 'Under Rs 5,000', href: '/c/fragrances?max=5000' },
+    ],
+  },
+  footwear: {
+    title: 'Shop by',
+    links: [
+      { label: 'Women', href: '/c/footwear?recipient=for-her' },
+      { label: 'Men', href: '/c/footwear?recipient=for-him' },
+      { label: 'Kids', href: '/c/footwear/kids-shoes' },
+      { label: 'Under Rs 5,000', href: '/c/footwear?max=5000' },
+    ],
+  },
+  gifts: {
+    title: 'Who is it for?',
+    links: recipients.map((r) => ({ label: r.label, href: `/gifts?recipient=${r.slug}` })),
+  },
+  chocolates: {
+    title: 'Perfect for',
+    links: occasions.slice(0, 5).map((o) => ({ label: o.label, href: `/c/chocolates?occasion=${o.slug}` })),
+  },
+}
+
+/** Mega-menu for a lifestyle department: sub-categories, shopping shortcuts and a featured product. */
+export function DepartmentMega({ slug, feature, onNavigate }: { slug: string; feature: Product | null; onNavigate: () => void }) {
+  const dept = categories.find((c) => c.slug === slug)
+  if (!dept) return null
+  const shortcuts = deptShortcuts[slug]
+  return (
+    <motion.div variants={dropdown} initial="hidden" animate="show" exit="exit" className="container-site">
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)] gap-8 rounded-b-2xl border border-t-0 border-line bg-surface p-8 shadow-lift">
+        <div>
+          <Link href={dept.href} onClick={onNavigate} className="mb-3 inline-flex items-center gap-1 font-display text-base font-bold hover:text-sunset-600">
+            All {dept.name} <IconArrowRight size={16} />
+          </Link>
+          <ul className="flex flex-col gap-0.5">
+            {dept.children?.map((s) => (
+              <li key={s.href}>
+                <Link href={s.href} onClick={onNavigate} className="-mx-2 block rounded-md px-2 py-1.5 text-sm text-ink-600 hover:bg-ink-50 hover:text-ink-900">
+                  {s.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        {shortcuts && (
+          <div>
+            <p className="mb-3 font-display text-base font-bold">{shortcuts.title}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {shortcuts.links.map((l) => (
+                <Link key={l.href} href={l.href} onClick={onNavigate} className="rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium hover:border-ink-900">
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        {feature ? (
+          <Link href={productHref(feature)} onClick={onNavigate} className="group relative flex items-center gap-4 overflow-hidden rounded-xl bg-canvas p-4">
+            <span className="relative size-24 shrink-0">
+              <Image src={feature.variants[0].image} alt="" fill sizes="96px" className="object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-110" />
+            </span>
+            <span>
+              <span className="text-xs font-bold uppercase tracking-wider text-rose-600">Popular now</span>
+              <span className="mt-1 block font-display font-bold leading-snug">
+                {feature.brand} {feature.name}
+              </span>
+              <span className="mt-1 inline-flex items-center gap-1 text-sm font-semibold text-ink-700 group-hover:text-sunset-600">
+                Shop now <IconArrowRight size={15} />
+              </span>
+            </span>
+          </Link>
+        ) : (
+          <p className="self-center rounded-xl bg-canvas p-5 text-sm text-ink-600">New {dept.name.toLowerCase()} arriving soon.</p>
+        )}
       </div>
     </motion.div>
   )

@@ -85,23 +85,99 @@ export const categories: CategoryDef[] = [
     blurb: 'Balms, oils and tints',
     children: [sub('lips', 'lip-balm', 'Lip Balms'), sub('lips', 'lip-oil', 'Lip Oils & Tints')],
   },
-  { slug: 'fragrances', name: 'Fragrances', href: '/c/fragrances', tint: 'fragrance', blurb: 'Perfumes and body mists', icon: 'perfume' },
-  { slug: 'footwear', name: 'Footwear', href: '/c/footwear', tint: 'footwear', blurb: 'Shoes, sandals and slides', icon: 'shoe' },
-  { slug: 'gifts', name: 'Gifts', href: '/c/gifts', tint: 'gifts', blurb: 'Gift sets and hampers', icon: 'gift' },
-  { slug: 'chocolates', name: 'Chocolates', href: '/c/chocolates', tint: 'chocolate', blurb: 'Imported treats', icon: 'candy' },
+  {
+    slug: 'fragrances',
+    name: 'Fragrances',
+    href: '/c/fragrances',
+    tint: 'fragrance',
+    blurb: 'Perfumes, colognes and body mists',
+    icon: 'perfume',
+    children: [
+      sub('fragrances', 'womens-perfume', 'Women’s perfume'),
+      sub('fragrances', 'mens-cologne', 'Men’s cologne'),
+      sub('fragrances', 'unisex-fragrance', 'Unisex'),
+      sub('fragrances', 'body-mists', 'Body mists & sets'),
+    ],
+  },
+  {
+    slug: 'footwear',
+    name: 'Footwear',
+    href: '/c/footwear',
+    tint: 'footwear',
+    blurb: 'Sneakers, sandals and everyday pairs',
+    icon: 'shoe',
+    children: [
+      sub('footwear', 'sneakers', 'Sneakers'),
+      sub('footwear', 'sandals-slides', 'Sandals & slides'),
+      sub('footwear', 'heels-flats', 'Heels & flats'),
+      sub('footwear', 'kids-shoes', 'Kids’ shoes'),
+    ],
+  },
+  {
+    slug: 'gifts',
+    name: 'Gifts',
+    href: '/c/gifts',
+    tint: 'gifts',
+    blurb: 'Hampers, gift sets and surprises',
+    icon: 'gift',
+    children: [
+      sub('gifts', 'gift-hampers', 'Gift hampers'),
+      sub('gifts', 'gift-boxes', 'Gift boxes & sets'),
+      sub('gifts', 'personalised-gifts', 'Personalised gifts'),
+    ],
+  },
+  {
+    slug: 'chocolates',
+    name: 'Chocolates',
+    href: '/c/chocolates',
+    tint: 'chocolate',
+    blurb: 'Boxes, bars and imported treats',
+    icon: 'candy',
+    children: [
+      sub('chocolates', 'chocolate-boxes', 'Chocolate boxes'),
+      sub('chocolates', 'chocolate-bars', 'Bars & tablets'),
+      sub('chocolates', 'sweet-treats', 'Sweet treats'),
+    ],
+  },
 ]
 
-export const beautyCategories = categories.filter((c) => c.children)
+/** Beauty departments (grouped under the "Beauty" menu); everything else is its own top-level department. */
+export const BEAUTY_SLUGS = ['skincare', 'hair-care', 'body-care', 'lips']
+export const beautyCategories = categories.filter((c) => BEAUTY_SLUGS.includes(c.slug))
+export const lifestyleDepartments = categories.filter((c) => !BEAUTY_SLUGS.includes(c.slug))
 
 /** Primary nav (desktop). "Beauty" and "Brands" open mega-menus. */
-export const primaryNav = [
-  { label: 'Beauty', href: '/c/beauty', mega: 'beauty' as const },
-  { label: 'Fragrances', href: '/c/fragrances' },
-  { label: 'Footwear', href: '/c/footwear' },
-  { label: 'Gifts', href: '/c/gifts' },
-  { label: 'Chocolates', href: '/c/chocolates' },
-  { label: 'Brands', href: '/brands', mega: 'brands' as const },
+export type MegaKey = 'beauty' | 'brands' | 'fragrances' | 'footwear' | 'gifts' | 'chocolates'
+
+export const primaryNav: { label: string; href: string; mega?: MegaKey; highlight?: boolean }[] = [
+  { label: 'Beauty', href: '/c/beauty', mega: 'beauty' },
+  { label: 'Fragrances', href: '/c/fragrances', mega: 'fragrances' },
+  { label: 'Footwear', href: '/c/footwear', mega: 'footwear' },
+  { label: 'Gifts', href: '/c/gifts', mega: 'gifts' },
+  { label: 'Chocolates', href: '/c/chocolates', mega: 'chocolates' },
+  { label: 'Brands', href: '/brands', mega: 'brands' },
   { label: 'Offers', href: '/offers', highlight: true },
+]
+
+/** Gifting vocabulary shared by the seed, Gift Finder and filters. */
+export const recipients = [
+  { slug: 'for-her', label: 'For her' },
+  { slug: 'for-him', label: 'For him' },
+  { slug: 'for-couples', label: 'For couples' },
+  { slug: 'for-kids', label: 'For kids' },
+  { slug: 'for-parents', label: 'For parents' },
+  { slug: 'for-friends', label: 'Friends & colleagues' },
+]
+export const occasions = [
+  { slug: 'birthday', label: 'Birthday' },
+  { slug: 'anniversary', label: 'Anniversary' },
+  { slug: 'avurudu', label: 'Avurudu' },
+  { slug: 'valentines', label: 'Valentine’s Day' },
+  { slug: 'mothers-day', label: 'Mother’s Day' },
+  { slug: 'fathers-day', label: 'Father’s Day' },
+  { slug: 'christmas', label: 'Christmas' },
+  { slug: 'wedding', label: 'Wedding' },
+  { slug: 'thank-you', label: 'Thank you' },
 ]
 
 export const concerns = [
@@ -115,7 +191,7 @@ export const concerns = [
   { slug: 'hair-fall', label: 'Hair fall' },
 ]
 
-export const popularSearches = ['Sunscreen', 'Niacinamide', 'CeraVe', 'Centella', 'Rosemary oil', 'Lip balm', 'Gift set']
+export const popularSearches = ['Perfume', 'Sneakers', 'Gift hamper', 'Chocolate box', 'Sunscreen', 'CeraVe', 'Lip balm']
 
 export const footerNav = {
   shop: [
@@ -123,7 +199,9 @@ export const footerNav = {
     { label: 'Hair Care', href: '/c/hair-care' },
     { label: 'Body Care', href: '/c/body-care' },
     { label: 'Fragrances', href: '/c/fragrances' },
-    { label: 'Gifts & Chocolates', href: '/c/gifts' },
+    { label: 'Footwear', href: '/c/footwear' },
+    { label: 'Gifts', href: '/c/gifts' },
+    { label: 'Chocolates', href: '/c/chocolates' },
     { label: 'All Brands', href: '/brands' },
   ],
   help: [

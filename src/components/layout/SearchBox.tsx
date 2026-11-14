@@ -115,7 +115,7 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
           enterKeyHint="search"
           autoFocus={autoFocus}
           value={q}
-          placeholder="Search CeraVe, serums, gifts…"
+          placeholder="Search perfumes, sneakers, gifts…"
           onFocus={() => setOpen(true)}
           onChange={(e) => {
             setQ(e.target.value)

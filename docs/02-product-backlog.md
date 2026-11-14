@@ -1,6 +1,6 @@
 # 02 · Product Backlog
 
-Version 1.1 · 15 Nov 2026 (after Sprint 1) · Owner: Product Owner. Ordered by priority within each epic.
+Version 1.2 · 15 Nov 2026 (after Sprint 1.5) · Owner: Product Owner. Ordered by priority within each epic.
 
 **Priority (MoSCoW):** M = Must, S = Should, C = Could, Sug = Suggested (an idea from the delivery team, needs PO approval).
 **Points:** Fibonacci (1, 2, 3, 5, 8, 13). **Status:** ✅ Done · 🔄 In progress · ⬜ To do.
@@ -11,6 +11,7 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 |---|---|---|---|---|
 | E00 | Foundation & design system | 8 | 34 | 0 ✅ |
 | E01 | Catalogue, variants & inventory | 10 | 55 | 1 ✅ (52 pts done; TOS-109 moved to Sprint 2) |
+| E13 | Lifestyle catalogue & custom admin | 12 | 47 | 1.5 ✅ |
 | E02 | Discovery: search, filters, wishlist, recommendations | 9 | 45 | 2 (+TOS-109 carried over) |
 | E03 | Customer accounts | 7 | 29 | 3 |
 | E04 | RBAC & admin security | 4 | 18 | 3 |
@@ -69,6 +70,34 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 - JSON-LD Product/Offer is valid.
 - The add-to-bag bar stays fixed on mobile once the main button scrolls out of view.
 - The variant is reflected in the URL (`?variant=sku`).
+
+## E13 · Lifestyle catalogue & custom admin (Sprint 1.5) ✅
+Added after Sprint 1 at the owner's request: the store is a lifestyle store, not only cosmetics, and the admin should feel custom-built (Shopify/WooCommerce level).
+
+| ID | Story | P | Pts | Status |
+|---|---|---|---|---|
+| TOS-131 | As a store manager, I want to set a product type (beauty, fragrance, footwear, gift, chocolate, accessory, home) and fill only the details that type needs. | M | 5 | ✅ |
+| TOS-132 | As a store manager, I want two-option variants (e.g. Shoe size × Colour), each combination with its own SKU, price, stock and photo. | M | 5 | ✅ |
+| TOS-133 | As a shopper, I want to pick a colour and then a size, with unavailable sizes clearly disabled. | M | 3 | ✅ |
+| TOS-134 | As marketing, I want recipients and occasions so that products can be merchandised as gifts. | M | 3 | ✅ |
+| TOS-135 | As a gift buyer, I want a gift shop across all departments, filterable by who it's for and the occasion. | M | 5 | ✅ |
+| TOS-136 | As a shopper, I want navigation, home page and product pages that fit every department, not only beauty. | M | 5 | ✅ |
+| TOS-137 | As the owner, I want clearly-marked demo products for the empty departments that can be removed with one command. | S | 2 | ✅ |
+| TOS-138 | As staff, I want a custom admin sidebar, header and ⌘K command palette grouped like a commerce admin and aware of my role. | M | 5 | ✅ |
+| TOS-139 | As the owner, I want an admin dashboard with KPIs, items needing attention, recent activity and a launch checklist. | M | 5 | ✅ |
+| TOS-140 | As a store manager, I want a products list with status tabs, search, type filter and bulk actions. | M | 5 | ✅ |
+| TOS-141 | As an inventory manager, I want one screen to adjust stock for many SKUs with a reason and note. | M | 3 | ✅ |
+| TOS-142 | As a shopper, I want the WhatsApp button to look right on every screen. | M | 1 | ✅ |
+
+**AC (TOS-132/133):**
+- Sizes that don't exist in the chosen colour, or are sold out, are disabled and announced as such.
+- Changing colour keeps the size if it is available.
+- The bag line shows both options ("EU 40 / Black").
+
+**AC (TOS-141):**
+- Only admin, store-manager and inventory-manager can adjust stock.
+- Every change is logged with the user, reason and note.
+- Changes are saved per product in one request.
 
 ## E02 · Discovery (Sprint 2)
 | ID | Story | P | Pts |

@@ -4,7 +4,7 @@ import config from '@payload-config'
 import { getPayload, type Where } from 'payload'
 import { cache } from 'react'
 
-import type { Brand, Category, Concern, Media, Product as PProduct, Tag } from '@/payload-types'
+import type { Brand, Category, Concern, Media, Occasion, Product as PProduct, Recipient, Tag } from '@/payload-types'
 
 import type { BrandSummary, CategoryNode, Crumb, ListResult, Product, ProductDetail, SortKey } from './types'
 
@@ -17,8 +17,8 @@ import type { BrandSummary, CategoryNode, Crumb, ListResult, Product, ProductDet
 export const getPayloadClient = cache(async () => getPayload({ config }))
 
 const PUBLISHED: Where = { _status: { equals: 'published' } }
-/** Virtual "Beauty" department = these top-level categories. */
-export const BEAUTY_SLUGS = ['skincare', 'hair-care', 'body-care', 'lips']
+import { BEAUTY_SLUGS } from '@/config/navigation'
+export { BEAUTY_SLUGS }
 
 /* ------------------------------------------------------------------ mapping */
 
@@ -66,6 +66,10 @@ export function toProduct(doc: PProduct): Product {
     concerns: (doc.concerns ?? []).map((c) => asObj<Concern>(c)?.slug).filter(Boolean) as string[],
     tags: (doc.tags ?? []).map((t) => asObj<Tag>(t)?.slug).filter(Boolean) as string[],
     badge: (doc.badge ?? null) as Product['badge'],
+    productType: (doc.productType ?? 'beauty') as Product['productType'],
+    isDemo: Boolean(doc.isDemo),
+    recipients: (doc.recipients ?? []).map((r) => asObj<Recipient>(r)?.slug).filter(Boolean) as string[],
+    occasions: (doc.occasions ?? []).map((o) => asObj<Occasion>(o)?.slug).filter(Boolean) as string[],
     rating: doc.rating ?? 0,
     reviewCount: doc.reviewCount ?? 0,
     priceTBC: Boolean(doc.priceTBC),
@@ -75,6 +79,8 @@ export function toProduct(doc: PProduct): Product {
         sku: v.sku,
         option: doc.optionName ?? 'Size',
         label: v.label,
+        option2Name: doc.option2Name ?? null,
+        option2: v.option2 ?? null,
         price: v.price,
         compareAtPrice: v.compareAtPrice ?? null,
         stock: v.stock ?? 0,
@@ -83,6 +89,37 @@ export function toProduct(doc: PProduct): Product {
       }
     }),
   }
+}
+
+const GENDER: Record<string, string> = { women: 'Women', men: 'Men', unisex: 'Unisex', kids: 'Kids' }
+
+/** Key facts per product type, shown as a compact "Details" list on the product page. */
+function productFacts(doc: PProduct): [string, string][] {
+  const d = doc.details ?? {}
+  const facts: [string, string | null | undefined][] = []
+  switch (doc.productType) {
+    case 'fragrance':
+      facts.push(['Concentration', d.concentration], ['Scent family', d.scentFamily], ['Longevity', d.longevity], ['For', d.gender ? GENDER[d.gender] : null])
+      break
+    case 'footwear':
+      facts.push(['Style', d.footwearStyle], ['Material', d.material], ['For', d.gender ? GENDER[d.gender] : null], ['Sizes', d.sizeSystem ? `${d.sizeSystem} sizing` : null])
+      break
+    case 'chocolate':
+      facts.push(
+        ['Net weight', d.netWeight ? `${d.netWeight} g` : null],
+        ['Cocoa', d.cocoaPercent ? `${d.cocoaPercent}%` : null],
+        ['Origin', d.origin],
+        ['Dietary', d.dietary?.length ? d.dietary.join(', ') : null],
+      )
+      break
+    case 'gift':
+      facts.push(['Gift-wrapped', d.giftWrapped ? 'Yes, arrives ready to give' : null], ['Personalisation', d.personalisable ? 'Free message card' : null])
+      break
+    case 'accessory':
+      facts.push(['For', d.gender ? GENDER[d.gender] : null])
+      break
+  }
+  return facts.filter((f): f is [string, string] => Boolean(f[1]))
 }
 
 function toDetail(doc: PProduct): ProductDetail {
@@ -99,6 +136,17 @@ function toDetail(doc: PProduct): ProductDetail {
     gallery: (doc.gallery ?? []).map(mediaUrls).filter((g) => g.image && !variantImages.has(g.image)),
     breadcrumbs,
     concernLabels: (doc.concerns ?? []).map((c) => asObj<Concern>(c)).filter(Boolean).map((c) => ({ slug: c!.slug ?? '', name: c!.name })),
+    recipientLabels: (doc.recipients ?? []).map((c) => asObj<Recipient>(c)).filter(Boolean).map((c) => ({ slug: c!.slug ?? '', name: c!.name })),
+    occasionLabels: (doc.occasions ?? []).map((c) => asObj<Occasion>(c)).filter(Boolean).map((c) => ({ slug: c!.slug ?? '', name: c!.name })),
+    facts: productFacts(doc),
+    notes:
+      doc.details?.topNotes || doc.details?.heartNotes || doc.details?.baseNotes
+        ? { top: doc.details?.topNotes ?? '', heart: doc.details?.heartNotes ?? '', base: doc.details?.baseNotes ?? '' }
+        : null,
+    contents: (doc.details?.contents ?? '').split('\n').map((s) => s.trim()).filter(Boolean),
+    fit: doc.details?.fit ?? '',
+    storage: doc.details?.storage ?? '',
+    allergens: doc.details?.allergens ?? '',
     metaTitle: doc.meta?.title ?? null,
     metaDescription: doc.meta?.description ?? null,
     updatedAt: doc.updatedAt,
@@ -186,6 +234,11 @@ export type ListOptions = {
   brandSlug?: string
   tagSlug?: string
   concernSlug?: string
+  recipientSlug?: string
+  occasionSlug?: string
+  productType?: string
+  /** Only gift-worthy products (those with a recipient or occasion set) */
+  giftReady?: boolean
   onSale?: boolean
   maxPrice?: number
   q?: string
@@ -197,7 +250,7 @@ export type ListOptions = {
 }
 
 /** Slug → id, memoised per request (filters on brand / tag / concern need the id). */
-const idsBySlug = cache(async (collection: 'brands' | 'tags' | 'concerns', slug: string) => {
+const idsBySlug = cache(async (collection: 'brands' | 'tags' | 'concerns' | 'recipients' | 'occasions', slug: string) => {
   const payload = await getPayloadClient()
   const res = await payload.find({ collection, where: { slug: { equals: slug } }, limit: 1, depth: 0, select: { slug: true } })
   return res.docs[0]?.id ?? -1
@@ -210,6 +263,10 @@ export const listProducts = cache(async (opts: ListOptions = {}): Promise<ListRe
   if (opts.brandSlug) and.push({ brand: { equals: await idsBySlug('brands', opts.brandSlug) } })
   if (opts.tagSlug) and.push({ tags: { in: [await idsBySlug('tags', opts.tagSlug)] } })
   if (opts.concernSlug) and.push({ concerns: { in: [await idsBySlug('concerns', opts.concernSlug)] } })
+  if (opts.recipientSlug) and.push({ recipients: { in: [await idsBySlug('recipients', opts.recipientSlug)] } })
+  if (opts.occasionSlug) and.push({ occasions: { in: [await idsBySlug('occasions', opts.occasionSlug)] } })
+  if (opts.productType) and.push({ productType: { equals: opts.productType } })
+  if (opts.giftReady) and.push({ or: [{ recipients: { exists: true } }, { occasions: { exists: true } }] })
   if (opts.onSale) and.push({ onSale: { equals: true } })
   if (opts.maxPrice) and.push({ minPrice: { less_than_equal: opts.maxPrice } })
   if (opts.slugs?.length) and.push({ slug: { in: opts.slugs } })
@@ -304,7 +361,7 @@ type HomeRail = {
   description?: string | null
   linkLabel?: string | null
   href: string
-  style: 'plain' | 'blush' | 'cream'
+  style: 'plain' | 'blush' | 'cream' | 'lilac'
   countdown: boolean
   products: Product[]
 }
@@ -379,9 +436,9 @@ export const getHomeData = cache(async () => {
   const [bestsellers, derm, tiles, saleFeature, giftFeature] = await Promise.all([
     listProducts({ sort: 'bestsellers', limit: 24 }),
     listProducts({ tagSlug: 'derm', sort: 'bestsellers', limit: 4 }),
-    // Two product photos per beauty category tile
+    // Two product photos per department tile (beauty and lifestyle)
     Promise.all(
-      BEAUTY_SLUGS.map(async (slug) => {
+      tree.roots.map((r) => r.slug).map(async (slug) => {
         const node = tree.bySlug.get(slug)
         if (!node) return [slug, [] as string[]] as const
         const top = await listProducts({ categoryIds: descendantIds(node), sort: 'bestsellers', limit: 2 })
@@ -389,7 +446,9 @@ export const getHomeData = cache(async () => {
       }),
     ),
     listProducts({ onSale: true, categoryIds: tree.bySlug.get('body-care') ? descendantIds(tree.bySlug.get('body-care')!) : [], sort: 'bestsellers', limit: 1 }),
-    listProducts({ tagSlug: 'gift', sort: 'bestsellers', limit: 1 }),
+    tree.bySlug.get('gifts')
+      ? listProducts({ categoryIds: descendantIds(tree.bySlug.get('gifts')!), sort: 'bestsellers', limit: 1 })
+      : listProducts({ tagSlug: 'gift', sort: 'bestsellers', limit: 1 }),
   ])
 
   return {
@@ -408,10 +467,21 @@ export type HomeData = Awaited<ReturnType<typeof getHomeData>>
 
 /** Header data: brand groups for the Brands mega-menu and a featured product for the Beauty mega-menu. */
 export const getNavData = cache(async () => {
-  const [brands, feature] = await Promise.all([getBrands(), listProducts({ tagSlug: 'trending', sort: 'bestsellers', limit: 1 })])
+  const { bySlug } = await getCategoryTree()
+  const departments = ['fragrances', 'footwear', 'gifts', 'chocolates']
+  const [brands, beautyFeature, ...deptFeatures] = await Promise.all([
+    getBrands(),
+    listProducts({ tagSlug: 'trending', sort: 'bestsellers', limit: 1 }),
+    ...departments.map((d) => {
+      const node = bySlug.get(d)
+      return node ? listProducts({ categoryIds: descendantIds(node), sort: 'bestsellers', limit: 1 }) : Promise.resolve(null)
+    }),
+  ])
   const groups: Record<string, { name: string; slug: string }[]> = {}
   for (const b of brands) (groups[BRAND_GROUP_LABELS[b.group] ?? 'More brands'] ??= []).push({ name: b.name, slug: b.slug })
-  return { brandGroups: groups, megaFeature: feature.products[0] ?? null }
+  const features: Record<string, Product | null> = { beauty: beautyFeature.products[0] ?? null }
+  departments.forEach((d, i) => (features[d] = deptFeatures[i]?.products[0] ?? null))
+  return { brandGroups: groups, megaFeature: features.beauty, features }
 })
 
 export type NavData = Awaited<ReturnType<typeof getNavData>>
@@ -423,7 +493,7 @@ export const getBagSuggestions = cache(async () => {
 })
 
 /** Display name for a tag or concern slug (used by filter chips). */
-export const getTaxonomyName = cache(async (collection: 'tags' | 'concerns', slug: string) => {
+export const getTaxonomyName = cache(async (collection: 'tags' | 'concerns' | 'recipients' | 'occasions', slug: string) => {
   const payload = await getPayloadClient()
   const res = await payload.find({ collection, where: { slug: { equals: slug } }, limit: 1, depth: 0 })
   return res.docs[0]?.name ?? null
@@ -439,6 +509,8 @@ export async function buildFilterChips(basePath: string, keep: Record<string, st
   }
   if (keep.concern) chips.push({ label: `Concern: ${(await getTaxonomyName('concerns', keep.concern)) ?? keep.concern}`, removeHref: without('concern') })
   if (keep.tag) chips.push({ label: (await getTaxonomyName('tags', keep.tag)) ?? keep.tag, removeHref: without('tag') })
+  if (keep.recipient) chips.push({ label: (await getTaxonomyName('recipients', keep.recipient)) ?? keep.recipient, removeHref: without('recipient') })
+  if (keep.occasion) chips.push({ label: `Occasion: ${(await getTaxonomyName('occasions', keep.occasion)) ?? keep.occasion}`, removeHref: without('occasion') })
   if (keep.max) chips.push({ label: `Under Rs ${Number(keep.max).toLocaleString('en-LK')}`, removeHref: without('max') })
   return chips
 }

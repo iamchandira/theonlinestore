@@ -16,6 +16,8 @@ export function parseListParams(sp: RawSearchParams) {
     page,
     concern: slug(first(sp.concern)),
     tag: slug(first(sp.tag)),
+    recipient: slug(first(sp.recipient)),
+    occasion: slug(first(sp.occasion)),
     maxPrice: Number.isFinite(max) && max > 0 ? max : undefined,
     q: first(sp.q)?.slice(0, 80),
   }
@@ -24,6 +26,8 @@ export function parseListParams(sp: RawSearchParams) {
   if (parsed.sort !== 'recommended') keep.sort = parsed.sort
   if (parsed.concern) keep.concern = parsed.concern
   if (parsed.tag) keep.tag = parsed.tag
+  if (parsed.recipient) keep.recipient = parsed.recipient
+  if (parsed.occasion) keep.occasion = parsed.occasion
   if (parsed.maxPrice) keep.max = String(parsed.maxPrice)
   if (parsed.q) keep.q = parsed.q
   return { ...parsed, keep }

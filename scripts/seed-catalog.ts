@@ -10,7 +10,7 @@ import path from 'path'
 import { getPayload, type Payload } from 'payload'
 
 import config from '../src/payload.config'
-import { categories as navCategories, concerns as navConcerns } from '../src/config/navigation'
+import { categories as navCategories, concerns as navConcerns, occasions as navOccasions, recipients as navRecipients } from '../src/config/navigation'
 
 type SeedVariant = { sku: string; option: string; label: string; price: number; compareAtPrice: number | null; stock: number; image: string }
 type SeedProduct = {
@@ -43,7 +43,7 @@ const concernNames: Record<string, string> = Object.fromEntries(navConcerns.map(
 const titleCase = (s: string) => s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 
 /** Find by a field or create; returns the id. Updates the doc when it already exists. */
-async function upsert(payload: Payload, collection: 'brands' | 'tags' | 'concerns' | 'categories', where: Record<string, unknown>, data: Record<string, unknown>) {
+async function upsert(payload: Payload, collection: 'brands' | 'tags' | 'concerns' | 'categories' | 'recipients' | 'occasions', where: Record<string, unknown>, data: Record<string, unknown>) {
   const found = await payload.find({ collection, where: { slug: { equals: where.slug } }, limit: 1, depth: 0 })
   if (found.docs[0]) {
     const doc = await payload.update({ collection, id: found.docs[0].id, data: data as never, context: ctx })
@@ -66,7 +66,11 @@ async function main() {
   for (const c of new Set([...navConcerns.map((x) => x.slug), ...seed.products.flatMap((p) => p.concerns)])) {
     concernIds.set(c, (await upsert(payload, 'concerns', { slug: c }, { name: concernNames[c] ?? titleCase(c), slug: c, generateSlug: false })) as number)
   }
-  log(`Tags: ${tagIds.size}, concerns: ${concernIds.size}`)
+  const recipientIds = new Map<string, number>()
+  for (const r of navRecipients) recipientIds.set(r.slug, (await upsert(payload, 'recipients', { slug: r.slug }, { name: r.label, slug: r.slug, generateSlug: false })) as number)
+  const occasionIds = new Map<string, number>()
+  for (const o of navOccasions) occasionIds.set(o.slug, (await upsert(payload, 'occasions', { slug: o.slug }, { name: o.label, slug: o.slug, generateSlug: false })) as number)
+  log(`Tags: ${tagIds.size}, concerns: ${concernIds.size}, recipients: ${recipientIds.size}, occasions: ${occasionIds.size}`)
 
   // ---------- Brands ----------
   const brandIds = new Map<string, number>()
@@ -139,6 +143,12 @@ async function main() {
         image: mediaIds.get(path.basename(v.image)),
       })),
       badge: p.badge,
+      productType: 'beauty' as const,
+      // Gifting signals for the obvious beauty gifts (lips, polishes, sets); the store team refines the rest
+      recipients: (p.category === 'lips' || p.tags.includes('gift') ? ['for-her'] : []).map((r) => recipientIds.get(r)).filter(Boolean),
+      occasions: (p.tags.includes('gift') ? ['birthday', 'thank-you', 'mothers-day'] : p.category === 'lips' ? ['valentines'] : [])
+        .map((o) => occasionIds.get(o))
+        .filter(Boolean),
       tags: p.tags.map((t) => tagIds.get(t)).filter(Boolean),
       concerns: p.concerns.map((c) => concernIds.get(c)).filter(Boolean),
       priceTBC: true,
@@ -162,7 +172,7 @@ async function main() {
   const idOf = async (slug: string) => (await payload.find({ collection: 'products', where: { slug: { equals: slug } }, limit: 1, depth: 0 })).docs[0]?.id
   const hero = (
     await Promise.all(
-      ['anua-peach-70-niacin-serum', 'mielle-rosemary-mint-scalp-hair-oil', 'lrp-anthelios-ultra-fluid-spf50', 'cosrx-advanced-snail-96-mucin-essence'].map(idOf),
+      ['demo-velvet-jasmine-edp', 'anua-peach-70-niacin-serum', 'demo-cloud-runner-sneakers', 'demo-ceylon-tea-treats-hamper'].map(idOf),
     )
   ).filter(Boolean)
   await payload.updateGlobal({
@@ -173,6 +183,19 @@ async function main() {
       rails: [
         { eyebrow: 'Today only', title: 'Deals of the day', linkLabel: 'All offers', source: 'sale', limit: 12, style: 'plain', placement: 'top', countdown: true },
         {
+          eyebrow: 'Ready to give',
+          title: 'Gifts they’ll love',
+          description: 'Hampers, gift boxes and treats, wrapped and delivered island-wide.',
+          linkLabel: 'Shop gifts',
+          source: 'category',
+          category: catIds.get('gifts'),
+          limit: 12,
+          style: 'cream',
+          placement: 'top',
+        },
+        { eyebrow: 'Signature scents', title: 'Fragrances for every mood', linkLabel: 'Shop fragrances', source: 'category', category: catIds.get('fragrances'), limit: 12, style: 'lilac', placement: 'bottom' },
+        { eyebrow: 'Step out in style', title: 'Footwear favourites', linkLabel: 'Shop footwear', source: 'category', category: catIds.get('footwear'), limit: 12, style: 'plain', placement: 'bottom' },
+        {
           eyebrow: 'Seoul to Colombo',
           title: 'Trending in K-Beauty',
           description: 'Centella, snail mucin and niacinamide heroes from SKIN1004, Medicube, Anua and COSRX.',
@@ -181,9 +204,9 @@ async function main() {
           tag: tagIds.get('k-beauty'),
           limit: 12,
           style: 'blush',
-          placement: 'top',
+          placement: 'bottom',
         },
-        { eyebrow: 'Little luxuries', title: 'Under Rs 2,999', linkLabel: 'See more', source: 'under', maxPrice: 2999, limit: 12, style: 'cream', placement: 'bottom' },
+        { eyebrow: 'Sweet treats', title: 'Chocolates & treats', linkLabel: 'Shop chocolates', source: 'category', category: catIds.get('chocolates'), limit: 12, style: 'cream', placement: 'bottom' },
         { eyebrow: 'Just landed', title: 'New arrivals', linkLabel: 'View all', source: 'new', limit: 12, style: 'plain', placement: 'bottom' },
       ],
     } as never,

@@ -18,7 +18,6 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { Badge, badgeLabel } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { VariantPill } from '@/components/ui/Chip'
 import { InstalmentLine, Price } from '@/components/ui/Price'
 import { Rating } from '@/components/ui/Rating'
 import { site } from '@/config/site'
@@ -29,6 +28,7 @@ import { cn } from '@/lib/utils/cn'
 
 import { categoryTint } from './ProductCard'
 import { ProductGallery, type GalleryImage } from './ProductGallery'
+import { VariantSelector } from './VariantSelector'
 
 type Props = { product: ProductDetail; details?: ReactNode }
 
@@ -60,7 +60,7 @@ export function ProductView({ product, details }: Props) {
     for (const v of product.variants) {
       if (!v.image || seen.has(v.image)) continue
       seen.add(v.image)
-      list.push({ src: v.image, large: v.imageLarge || v.image, alt: `${product.brand} ${product.name}${multi ? ` (${v.label})` : ''}` })
+      list.push({ src: v.image, large: v.imageLarge || v.image, alt: `${product.brand} ${product.name}${multi ? ` (${v.option2 ?? v.label})` : ''}` })
     }
     for (const g of product.gallery) list.push({ src: g.image, large: g.imageLarge, alt: g.alt || `${product.brand} ${product.name}` })
     return list
@@ -126,6 +126,11 @@ export function ProductView({ product, details }: Props) {
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">
+              {product.isDemo && (
+                <Badge tone="outline" title="Sample product for design and testing">
+                  Sample product
+                </Badge>
+              )}
               {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
               {saving > 0 && <Badge tone="sale">Save {formatLKR(saving)}</Badge>}
             </div>
@@ -150,30 +155,23 @@ export function ProductView({ product, details }: Props) {
 
           {product.shortDescription && <p className="text-ink-700">{product.shortDescription}</p>}
 
-          {multi && (
-            <fieldset>
-              <legend className="mb-2.5 text-sm font-semibold">
-                {variant.option}: <span className="font-normal text-ink-600">{variant.label}</span>
-              </legend>
-              <div role="radiogroup" aria-label={variant.option} className="flex flex-wrap gap-2">
-                {product.variants.map((v) => (
-                  <VariantPill key={v.sku} selected={v.sku === variant.sku} disabled={v.stock <= 0} onClick={() => choose(v.sku)}>
-                    <span className="flex items-center gap-2">
-                      {v.image && v.option !== 'Size' && v.option !== 'Pack' && (
-                        <span className="relative size-7 shrink-0 overflow-hidden rounded bg-white">
-                          <Image src={v.image} alt="" fill sizes="28px" className="object-contain" />
-                        </span>
-                      )}
-                      <span>
-                        {v.label}
-                        {v.price !== variant.price && <span className="ml-1.5 text-xs opacity-75">{formatLKR(v.price)}</span>}
-                      </span>
-                    </span>
-                  </VariantPill>
-                ))}
-              </div>
-            </fieldset>
+          {(product.recipientLabels.length > 0 || product.occasionLabels.length > 0) && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="mr-1 text-sm font-semibold">Perfect for</span>
+              {product.recipientLabels.map((r) => (
+                <Link key={r.slug} href={`/gifts?recipient=${r.slug}`} className="inline-flex h-8 items-center rounded-full bg-tint-gifts px-3 text-sm font-medium text-ink-800 hover:bg-sunset-100">
+                  {r.name}
+                </Link>
+              ))}
+              {product.occasionLabels.slice(0, 4).map((o) => (
+                <Link key={o.slug} href={`/gifts?occasion=${o.slug}`} className="inline-flex h-8 items-center rounded-full border border-line-strong px-3 text-sm font-medium hover:border-ink-900">
+                  {o.name}
+                </Link>
+              ))}
+            </div>
           )}
+
+          <VariantSelector variants={product.variants} selected={variant} onSelect={(v) => choose(v.sku)} />
 
           {/* Stock status */}
           <p
@@ -268,7 +266,7 @@ export function ProductView({ product, details }: Props) {
                 <span className="block truncate text-sm font-semibold">{product.name}</span>
                 <span className="block truncate text-sm font-bold tabular-nums">
                   {formatLKR(variant.price)}
-                  {multi && <span className="ml-1.5 font-normal text-ink-500">· {variant.label}</span>}
+                  {multi && <span className="ml-1.5 font-normal text-ink-500">· {[variant.option2, variant.label].filter(Boolean).join(' · ')}</span>}
                 </span>
               </span>
               <Button size="md" onClick={(e) => add(e.currentTarget)} disabled={soldOut} className="shrink-0">

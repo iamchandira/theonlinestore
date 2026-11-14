@@ -29,6 +29,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: `/p/${product.slug}` },
+    // Demo/sample products are never indexed
+    robots: product.isDemo ? { index: false, follow: false } : undefined,
     openGraph: { type: 'website', title, description, images: image ? [{ url: abs(image) }] : undefined },
   }
 }
