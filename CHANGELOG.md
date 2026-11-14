@@ -2,6 +2,10 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.2.1] - 2026-11-15
+### Fixed
+- WhatsApp button rendered as an oval on tablet and desktop: the hidden "Chat with us" label still reserved a gap. It is now a 56 px circle, and the label is a tooltip bubble that doesn't change its shape.
+
 ## [0.2.0] - 2026-11-15 · Sprint 1: Catalogue live
 ### Added
 - **Catalogue in Payload:**
