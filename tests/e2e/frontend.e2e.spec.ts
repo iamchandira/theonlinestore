@@ -1,6 +1,19 @@
 import { expect, test } from '@playwright/test'
 
 test.describe('Storefront', () => {
+  test('smooth scrolling is on for desktop and off for reduced motion', async ({ browser }) => {
+    const desktop = await browser.newPage()
+    await desktop.goto('http://localhost:3000')
+    await expect(desktop.locator('html')).toHaveClass(/\blenis\b/)
+    await desktop.close()
+    const ctx = await browser.newContext({ reducedMotion: 'reduce' })
+    const reduced = await ctx.newPage()
+    await reduced.goto('http://localhost:3000')
+    await reduced.waitForTimeout(500)
+    await expect(reduced.locator('html')).not.toHaveClass(/\blenis\b/)
+    await ctx.close()
+  })
+
   test('home page renders the brand shell and hero', async ({ page }) => {
     await page.goto('http://localhost:3000')
     await expect(page).toHaveTitle(/The Online Store/)
@@ -36,8 +49,14 @@ test.describe('Header scroll stability (regression: Sprint 0 page-jump bug)', ()
         await page.waitForTimeout(40)
         await sample()
       }
-      await page.waitForTimeout(300)
-      const settled = await sample()
+      // Smooth scrolling (Lenis) glides for a moment: wait until the page has come to rest
+      let settled = await sample()
+      for (let i = 0; i < 40; i++) {
+        await page.waitForTimeout(100)
+        const y = await sample()
+        if (Math.abs(y - settled) < 1) break
+        settled = y
+      }
       await page.waitForTimeout(800)
       const later = await sample()
       // The page must stay where the user scrolled it, and the header must never change its layout height

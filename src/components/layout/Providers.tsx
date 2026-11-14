@@ -4,12 +4,14 @@ import { MotionConfig } from 'motion/react'
 import type { ReactNode } from 'react'
 import { Toaster } from 'sonner'
 
+import { SmoothScroll } from '@/lib/motion/SmoothScroll'
 import { ShopProvider } from '@/lib/store/shop'
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
     // reducedMotion="user": Framer skips transform/layout animations when the OS asks for less motion
     <MotionConfig reducedMotion="user">
+      <SmoothScroll />
       <ShopProvider>
         {children}
         <Toaster

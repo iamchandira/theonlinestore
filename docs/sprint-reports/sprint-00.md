@@ -54,6 +54,8 @@ Set up the project, create the brand and UX system, build an animated storefront
 
 **Card polish (v0.1.2):** product card action buttons were re-aligned to one shared inset, with a centered desktop Quick add bar and matching 36 px touch buttons. See CHANGELOG.
 
+**Smooth scrolling (v0.1.3):** Lenis added on desktop (native on touch, off for reduced motion), synced with GSAP. While testing it we found and fixed a dev-mode double-effect that snapped the page to the top right after load.
+
 **Lesson, added to the motion rules:** never animate or toggle the *layout* size of sticky or fixed UI in response to scroll. Use transforms, opacity or shadows.
 
 ## Known issues and follow-ups

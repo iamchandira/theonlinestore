@@ -2,6 +2,18 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.1.3] - 2026-11-15 · Smooth scrolling
+### Added
+- **Butter-smooth scrolling with Lenis 1.3** (`src/lib/motion/SmoothScroll.tsx`), driven by GSAP's ticker so ScrollTrigger effects (hero parallax, marquees) stay in sync with the scroll. A 600 px wheel tick now eases in over about 0.7 s instead of jumping.
+  - Desktop wheel and trackpad only. Phones and tablets keep native momentum scrolling.
+  - Off for `prefers-reduced-motion`.
+  - Page is locked while drawers or sheets are open (`lockScroll` / `unlockScroll`).
+  - Panels scroll on their own (`data-lenis-prevent`, `allowNestedScroll`). In-page anchors glide and clear the sticky header.
+  - New pages start at the top. Reload and back/forward keep the browser's scroll restoration.
+- Playwright test: smooth scrolling is on for desktop and off for reduced motion. The header-stability test now waits for the glide to settle.
+### Changed
+- Removed CSS `scroll-behavior: smooth` (two smoothers fight each other) and added the Lenis base styles.
+
 ## [0.1.2] - 2026-11-15 · Product card polish
 ### Fixed
 - **Product card action buttons: margins, padding and alignment.**

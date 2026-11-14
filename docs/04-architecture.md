@@ -9,7 +9,7 @@ Version 1.0 · Sprint 0. This document is updated whenever the data model or int
 | CMS / backend | Payload CMS | 3.93 | Admin UI, REST/GraphQL/Local API, auth, access control, hooks, jobs |
 | Database | PostgreSQL (via `@payloadcms/db-postgres` / Drizzle) | 16 | Local: Docker on port **5434** |
 | Styling | Tailwind CSS v4 (CSS-first `@theme` tokens) | 4.3 | Scoped to the `(frontend)` route group |
-| Motion | GSAP + ScrollTrigger (`@gsap/react`), Motion (Framer Motion) | 3.15 / 14 | GSAP for timelines and scroll, Motion for UI state |
+| Motion | GSAP + ScrollTrigger (`@gsap/react`), Motion (Framer Motion), Lenis | 3.15 / 14 / 1.3 | GSAP for timelines and scroll, Motion for UI state, Lenis for smooth wheel scrolling (on GSAP's ticker) |
 | Icons | Tabler Icons (`@tabler/icons-react`) | 3.51 | Lucide is not used, per your requirement |
 | UI utils | class-variance-authority, clsx, tailwind-merge, Embla Carousel, Sonner (toasts) | | |
 | Images | `next/image` (AVIF/WebP) + `sharp` (Payload image sizes) | | |

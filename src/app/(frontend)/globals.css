@@ -4,6 +4,8 @@
    Every text/background pair used in components meets WCAG 2.2 AA (see scripts/check-contrast.ts).
    ========================================================================== */
 @import 'tailwindcss';
+/* Lenis smooth-scroll base styles (html.lenis, stopped state, nested scroll areas) */
+@import 'lenis/dist/lenis.css';
 
 @theme {
   /* ---------- Typography ---------- */
@@ -173,7 +175,7 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
-    scroll-behavior: smooth;
+    /* No CSS scroll-behavior: smooth. Lenis handles smooth scrolling (two smoothers fight each other). */
     text-rendering: optimizeLegibility;
   }
   body {
@@ -211,9 +213,6 @@
 
 /* Respect reduced-motion preferences globally (GSAP and Framer are guarded in code too) */
 @media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;

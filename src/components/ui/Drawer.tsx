@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 
+import { lockScroll, unlockScroll } from '@/lib/motion/SmoothScroll'
 import { backdrop, drawerRight, sheetUp } from '@/lib/motion/variants'
 import { cn } from '@/lib/utils/cn'
 
@@ -46,6 +47,7 @@ export function Drawer({ open, onClose, title, side = 'right', children, footer,
     returnFocus.current = document.activeElement as HTMLElement
     const { overflow } = document.body.style
     document.body.style.overflow = 'hidden'
+    lockScroll()
     const t = window.setTimeout(() => panelRef.current?.focus(), 30)
 
     const onKey = (e: KeyboardEvent) => {
@@ -70,6 +72,7 @@ export function Drawer({ open, onClose, title, side = 'right', children, footer,
     return () => {
       window.clearTimeout(t)
       document.body.style.overflow = overflow
+      unlockScroll()
       document.removeEventListener('keydown', onKey)
       returnFocus.current?.focus?.()
     }
@@ -123,7 +126,9 @@ export function Drawer({ open, onClose, title, side = 'right', children, footer,
               </h2>
               <IconButton label="Close" icon={<IconX size={22} />} onClick={onClose} className="-mr-2" />
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+            <div data-lenis-prevent className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+              {children}
+            </div>
             {footer && <div className="shrink-0 border-t border-line bg-surface px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">{footer}</div>}
           </motion.div>
         </div>

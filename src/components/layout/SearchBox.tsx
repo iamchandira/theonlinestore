@@ -131,7 +131,7 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
             exit="exit"
             className="absolute inset-x-0 top-[calc(100%+8px)] z-[70] overflow-hidden rounded-xl border border-line bg-surface shadow-lift"
           >
-            <div id={listId} role="listbox" aria-label="Search suggestions" className="max-h-[70dvh] overflow-y-auto p-2">
+            <div id={listId} role="listbox" aria-label="Search suggestions" data-lenis-prevent className="max-h-[70dvh] overflow-y-auto overscroll-contain p-2">
               {!hasQuery || (results.length === 0 && brandHits.length === 0 && catHits.length === 0) ? (
                 <div className="p-3">
                   {hasQuery && (

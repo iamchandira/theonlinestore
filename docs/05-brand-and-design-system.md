@@ -126,6 +126,13 @@ All fonts load through `next/font` (self-hosted, `display: swap`, no layout shif
 | Stable | Only transform and opacity are animated (no layout shift). CLS stays under 0.1. **Never change the layout size of sticky or fixed UI in response to scroll** (it causes a scroll-anchoring feedback loop where the page jumps). Use transform, opacity or shadow instead. |
 | Respectful | `prefers-reduced-motion`: CSS durations collapse, Framer runs with `reducedMotion="user"`, GSAP intros and marquees are skipped. The hero intro is also skipped when the page loads in a background tab. |
 
+**Smooth scrolling (Lenis):**
+- Desktop wheel and trackpad glide with `lerp 0.1`. Touch devices keep native momentum. Off for reduced motion.
+- Lenis runs on GSAP's ticker, so ScrollTrigger effects move in lockstep with the scroll.
+- Any custom scrollable panel needs `data-lenis-prevent`.
+- Any modal must call `lockScroll()` / `unlockScroll()` (the shared `Drawer` already does).
+- Use `scrollToTarget()` for programmatic scrolling.
+
 **Which library does what:**
 - **GSAP** (`src/lib/motion/gsap.ts`): the hero intro timeline, idle float, ScrollTrigger parallax, announcement and brand marquees.
 - **Framer Motion** (`src/lib/motion/variants.ts`, `Reveal`):
