@@ -28,8 +28,14 @@ import { SearchBox } from './SearchBox'
 /**
  * Sticky header.
  *  - Row 1: logo · always-visible search · account / wishlist / bag (with running total)
- *  - Row 2 (desktop): category nav with mega-menus; hides while scrolling down, returns on scroll up
+ *  - Row 2 (desktop): category nav with mega-menus; slides away while scrolling down, returns on scroll up
  *  - Mobile: menu · logo · bag, then full-width search
+ *
+ * IMPORTANT: the header's layout height never changes while scrolling. Hiding the category row or shrinking
+ * the bar by changing height/padding made the browser's scroll anchoring shift scrollY, which flipped the
+ * scroll direction and toggled the header back: a feedback loop that made the page jump (Sprint 0 bug).
+ * The category row is therefore absolutely positioned and moved with transforms only, and an in-flow spacer
+ * reserves its space at the top of the page.
  */
 export function Header() {
   const { itemCount, subtotal, wishlist, setCartOpen, cartIconRef, addPulse } = useShop()
@@ -38,13 +44,18 @@ export function Header() {
   const [compact, setCompact] = useState(false)
   const [navHidden, setNavHidden] = useState(false)
   const closeTimer = useRef<number | undefined>(undefined)
+  const lastY = useRef(0)
   const { scrollY } = useScroll()
 
   useMotionValueEvent(scrollY, 'change', (y) => {
-    const prev = scrollY.getPrevious() ?? 0
-    setCompact(y > 24)
-    setNavHidden(y > 180 && y > prev)
-    if (y > prev && mega) setMega(null)
+    setCompact(y > 8)
+    const delta = y - lastY.current
+    // Hysteresis: ignore tiny movements (trackpad noise, momentum settle) so the row never flickers
+    if (Math.abs(delta) < 12) return
+    lastY.current = y
+    const goingDown = delta > 0
+    setNavHidden(goingDown && y > 160)
+    if (goingDown && mega) setMega(null)
   })
 
   useEffect(() => () => window.clearTimeout(closeTimer.current), [])
@@ -62,19 +73,21 @@ export function Header() {
     <>
       <header
         className={cn(
-          'sticky top-0 z-[60] border-b bg-surface/90 backdrop-blur-xl transition-[border-color,box-shadow] duration-300 supports-[backdrop-filter]:bg-surface/80',
-          compact ? 'border-line shadow-soft' : 'border-transparent',
+          'sticky top-0 z-[60] transition-shadow duration-300',
+          compact && (navHidden ? 'shadow-soft' : 'max-lg:shadow-soft'),
         )}
         onKeyDown={(e) => e.key === 'Escape' && setMega(null)}
       >
         <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-[100] focus:rounded-full focus:bg-ink-900 focus:px-4 focus:py-2 focus:text-white">
           Skip to content
         </a>
-        <div className={cn('container-site flex items-center gap-3 transition-[padding] duration-300 lg:gap-8', compact ? 'py-2' : 'py-3 lg:py-4')}>
+        {/* Top bar sits above the sliding category row (z-10) and has an opaque background so the row hides beneath it */}
+        <div className="relative z-10 border-b border-line bg-surface/95 backdrop-blur-xl supports-[backdrop-filter]:bg-surface/85">
+        <div className="container-site flex items-center gap-3 py-3 lg:gap-8">
           <button type="button" aria-label="Open menu" onClick={() => setMenuOpen(true)} className="-ml-2 grid size-11 place-items-center rounded-full hover:bg-ink-50 lg:hidden">
             <IconMenu2 size={24} />
           </button>
-          <Logo priority className={cn('transition-[height] duration-300', compact ? 'h-9 lg:h-10' : 'h-9 lg:h-12')} />
+          <Logo priority className="h-9 lg:h-11" />
 
           <SearchBox className="hidden max-w-2xl flex-1 md:block" />
 
@@ -118,15 +131,21 @@ export function Header() {
         <div className="container-site pb-3 md:hidden">
           <SearchBox />
         </div>
+        </div>
 
-        {/* Desktop category nav */}
+        {/* Desktop category nav: out of flow, slides with transform only (no layout shift) */}
         <motion.div
           initial={false}
-          animate={{ height: navHidden ? 0 : 'auto', opacity: navHidden ? 0 : 1 }}
-          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-          className="hidden overflow-hidden lg:block"
+          animate={{ y: navHidden ? '-100%' : '0%', opacity: navHidden ? 0 : 1 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          aria-hidden={navHidden || undefined}
+          inert={navHidden || undefined}
+          className={cn(
+            'absolute inset-x-0 top-full hidden border-b border-line bg-surface/95 backdrop-blur-xl lg:block supports-[backdrop-filter]:bg-surface/85',
+            compact && !navHidden && 'shadow-soft',
+          )}
         >
-          <div className="container-site flex items-center justify-between border-t border-line">
+          <div className="container-site flex items-center justify-between">
             <nav aria-label="Shop categories">
               <ul className="flex items-center gap-1" onMouseLeave={scheduleClose}>
                 {primaryNav.map((item) => (
@@ -163,16 +182,17 @@ export function Header() {
               Island-wide delivery in <strong className="font-semibold text-ink-900">{site.deliveryEstimate}</strong>
             </p>
           </div>
+          <AnimatePresence>
+            {mega && (
+              <div className="absolute inset-x-0 top-full" onMouseEnter={() => openMega(mega)} onMouseLeave={scheduleClose}>
+                {mega === 'beauty' ? <BeautyMega onNavigate={() => setMega(null)} /> : <BrandsMega onNavigate={() => setMega(null)} />}
+              </div>
+            )}
+          </AnimatePresence>
         </motion.div>
-
-        <AnimatePresence>
-          {mega && (
-            <div className="absolute inset-x-0 top-full hidden lg:block" onMouseEnter={() => openMega(mega)} onMouseLeave={scheduleClose}>
-              {mega === 'beauty' ? <BeautyMega onNavigate={() => setMega(null)} /> : <BrandsMega onNavigate={() => setMega(null)} />}
-            </div>
-          )}
-        </AnimatePresence>
       </header>
+      {/* Reserves the category row's height at the top of the page (the row itself is absolutely positioned) */}
+      <div aria-hidden className="hidden h-12 lg:block" />
 
       <MobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </>

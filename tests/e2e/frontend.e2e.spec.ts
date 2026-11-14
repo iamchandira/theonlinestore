@@ -15,3 +15,35 @@ test.describe('Storefront', () => {
     await expect(page.getByRole('dialog')).toContainText('Your bag')
   })
 })
+
+test.describe('Header scroll stability (regression: Sprint 0 page-jump bug)', () => {
+  for (const viewport of [
+    { width: 1280, height: 720 },
+    { width: 390, height: 844 },
+  ]) {
+    test(`page does not drift or jump after scrolling at ${viewport.width}px`, async ({ page }) => {
+      await page.setViewportSize(viewport)
+      await page.goto('http://localhost:3000')
+      await page.mouse.move(viewport.width / 2, 400)
+      const headerHeights = new Set<number>()
+      const sample = async () => {
+        const [y, h] = await page.evaluate(() => [scrollY, document.querySelector('header')!.getBoundingClientRect().height])
+        headerHeights.add(Math.round(h))
+        return y
+      }
+      for (let i = 0; i < 20; i++) {
+        await page.mouse.wheel(0, 60)
+        await page.waitForTimeout(40)
+        await sample()
+      }
+      await page.waitForTimeout(300)
+      const settled = await sample()
+      await page.waitForTimeout(800)
+      const later = await sample()
+      // The page must stay where the user scrolled it, and the header must never change its layout height
+      expect(Math.abs(later - settled)).toBeLessThanOrEqual(1)
+      expect(settled).toBeGreaterThan(1000)
+      expect(headerHeights.size).toBe(1)
+    })
+  }
+})

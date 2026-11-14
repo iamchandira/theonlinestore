@@ -123,7 +123,7 @@ All fonts load through `next/font` (self-hosted, `display: swap`, no layout shif
 | Purposeful | Motion explains a change: something appears, moves to the bag, or confirms an action. It is never decoration that delays the shopper. |
 | Fast | Micro-interactions 150–250 ms. Entrances 400–700 ms. Ease-out `cubic-bezier(.22,1,.36,1)`. |
 | Non-blocking | Content is never hidden behind an animation the shopper must wait for. Inputs work during animations. |
-| Stable | Only transform and opacity are animated (no layout shift). CLS stays under 0.1. |
+| Stable | Only transform and opacity are animated (no layout shift). CLS stays under 0.1. **Never change the layout size of sticky or fixed UI in response to scroll** (it causes a scroll-anchoring feedback loop where the page jumps). Use transform, opacity or shadow instead. |
 | Respectful | `prefers-reduced-motion`: CSS durations collapse, Framer runs with `reducedMotion="user"`, GSAP intros and marquees are skipped. The hero intro is also skipped when the page loads in a background tab. |
 
 **Which library does what:**
