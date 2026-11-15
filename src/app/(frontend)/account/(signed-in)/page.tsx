@@ -4,14 +4,18 @@ import Link from 'next/link'
 import { FormAlert } from '@/components/account/Form'
 import { WishlistCount } from '@/components/account/WishlistCount'
 import { requireUser } from '@/lib/auth/server'
+import { getPayloadClient } from '@/lib/catalog/server'
 
 /** Account overview: one card per area, each with the most useful fact. */
 export default async function AccountOverview({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const user = await requireUser('/account')
   const sp = await searchParams
   const def = user.addresses?.find((a) => a.isDefault) ?? user.addresses?.[0]
+  const payload = await getPayloadClient()
+  const orders = await payload.find({ collection: 'orders', where: { customer: { equals: user.id } }, sort: '-createdAt', limit: 1, depth: 0, overrideAccess: true })
+  const last = orders.docs[0]
   const cards = [
-    { href: '/account/orders', icon: IconPackage, title: 'Orders', text: 'No orders yet. Your orders and tracking will appear here.' },
+    { href: '/account/orders', icon: IconPackage, title: 'Orders', text: last ? `${orders.totalDocs} order${orders.totalDocs === 1 ? '' : 's'} · latest ${last.orderNumber}` : 'No orders yet. Your orders and tracking will appear here.' },
     {
       href: '/account/addresses',
       icon: IconMapPin,

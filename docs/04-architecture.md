@@ -184,6 +184,27 @@ The Payload admin is customised through its component API, without forking Paylo
 
 **Rate limiting:** `lib/server/rateLimit.ts`, in memory, keyed by `clientIp()` (`X-Real-IP`, then the last `X-Forwarded-For` entry).
 
+### Added in Sprint 4 (checkout)
+**Collections and globals:**
+- `orders`: `orderNumber` (`TOS-YYMMDD-XXXX`), `items[]` (product, sku, name, brand, variant, image, unit price, line subtotal, discount, line total: a snapshot, so later price changes never alter an order), `discounts[]`, `totals` (subtotal, discountTotal, delivery incl. any COD fee, giftWrap, total), `contact`, `shippingAddress`, `delivery` (method, zone, eta), `gift`, `customerNote`, `status` (12 values), `paymentMethod`, `paymentStatus`, `customer`, `coupon`, `termsAcceptedAt` + `termsVersion`, `timeline[]`, `staffNotes`, `stockReturned`, `accessToken` (hidden), `clientIp`. Create access is `false` for everyone: only the place endpoint creates orders. Hooks add a timeline entry on each status change and restock once when an order is cancelled.
+- `discounts`: mode (automatic | code), type (percent | fixed | free-shipping | bogo), value, buy/get rules, scope (all, products, categories incl. children, brands), minSpend, maxDiscount, excludeSaleItems, combinable, priority, dates, usage limits (total, per customer), firstOrderOnly, usedCount. A virtual `offer` field gives the list a plain-language summary.
+- `checkout-settings` global: free-delivery threshold, included weight and per-kg fee, zones (districts → fee + ETA), fallback fee, same-day (fee, cut-off hour, districts), COD (maximum, fee), bank transfer (instructions, hold hours), gift wrap fee, terms version.
+- `users.cart` (json): the signed-in bag. `POST /api/users/cart` merges (keeping the larger quantity) or replaces it, re-priced through `loadLines`.
+
+**Pricing:** `lib/checkout/pricing.ts` is a pure function, `quote()`, with no database access, so it is fully unit-tested (27 scenarios). Order: line subtotals → automatic promotions by priority → one coupon (the better of coupon vs promotions when not combinable) → delivery (zone fee + weight surcharge; free above the threshold *after* discounts or with a free-delivery code; same-day is a flat fee and never free) → gift wrap. Discounts are allocated to lines and rounded to the rupee per line.
+
+**Server side:** `lib/checkout/server.ts` loads settings, lines (clamped to stock, 300 g default weight), automatic promotions and the coupon (dates, limits, uses per email, phone or account, first order), then calls `quote()`.
+
+**Placing an order** (`POST /api/orders/place`, `endpoints/checkout.ts`):
+1. Validate the form (Sri Lankan mobile, email, address, district, payment, terms) and return field messages.
+2. Re-quote. Refuse (409) if the bag changed, the coupon is invalid, the payment method isn't available, same-day has closed, or the total differs from `expectedTotal` (the total the shopper saw).
+3. In one transaction: `SELECT … FOR UPDATE` on the products, re-quote inside the lock, decrement stock (logged as a `sale` stock movement), add to `salesCount`, create the order, count the coupon use, clear the account bag. Any failure rolls everything back.
+4. After commit: send the confirmation email (never blocks the order) and return the confirmation link with the private token.
+
+The integration test races two shoppers for the last units: exactly one order succeeds and stock never goes below zero.
+
+**Stock history:** `stock-movements.product` is now optional, so deleting a product keeps its history (SKU and variant name stay on each row).
+
 ### Target (Sprints 2–7)
 ```mermaid
 erDiagram

@@ -2,6 +2,25 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.6.0] · 2026-11-15 · Sprint 4: Checkout
+### Added
+- **One-page checkout** (`/checkout`), guest or signed in: contact, address (saved addresses or new, all 25 districts with town suggestions), delivery (standard or same-day in Colombo before noon), payment (cash on delivery or bank transfer; card, Koko and Mintpay marked "coming soon"), gift wrap and message, notes and a coupon box. The summary is sticky on desktop and folds away on phones.
+- **Pricing on the server** (`src/lib/checkout/pricing.ts`): line totals, automatic promotions by priority, one coupon (best of when not combinable), delivery by zone and weight with a free-delivery threshold, gift wrap. Rounded to the rupee per line. 27 tested scenarios.
+- **Discounts** collection (Sales › Discounts): percent, fixed, free delivery and buy-X-get-Y; automatic or by code; date windows, total and per-customer limits, minimum spend, first order only, exclude sale items, scope by products, categories or brands. The list shows a plain-language summary ("Buy 2, get 1 free").
+- **Checkout settings** global (Settings › Checkout & delivery): free-delivery threshold, weight rules, delivery zones by district, same-day fee and cut-off, COD maximum and fee, bank transfer instructions and hold time, gift wrap fee, terms version.
+- **Orders** collection with 12 statuses, a timeline, staff notes, restock once on cancellation, and order numbers like `TOS-261115-J7MT`. Admin Orders screen with today's numbers, status tabs and search; open orders badge in the sidebar; 14-day sales card on the dashboard.
+- `POST /api/orders/quote` and `POST /api/orders/place`: validates every field, re-prices, refuses a changed total, then locks the products, re-checks stock and creates the order in one transaction.
+- **Order confirmed** page and email (Mailpit locally), with bank transfer or COD instructions. Guests can add a password to turn the order into an account (TOS-307); the order links at first sign-in.
+- **Bag sync:** the bag is saved to the account, merged at sign-in (keeping the larger quantity) and emptied after an order. Account › Orders lists orders.
+- Summary policy pages: `/terms`, `/returns`, `/privacy`.
+- Demo codes from `pnpm seed:demo`: WELCOME10, FREEDEL, CHOC3FOR2.
+- Tests: `checkout.int.spec.ts` (14), 4 more RBAC checks, `checkout.e2e.spec.ts` (2).
+
+### Fixed
+- Products with stock history could not be deleted (the history's product link was required, but the database clears it on delete). History is now kept with the SKU and variant.
+- Reopening the admin sidebar before the saved preference loaded was not remembered, and a slow answer closed it again.
+- The WhatsApp button covered the order total on the phone checkout; it is hidden on `/checkout`.
+
 ## [0.5.0] - 2026-11-15 · Sprint 3: Accounts & security
 ### Added
 - **Customer accounts:**

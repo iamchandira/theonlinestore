@@ -67,6 +67,13 @@ const relative = (iso: string) => {
   return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
+/** The last `days` calendar days in Sri Lanka time (YYYY-MM-DD), oldest first. */
+function salesWindow(days: number) {
+  const now = Date.now()
+  const salesDays = Array.from({ length: days }, (_, i) => new Date(now - (days - 1 - i) * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' }))
+  return { since: salesDays[0], salesDays }
+}
+
 /** Store overview dashboard (replaces Payload's default dashboard). */
 export async function Dashboard({ initPageResult }: AdminViewServerProps) {
   const { req } = initPageResult
@@ -95,7 +102,9 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     content: can('marketing'),
   }
 
-  const [all, movements, staff, home, pendingReviews] = await Promise.all([
+  // Sales: the last 14 days (Sri Lanka time), cancelled orders excluded
+  const { since, salesDays } = salesWindow(14)
+  const [all, movements, staff, home, pendingReviews, recentOrders] = await Promise.all([
     payload.find({
       collection: 'products',
       limit: 0,
@@ -118,15 +127,24 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     payload.find({ collection: 'stock-movements', sort: '-createdAt', limit: 8, depth: 1 }),
     payload.count({ collection: 'users', where: { roles: { not_in: ['customer'] } } }),
     payload.findGlobal({ slug: 'home-page', depth: 0 }),
+    payload.find({ collection: 'reviews', where: { status: { equals: 'pending' } }, sort: 'createdAt', limit: 4, depth: 1, overrideAccess: true }),
     payload.find({
-      collection: 'reviews',
-      where: { status: { equals: 'pending' } },
-      sort: 'createdAt',
-      limit: 4,
-      depth: 1,
+      collection: 'orders',
+      where: { and: [{ createdAt: { greater_than_equal: new Date(`${since}T00:00:00+05:30`).toISOString() } }, { status: { not_in: ['cancelled'] } }] },
+      sort: '-createdAt',
+      limit: 0,
+      pagination: false,
+      depth: 0,
       overrideAccess: true,
+      select: { orderNumber: true, totals: true, createdAt: true, status: true, contact: true },
     }),
   ])
+  const dayKey = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' })
+  const byDay = new Map(salesDays.map((d) => [d, 0]))
+  for (const o of recentOrders.docs) byDay.set(dayKey(o.createdAt), (byDay.get(dayKey(o.createdAt)) ?? 0) + (o.totals?.total ?? 0))
+  const revenue14 = [...byDay.values()].reduce((a, b) => a + b, 0)
+  const orders14 = recentOrders.docs.length
+  const maxDay = Math.max(1, ...byDay.values())
 
   const products = all.docs
   const published = products.filter((p) => p._status === 'published')
@@ -346,17 +364,48 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
           {show.sales && (
             <section className="tos-card" aria-labelledby="d-sales">
               <div className="tos-card__head">
-                <h2 id="d-sales">Sales</h2>
-                <span className="tos-pill tos-pill--muted tos-pill--plain">
-                  Arrives with checkout · Sprint 4
-                </span>
+                <h2 id="d-sales">Sales · last 14 days</h2>
+                <Link href="/admin/collections/orders">All orders →</Link>
               </div>
-              <div className="tos-empty">
-                <IconReceipt size={28} />
-                <p style={{ margin: '8px 0 0' }}>
-                  Orders, revenue and average order value will appear here once checkout goes live.
-                </p>
-              </div>
+              {orders14 ? (
+                <div className="tos-card__body tos-stack">
+                  <div className="tos-sales-figures">
+                    <div>
+                      <span className="tos-kpi__label">Revenue</span>
+                      <span className="tos-kpi__value">{LKRc(revenue14)}</span>
+                    </div>
+                    <div>
+                      <span className="tos-kpi__label">Orders</span>
+                      <span className="tos-kpi__value">{orders14}</span>
+                    </div>
+                    <div>
+                      <span className="tos-kpi__label">Average order</span>
+                      <span className="tos-kpi__value">{LKRc(Math.round(revenue14 / orders14))}</span>
+                    </div>
+                  </div>
+                  <div className="tos-daybars" role="img" aria-label={`Daily revenue for the last 14 days, highest ${LKR(maxDay)}`}>
+                    {[...byDay].map(([d, v]) => (
+                      <span key={d} title={`${d}: ${LKR(v)}`} style={{ height: `${Math.max(3, (v / maxDay) * 100)}%`, opacity: v ? 0.9 : 0.25 }} />
+                    ))}
+                  </div>
+                  <ul className="tos-list">
+                    {recentOrders.docs.slice(0, 4).map((o) => (
+                      <li key={o.id}>
+                        <span className="tos-list__main">
+                          <Link href={`/admin/collections/orders/${o.id}`}>{o.orderNumber}</Link>
+                          <small>{o.contact?.fullName}</small>
+                        </span>
+                        <strong style={{ fontVariantNumeric: 'tabular-nums' }}>{LKR(o.totals?.total ?? 0)}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="tos-empty">
+                  <IconReceipt size={28} />
+                  <p style={{ margin: '8px 0 0' }}>No orders in the last 14 days yet. Sales, average order value and recent orders appear here.</p>
+                </div>
+              )}
             </section>
           )}
 

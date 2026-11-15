@@ -311,6 +311,7 @@ async function remove(payload: Payload) {
   }
   const media = await payload.delete({ collection: 'media', where: { filename: { like: 'demo-' } }, context: ctx })
   const brands = await payload.delete({ collection: 'brands', where: { description: { like: 'Demo brand' } }, context: ctx })
+  await payload.delete({ collection: 'discounts', where: { internalNote: { like: 'Demo discount' } }, overrideAccess: true })
   payload.logger.info(`Removed ${products.docs.length} demo products, ${media.docs.length} photos, ${brands.docs.length} demo brands`)
 }
 
@@ -410,6 +411,21 @@ async function main() {
     reviewsAdded += await seedSampleReviews(payload, productId, d, i)
   }
   payload.logger.info(`Sample reviews: ${reviewsAdded} (labelled "Sample review", demo products only)`)
+
+  // Demo discount codes to try checkout (TOS-503). Marked in their internal note; removed with --remove.
+  const chocolates = (await payload.find({ collection: 'categories', where: { slug: { equals: 'chocolates' } }, limit: 1, depth: 0 })).docs[0]
+  const demoCodes = [
+    { name: 'Welcome 10% off', code: 'WELCOME10', type: 'percent', value: 10, maxDiscount: 2000, firstOrderOnly: true, usagePerCustomer: 1 },
+    { name: 'Free delivery over Rs 5,000', code: 'FREEDEL', type: 'free-shipping', minSpend: 5000, usagePerCustomer: 3 },
+    ...(chocolates ? [{ name: 'Chocolates: buy 2, get 1 free', code: 'CHOC3FOR2', type: 'bogo', buyQty: 2, getQty: 1, getPercent: 100, appliesTo: 'categories', categories: [chocolates.id], usagePerCustomer: 5 }] : []),
+  ]
+  for (const d of demoCodes) {
+    const found = await payload.find({ collection: 'discounts', where: { code: { equals: d.code } }, limit: 1, depth: 0 })
+    const data = { appliesTo: 'all', active: true, mode: 'code', combinable: false, internalNote: 'Demo discount (seed:demo). Remove before launch.', ...d } as never
+    if (found.docs[0]) await payload.update({ collection: 'discounts', id: found.docs[0].id, data, overrideAccess: true })
+    else await payload.create({ collection: 'discounts', data, overrideAccess: true })
+  }
+  payload.logger.info(`Demo discount codes: ${demoCodes.map((d) => d.code).join(', ')}`)
   payload.logger.info(`Demo products: ${created} created, ${updated} updated (${DEMOS.length} total)`)
   process.exit(0)
 }

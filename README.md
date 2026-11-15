@@ -22,7 +22,7 @@ pnpm seed:catalog             # import the 88-product seed catalogue into Payloa
 | `pnpm check:contrast` | WCAG AA check of the brand colour pairs |
 | `pnpm test:int` · `pnpm test:e2e` | Vitest integration tests · Playwright end-to-end tests (run e2e against `pnpm build && pnpm start` for reliable results) |
 | `pnpm seed:catalog` | Import / refresh the seed catalogue (products, brands, categories, photos, home rails) |
-| `pnpm seed:demo` | Add 20 clearly-marked demo products for fragrance, footwear, gifts and chocolates (`--remove` deletes them; **remove before launch**) |
+| `pnpm seed:demo` | Add 20 clearly-marked demo products for fragrance, footwear, gifts and chocolates, sample reviews and the demo codes WELCOME10, FREEDEL and CHOC3FOR2 (`--remove` deletes them; **remove before launch**) |
 | `pnpm prune:media` | List unused media (`--apply` deletes them) |
 | `node scripts/screenshots.mjs screenshots /` | Desktop + mobile full-page screenshots for visual QA |
 | `pnpm generate:types` · `pnpm generate:importmap` | Regenerate Payload types and the admin import map |
@@ -33,8 +33,9 @@ pnpm seed:catalog             # import the 88-product seed catalogue into Payloa
 - **Store config:** `src/config/site.ts` (contact, delivery threshold, announcements) and `src/config/navigation.ts` (IA)
 - **Catalogue seed:** `seed/catalogue/products.json` + `public/catalogue/`
 - **Custom admin:** `src/components/admin/` + `src/app/(payload)/custom.scss`
+- **Checkout:** pricing `src/lib/checkout/pricing.ts`, server `src/lib/checkout/server.ts`, endpoints `src/endpoints/checkout.ts`, page `src/components/checkout/`; fees in Admin › Settings › Checkout & delivery
 - **RBAC:** `src/access/roles.ts`
 - **Docs:** [`docs/`](docs/README.md): charter, SRS, backlog, sprint plan, architecture, design system, RBAC, UX
 
 ## Status
-Sprints 0, 1, 1.5, 2 and 3 (accounts and security) are complete. Customer accounts live at `/account`, and local emails appear in Mailpit. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.
+Sprints 0 to 4 are complete (v0.6.0, checkout). Shoppers can check out as guests or signed in, with cash on delivery or bank transfer; orders appear in Admin › Orders and confirmation emails in Mailpit. Online payments (PayHere, Koko, Mintpay) come in Sprint 5. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.

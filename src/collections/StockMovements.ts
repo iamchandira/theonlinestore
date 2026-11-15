@@ -12,8 +12,17 @@ export const StockMovements: CollectionConfig = {
   admin: {
     group: 'Catalogue',
     useAsTitle: 'sku',
-    defaultColumns: ['createdAt', 'product', 'variantLabel', 'change', 'resultingStock', 'reason', 'user'],
-    description: 'Every stock change, who made it and why. Written automatically; adjust stock from Inventory.',
+    defaultColumns: [
+      'createdAt',
+      'product',
+      'variantLabel',
+      'change',
+      'resultingStock',
+      'reason',
+      'user',
+    ],
+    description:
+      'Every stock change, who made it and why. Written automatically; adjust stock from Inventory.',
   },
   access: {
     read: allowRoles('store-manager', 'inventory-manager', 'order-fulfillment', 'support'),
@@ -23,10 +32,24 @@ export const StockMovements: CollectionConfig = {
   },
   defaultSort: '-createdAt',
   fields: [
-    { name: 'product', type: 'relationship', relationTo: 'products', required: true, index: true },
+    {
+      name: 'product',
+      type: 'relationship',
+      relationTo: 'products',
+      index: true,
+      admin: {
+        description:
+          'Empty once the product has been deleted; the SKU and variant keep the history readable.',
+      },
+    },
     { name: 'sku', type: 'text', required: true, index: true },
     { name: 'variantLabel', type: 'text' },
-    { name: 'change', type: 'number', required: true, admin: { description: 'Positive = stock in, negative = stock out' } },
+    {
+      name: 'change',
+      type: 'number',
+      required: true,
+      admin: { description: 'Positive = stock in, negative = stock out' },
+    },
     { name: 'resultingStock', type: 'number', required: true },
     {
       name: 'reason',
@@ -44,6 +67,11 @@ export const StockMovements: CollectionConfig = {
       ],
     },
     { name: 'note', type: 'text' },
-    { name: 'user', type: 'relationship', relationTo: 'users', admin: { description: 'Who made the change (empty = system).' } },
+    {
+      name: 'user',
+      type: 'relationship',
+      relationTo: 'users',
+      admin: { description: 'Who made the change (empty = system).' },
+    },
   ],
 }

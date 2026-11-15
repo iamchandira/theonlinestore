@@ -127,6 +127,19 @@ export function NavClient({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, navOpen])
+  useEffect(() => {
+    // A click on Payload's menu button is always the user's choice: save it straight away, even before the
+    // saved preference has loaded (otherwise a slow answer would close the sidebar they just opened).
+    const onClick = (e: MouseEvent) => {
+      if (!isDesktop() || !(e.target as Element | null)?.closest?.('.template-default__nav-toggler')) return
+      const next = !navOpen
+      navPref.current = next ? 'open' : 'collapsed'
+      void setPreference('nav', { open: next }, true)
+    }
+    document.addEventListener('click', onClick, true)
+    return () => document.removeEventListener('click', onClick, true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navOpen])
 
   // Phones/tablets: the sidebar is a drawer over the page; tapping outside it closes it
   useEffect(() => {

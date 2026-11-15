@@ -13,9 +13,9 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 | E01 | Catalogue, variants & inventory | 10 | 55 | 1 ✅ (TOS-109 done in Sprint 2) |
 | E13 | Lifestyle catalogue & custom admin | 12 | 47 | 1.5 ✅ |
 | E02 | Discovery: search, filters, wishlist, recommendations | 8 | 42 | 2 ✅ (+TOS-109 carried over, done) |
-| E03 | Customer accounts | 7 | 29 | 3 ✅ (TOS-305 history → Sprint 6, TOS-307 → Sprint 4) |
+| E03 | Customer accounts | 7 | 29 | 3 ✅ (TOS-305 history → Sprint 6, TOS-307 done in Sprint 4) |
 | E04 | RBAC & admin security | 4 | 18 | 3 ✅ (TOS-403 2FA → Sprint 10) |
-| E05 | Bag & checkout | 9 | 52 | 4 |
+| E05 | Bag & checkout | 9 | 52 | 4 ✅ |
 | E06 | Payments | 7 | 47 | 5 |
 | E07 | Orders & delivery | 8 | 44 | 6 |
 | E08 | Notifications | 6 | 34 | 7 |
@@ -131,7 +131,7 @@ Added after Sprint 1 at the owner's request: the store is a lifestyle store, not
 | TOS-304 | As a customer, I want an address book with districts and cities. | M | 3 | ✅ |
 | TOS-305 | As a customer, I want to see my order history and reorder in one tap. | M | 5 | 🔄 page ready; history + reorder → Sprint 6 (needs orders) |
 | TOS-306 | As a customer, I want to manage my marketing consent and request account deletion (PDPA). | M | 3 | ✅ (+ download my data) |
-| TOS-307 | As a guest, I want to create an account after checkout using my order details. | S | 5 | ➡️ Sprint 4 (needs an order) |
+| TOS-307 | As a guest, I want to create an account after checkout using my order details. | S | 5 | ✅ Sprint 4 (password on the confirmation page; the order links at first sign-in) |
 
 **AC (TOS-303):**
 - The reset link expires after 1 hour and can be used once.
@@ -150,18 +150,18 @@ Added after Sprint 1 at the owner's request: the store is a lifestyle store, not
 - Automated tests prove that each role can and cannot perform the actions listed in `06-rbac-matrix.md`.
 - Customers get a 403 on /admin.
 
-## E05 · Bag & checkout (Sprint 4)
-| ID | Story | P | Pts |
-|---|---|---|---|
-| TOS-501 | As a shopper, I want my bag saved on the server and synced across devices once I sign in. | M | 5 |
-| TOS-502 | As a shopper, I want a one-page checkout (contact → address → delivery → payment → review) that works as a guest. | M | 13 |
-| TOS-503 | As marketing, I want coupons (%, fixed, free delivery, BOGO) with limits and validity windows. | M | 8 |
-| TOS-504 | As the business, I want a discount engine that applies promotions and coupons in a defined order and shows each discount line. | M | 8 |
-| TOS-505 | As the business, I want delivery fees by district, weight and order value, with a free-delivery threshold. | M | 5 |
-| TOS-506 | As a shopper, I want to add order notes and gift options (wrap, message, hide prices). | M | 3 |
-| TOS-507 | As the business, I want customers to accept the T&C before ordering, with the acceptance recorded. | M | 2 |
-| TOS-508 | As a shopper, I want an order confirmation page and email. | M | 5 |
-| TOS-509 | As a shopper, I want my address auto-filled from my account and the city list filtered by district. | S | 3 |
+## E05 · Bag & checkout (Sprint 4) ✅
+| ID | Story | P | Pts | Status |
+|---|---|---|---|---|
+| TOS-501 | As a shopper, I want my bag saved on the server and synced across devices once I sign in. | M | 5 | ✅ merges at sign-in, re-priced from the server |
+| TOS-502 | As a shopper, I want a one-page checkout (contact → address → delivery → payment → review) that works as a guest. | M | 13 | ✅ |
+| TOS-503 | As marketing, I want coupons (%, fixed, free delivery, BOGO) with limits and validity windows. | M | 8 | ✅ |
+| TOS-504 | As the business, I want a discount engine that applies promotions and coupons in a defined order and shows each discount line. | M | 8 | ✅ 27 pricing scenarios tested |
+| TOS-505 | As the business, I want delivery fees by district, weight and order value, with a free-delivery threshold. | M | 5 | ✅ zones in Checkout settings; same-day for Colombo |
+| TOS-506 | As a shopper, I want to add order notes and gift options (wrap, message, hide prices). | M | 3 | ✅ |
+| TOS-507 | As the business, I want customers to accept the T&C before ordering, with the acceptance recorded. | M | 2 | ✅ time and terms version stored on the order |
+| TOS-508 | As a shopper, I want an order confirmation page and email. | M | 5 | ✅ |
+| TOS-509 | As a shopper, I want my address auto-filled from my account and the city list filtered by district. | S | 3 | ✅ |
 
 **AC (TOS-504):**
 - All totals are calculated on the server. The client never sets prices.
@@ -194,7 +194,7 @@ Added after Sprint 1 at the owner's request: the store is a lifestyle store, not
 ## E07 · Orders & delivery (Sprint 6)
 | ID | Story | P | Pts |
 |---|---|---|---|
-| TOS-701 | As fulfilment staff, I want an order list with filters, search and bulk status changes. | M | 8 |
+| TOS-701 | As fulfilment staff, I want an order list with filters, search and bulk status changes. | M | 8 | (list, status tabs and search shipped early in Sprint 4; bulk changes to come) |
 | TOS-702 | As the business, I want a defined order status lifecycle with timestamps and history. | M | 5 |
 | TOS-703 | As fulfilment staff, I want to print packing slips and invoices (PDF). | M | 5 |
 | TOS-704 | As fulfilment staff, I want to assign a courier and tracking number. | M | 5 |

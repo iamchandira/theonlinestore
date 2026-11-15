@@ -67,6 +67,8 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    orders: Order;
+    discounts: Discount;
     products: Product;
     reviews: Review;
     'review-media': ReviewMedia;
@@ -89,6 +91,8 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
+    orders: OrdersSelect<false> | OrdersSelect<true>;
+    discounts: DiscountsSelect<false> | DiscountsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     'review-media': ReviewMediaSelect<false> | ReviewMediaSelect<true>;
@@ -115,9 +119,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     'home-page': HomePage;
+    'checkout-settings': CheckoutSetting;
   };
   globalsSelect: {
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
+    'checkout-settings': CheckoutSettingsSelect<false> | CheckoutSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -152,6 +158,133 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
+}
+/**
+ * Every order placed at checkout. Totals are calculated by the server and can’t be edited.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  orderNumber: string;
+  items: {
+    product?: (number | null) | Product;
+    sku: string;
+    quantity: number;
+    name: string;
+    brand?: string | null;
+    variant?: string | null;
+    image?: string | null;
+    unitPrice?: number | null;
+    lineSubtotal?: number | null;
+    discount?: number | null;
+    lineTotal?: number | null;
+    id?: string | null;
+  }[];
+  discounts?:
+    | {
+        label?: string | null;
+        code?: string | null;
+        amount?: number | null;
+        discount?: (number | null) | Discount;
+        id?: string | null;
+      }[]
+    | null;
+  totals?: {
+    subtotal?: number | null;
+    discountTotal?: number | null;
+    delivery?: number | null;
+    giftWrap?: number | null;
+    total?: number | null;
+  };
+  contact: {
+    fullName: string;
+    email: string;
+    phone: string;
+  };
+  shippingAddress: {
+    recipientName: string;
+    phone: string;
+    line1: string;
+    line2?: string | null;
+    city: string;
+    district:
+      | 'Colombo'
+      | 'Gampaha'
+      | 'Kalutara'
+      | 'Kandy'
+      | 'Matale'
+      | 'Nuwara Eliya'
+      | 'Galle'
+      | 'Matara'
+      | 'Hambantota'
+      | 'Jaffna'
+      | 'Kilinochchi'
+      | 'Mannar'
+      | 'Vavuniya'
+      | 'Mullaitivu'
+      | 'Batticaloa'
+      | 'Ampara'
+      | 'Trincomalee'
+      | 'Kurunegala'
+      | 'Puttalam'
+      | 'Anuradhapura'
+      | 'Polonnaruwa'
+      | 'Badulla'
+      | 'Monaragala'
+      | 'Ratnapura'
+      | 'Kegalle';
+    postalCode?: string | null;
+    landmark?: string | null;
+  };
+  delivery?: {
+    method?: ('standard' | 'same-day') | null;
+    zone?: string | null;
+    eta?: string | null;
+  };
+  gift?: {
+    wrap?: boolean | null;
+    hidePrices?: boolean | null;
+    message?: string | null;
+  };
+  customerNote?: string | null;
+  timeline?:
+    | {
+        at?: string | null;
+        event?: string | null;
+        by?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Internal only
+   */
+  staffNotes?: string | null;
+  status:
+    | 'pending-payment'
+    | 'processing'
+    | 'packed'
+    | 'shipped'
+    | 'out-for-delivery'
+    | 'delivered'
+    | 'completed'
+    | 'on-hold'
+    | 'cancelled'
+    | 'refunded'
+    | 'returned'
+    | 'failed-delivery';
+  paymentMethod: 'cod' | 'bank-transfer';
+  paymentStatus: 'unpaid' | 'paid' | 'refunded';
+  customer?: (number | null) | User;
+  coupon?: (number | null) | Discount;
+  termsAcceptedAt?: string | null;
+  termsVersion?: string | null;
+  stockReturned?: boolean | null;
+  accessToken?: string | null;
+  clientIp?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Prices are in LKR. A product flagged "Price to be confirmed" shows a warning until its prices are checked.
@@ -557,90 +690,83 @@ export interface Concern {
   createdAt: string;
 }
 /**
- * Shopper reviews. New reviews wait for approval before they appear on the store.
+ * Coupon codes and automatic promotions. Every discount shows as its own line at checkout.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "reviews".
+ * via the `definition` "discounts".
  */
-export interface Review {
+export interface Discount {
   id: number;
-  product: number | Product;
   /**
-   * 1 to 5 stars
+   * Summary of this discount.
    */
-  rating: number;
-  title?: string | null;
-  body: string;
-  photos?: (number | ReviewMedia)[] | null;
+  offer?: string | null;
   /**
-   * Shown under the review as "Reply from The Online Store".
+   * Shown to shoppers on the discount line, e.g. “Avurudu 10% off”.
    */
-  reply?: string | null;
-  authorName: string;
+  name: string;
+  mode: 'code' | 'automatic';
   /**
-   * Never shown on the store.
+   * What shoppers type. Saved in capitals.
    */
-  authorEmail?: string | null;
-  status: 'pending' | 'approved' | 'rejected';
+  code?: string | null;
+  type: 'percent' | 'fixed' | 'free-shipping' | 'bogo';
   /**
-   * Bought this product from us. Set from orders once checkout launches (Sprint 6).
+   * Percent (1–100) or rupees
    */
-  verifiedBuyer?: boolean | null;
-  helpfulCount?: number | null;
-  user?: (number | null) | User;
+  value?: number | null;
   /**
-   * Illustrative review on a demo product. Removed with the demo products.
+   * Optional maximum saving
    */
-  isSample?: boolean | null;
+  maxDiscount?: number | null;
+  buyQty?: number | null;
+  getQty?: number | null;
   /**
-   * Internal note (why it was rejected, etc.).
+   * 100 = free
    */
-  moderationNote?: string | null;
+  getPercent?: number | null;
+  appliesTo: 'all' | 'products' | 'categories' | 'brands';
+  products?: (number | Product)[] | null;
+  /**
+   * Includes sub-categories
+   */
+  categories?: (number | Category)[] | null;
+  brands?: (number | Brand)[] | null;
+  /**
+   * Don’t discount items already on sale.
+   */
+  excludeSaleItems?: boolean | null;
+  minSpend?: number | null;
+  /**
+   * Only for customers who haven’t ordered before
+   */
+  firstOrderOnly?: boolean | null;
+  /**
+   * Leave empty for unlimited
+   */
+  usageLimit?: number | null;
+  /**
+   * Counted by email and phone
+   */
+  usagePerCustomer?: number | null;
+  combinable?: boolean | null;
+  /**
+   * Lower runs first
+   */
+  priority?: number | null;
+  active?: boolean | null;
+  startsAt?: string | null;
+  /**
+   * Optional end date and time
+   */
+  endsAt?: string | null;
+  /**
+   * Orders that used it
+   */
+  usedCount?: number | null;
+  internalNote?: string | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * Photos shoppers attached to reviews. Visible on the store once the review is approved.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "review-media".
- */
-export interface ReviewMedia {
-  id: number;
-  alt?: string | null;
-  /**
-   * Set automatically when the review is approved.
-   */
-  public?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-  sizes?: {
-    thumb?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-    large?: {
-      url?: string | null;
-      width?: number | null;
-      height?: number | null;
-      mimeType?: string | null;
-      filesize?: number | null;
-      filename?: string | null;
-    };
-  };
 }
 /**
  * Customers and staff accounts. Roles control what each staff member can see and do.
@@ -733,6 +859,15 @@ export interface User {
     | number
     | boolean
     | null;
+  cart?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   staffNote?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -757,6 +892,92 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Shopper reviews. New reviews wait for approval before they appear on the store.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews".
+ */
+export interface Review {
+  id: number;
+  product: number | Product;
+  /**
+   * 1 to 5 stars
+   */
+  rating: number;
+  title?: string | null;
+  body: string;
+  photos?: (number | ReviewMedia)[] | null;
+  /**
+   * Shown under the review as "Reply from The Online Store".
+   */
+  reply?: string | null;
+  authorName: string;
+  /**
+   * Never shown on the store.
+   */
+  authorEmail?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  /**
+   * Bought this product from us. Set from orders once checkout launches (Sprint 6).
+   */
+  verifiedBuyer?: boolean | null;
+  helpfulCount?: number | null;
+  user?: (number | null) | User;
+  /**
+   * Illustrative review on a demo product. Removed with the demo products.
+   */
+  isSample?: boolean | null;
+  /**
+   * Internal note (why it was rejected, etc.).
+   */
+  moderationNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Photos shoppers attached to reviews. Visible on the store once the review is approved.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "review-media".
+ */
+export interface ReviewMedia {
+  id: number;
+  alt?: string | null;
+  /**
+   * Set automatically when the review is approved.
+   */
+  public?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumb?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    large?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
  * Every stock change, who made it and why. Written automatically; adjust stock from Inventory.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -764,7 +985,10 @@ export interface User {
  */
 export interface StockMovement {
   id: number;
-  product: number | Product;
+  /**
+   * Empty once the product has been deleted; the SKU and variant keep the history readable.
+   */
+  product?: (number | null) | Product;
   sku: string;
   variantLabel?: string | null;
   /**
@@ -954,6 +1178,14 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
+        relationTo: 'orders';
+        value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'discounts';
+        value: number | Discount;
+      } | null)
+    | ({
         relationTo: 'products';
         value: number | Product;
       } | null)
@@ -1050,6 +1282,136 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderNumber?: T;
+  items?:
+    | T
+    | {
+        product?: T;
+        sku?: T;
+        quantity?: T;
+        name?: T;
+        brand?: T;
+        variant?: T;
+        image?: T;
+        unitPrice?: T;
+        lineSubtotal?: T;
+        discount?: T;
+        lineTotal?: T;
+        id?: T;
+      };
+  discounts?:
+    | T
+    | {
+        label?: T;
+        code?: T;
+        amount?: T;
+        discount?: T;
+        id?: T;
+      };
+  totals?:
+    | T
+    | {
+        subtotal?: T;
+        discountTotal?: T;
+        delivery?: T;
+        giftWrap?: T;
+        total?: T;
+      };
+  contact?:
+    | T
+    | {
+        fullName?: T;
+        email?: T;
+        phone?: T;
+      };
+  shippingAddress?:
+    | T
+    | {
+        recipientName?: T;
+        phone?: T;
+        line1?: T;
+        line2?: T;
+        city?: T;
+        district?: T;
+        postalCode?: T;
+        landmark?: T;
+      };
+  delivery?:
+    | T
+    | {
+        method?: T;
+        zone?: T;
+        eta?: T;
+      };
+  gift?:
+    | T
+    | {
+        wrap?: T;
+        hidePrices?: T;
+        message?: T;
+      };
+  customerNote?: T;
+  timeline?:
+    | T
+    | {
+        at?: T;
+        event?: T;
+        by?: T;
+        id?: T;
+      };
+  staffNotes?: T;
+  status?: T;
+  paymentMethod?: T;
+  paymentStatus?: T;
+  customer?: T;
+  coupon?: T;
+  termsAcceptedAt?: T;
+  termsVersion?: T;
+  stockReturned?: T;
+  accessToken?: T;
+  clientIp?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "discounts_select".
+ */
+export interface DiscountsSelect<T extends boolean = true> {
+  offer?: T;
+  name?: T;
+  mode?: T;
+  code?: T;
+  type?: T;
+  value?: T;
+  maxDiscount?: T;
+  buyQty?: T;
+  getQty?: T;
+  getPercent?: T;
+  appliesTo?: T;
+  products?: T;
+  categories?: T;
+  brands?: T;
+  excludeSaleItems?: T;
+  minSpend?: T;
+  firstOrderOnly?: T;
+  usageLimit?: T;
+  usagePerCustomer?: T;
+  combinable?: T;
+  priority?: T;
+  active?: T;
+  startsAt?: T;
+  endsAt?: T;
+  usedCount?: T;
+  internalNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1421,6 +1783,7 @@ export interface UsersSelect<T extends boolean = true> {
   marketingConsentAt?: T;
   deletionRequestedAt?: T;
   wishlist?: T;
+  cart?: T;
   staffNote?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1572,6 +1935,116 @@ export interface HomePage {
   createdAt?: string | null;
 }
 /**
+ * Delivery fees, same-day, gift wrap, payment methods and terms version.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkout-settings".
+ */
+export interface CheckoutSetting {
+  id: number;
+  /**
+   * After discounts. Standard delivery only.
+   */
+  freeThreshold?: number | null;
+  includedKg?: number | null;
+  perKgFee?: number | null;
+  /**
+   * Districts not in any zone use the island-wide fee below.
+   */
+  zones?:
+    | {
+        name: string;
+        fee: number;
+        eta: string;
+        districts: (
+          | 'Colombo'
+          | 'Gampaha'
+          | 'Kalutara'
+          | 'Kandy'
+          | 'Matale'
+          | 'Nuwara Eliya'
+          | 'Galle'
+          | 'Matara'
+          | 'Hambantota'
+          | 'Jaffna'
+          | 'Kilinochchi'
+          | 'Mannar'
+          | 'Vavuniya'
+          | 'Mullaitivu'
+          | 'Batticaloa'
+          | 'Ampara'
+          | 'Trincomalee'
+          | 'Kurunegala'
+          | 'Puttalam'
+          | 'Anuradhapura'
+          | 'Polonnaruwa'
+          | 'Badulla'
+          | 'Monaragala'
+          | 'Ratnapura'
+          | 'Kegalle'
+        )[];
+        id?: string | null;
+      }[]
+    | null;
+  fallbackFee?: number | null;
+  fallbackEta?: string | null;
+  sameDay?: {
+    enabled?: boolean | null;
+    fee?: number | null;
+    cutoffHour?: number | null;
+    eta?: string | null;
+    districts?:
+      | (
+          | 'Colombo'
+          | 'Gampaha'
+          | 'Kalutara'
+          | 'Kandy'
+          | 'Matale'
+          | 'Nuwara Eliya'
+          | 'Galle'
+          | 'Matara'
+          | 'Hambantota'
+          | 'Jaffna'
+          | 'Kilinochchi'
+          | 'Mannar'
+          | 'Vavuniya'
+          | 'Mullaitivu'
+          | 'Batticaloa'
+          | 'Ampara'
+          | 'Trincomalee'
+          | 'Kurunegala'
+          | 'Puttalam'
+          | 'Anuradhapura'
+          | 'Polonnaruwa'
+          | 'Badulla'
+          | 'Monaragala'
+          | 'Ratnapura'
+          | 'Kegalle'
+        )[]
+      | null;
+  };
+  cod?: {
+    enabled?: boolean | null;
+    maxOrder?: number | null;
+    fee?: number | null;
+  };
+  bankTransfer?: {
+    enabled?: boolean | null;
+    /**
+     * Shown after ordering and in the confirmation email. Use your order number as the reference.
+     */
+    instructions?: string | null;
+    holdHours?: number | null;
+  };
+  giftWrapFee?: number | null;
+  /**
+   * Recorded on every order with the time the shopper accepted it. Change it when the terms change.
+   */
+  termsVersion?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home-page_select".
  */
@@ -1595,6 +2068,54 @@ export interface HomePageSelect<T extends boolean = true> {
         maxPrice?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "checkout-settings_select".
+ */
+export interface CheckoutSettingsSelect<T extends boolean = true> {
+  freeThreshold?: T;
+  includedKg?: T;
+  perKgFee?: T;
+  zones?:
+    | T
+    | {
+        name?: T;
+        fee?: T;
+        eta?: T;
+        districts?: T;
+        id?: T;
+      };
+  fallbackFee?: T;
+  fallbackEta?: T;
+  sameDay?:
+    | T
+    | {
+        enabled?: T;
+        fee?: T;
+        cutoffHour?: T;
+        eta?: T;
+        districts?: T;
+      };
+  cod?:
+    | T
+    | {
+        enabled?: T;
+        maxOrder?: T;
+        fee?: T;
+      };
+  bankTransfer?:
+    | T
+    | {
+        enabled?: T;
+        instructions?: T;
+        holdHours?: T;
+      };
+  giftWrapFee?: T;
+  termsVersion?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

@@ -14,7 +14,7 @@
 | **2** ✅ | 15 Nov 2026 (started early) | **Find it fast**: search, filters, wishlist, cross-sell and upsell, reviews, CSV import/export | TOS-201 → 208, TOS-109 | Search "centella", filter by concern, save to wishlist |
 | **3** ✅ | 15 Nov 2026 (started early) | **Accounts & security**: register, login, reset, addresses, order history shell; RBAC enforced; audit log | TOS-301 → 307, 401 → 404 | A customer signs up; each staff role sees the right admin |
 | — | 25 Dec – 1 Jan | Holiday buffer (bug fixes, content entry) | | |
-| **4** | 4 – 15 Jan 2027 | **Checkout**: server bag, coupons, discount engine, delivery fees, notes, T&C, gift options, confirmation | TOS-501 → 509 | Full COD order with a coupon and district delivery fee |
+| **4** ✅ | 15 Nov 2026 (started early) | **Checkout**: server bag, coupons, discount engine, delivery fees, notes, T&C, gift options, confirmation | TOS-501 → 509 | Full COD order with a coupon and district delivery fee |
 | **5** | 18 – 29 Jan | **Payments**: payment settings; PayHere, Koko and Mintpay (sandbox); bank slip; COD rules; transactions | TOS-601 → 607 | Pay with PayHere sandbox; verify a bank slip |
 | **6** | 1 – 12 Feb | **Orders & delivery**: lifecycle, fulfilment, invoices, courier tracking, returns and refunds | TOS-701 → 708 | Order goes Processing → Shipped → Delivered; customer tracks it |
 | **7** | 15 – 26 Feb | **Notifications**: email, SMS and WhatsApp templates and triggers; staff alerts; back-in-stock | TOS-801 → 806 | Placing an order triggers email + SMS + WhatsApp |
@@ -49,7 +49,20 @@ All 8 stories done (45 points), plus TOS-109 (CSV import/export) carried over fr
 ## Sprint 3 (complete): accounts & security
 Delivered TOS-301 → 304, 306, 401, 402 and 404, plus wishlist sync and account-linked reviews. Re-planned: TOS-305 history/reorder → Sprint 6, TOS-307 → Sprint 4, TOS-403 2FA → Sprint 10, SMS OTP → Sprint 7. See `sprint-reports/sprint-03.md`.
 
-## Sprint 4 plan (next, 4 – 15 Jan 2027)
+## Sprint 4 (complete): checkout
+Delivered TOS-501 → 509 and TOS-307 (account from a guest order), plus an early Orders list for staff, a 14-day sales card on the dashboard and summary policy pages. Card, Koko and Mintpay show as "coming soon" until Sprint 5. See `sprint-reports/sprint-04.md`.
+
+## Sprint 5 plan (next): payments
+| # | Task | Story |
+|---|---|---|
+| 1 | Payment settings: turn methods on/off, order them, sandbox and live credentials (super-admin only) | TOS-601 |
+| 2 | PayHere (cards, wallets) with server-verified notifications | TOS-602 |
+| 3 | Koko and Mintpay instalments (sandbox) | TOS-603, 604 |
+| 4 | Bank transfer slip upload and staff verification; release the order hold after 48 h | TOS-605 |
+| 5 | COD rules: excluded districts on top of the existing maximum | TOS-606 |
+| 6 | `transactions` collection: every attempt and callback, reconcilable | TOS-607 |
+
+## Sprint 4 plan (as planned)
 **Goal:** checkout. A shopper can place a cash-on-delivery order with a coupon and the right delivery fee for their district.
 
 | # | Task | Story |

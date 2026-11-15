@@ -132,6 +132,36 @@ export const Users: CollectionConfig = {
   },
   endpoints: [
     {
+      // POST /api/users/cart { items: [{ sku, qty }], mode: 'merge' | 'replace' } → the account's bag, re-priced (TOS-501)
+      path: '/cart',
+      method: 'post',
+      handler: async (req) => {
+        if (!req.user) return Response.json({ error: 'Sign in first' }, { status: 401 })
+        if (!allow(`cart:${clientIp(req.headers)}:${req.user.id}`, 120, 60 * 1000)) return Response.json({ error: 'Slow down' }, { status: 429 })
+        const body = (await req.json?.().catch(() => null)) as { items?: unknown; mode?: string } | null
+        const incoming = (Array.isArray(body?.items) ? body.items : [])
+          .map((i) => ({ sku: String((i as { sku?: unknown }).sku ?? '').slice(0, 80), qty: Math.floor(Number((i as { qty?: unknown }).qty) || 0) }))
+          .filter((i) => i.sku && i.qty > 0)
+          .slice(0, 60)
+        const me = await req.payload.findByID({ collection: 'users', id: req.user.id, depth: 0, overrideAccess: true })
+        const current = (Array.isArray(me.cart) ? me.cart : []) as { sku: string; qty: number }[]
+        let next = incoming
+        if (body?.mode !== 'replace') {
+          // Merge: keep the larger quantity of each item
+          const map = new Map(current.map((i) => [i.sku, i.qty]))
+          for (const i of incoming) map.set(i.sku, Math.max(map.get(i.sku) ?? 0, i.qty))
+          next = [...map].map(([sku, qty]) => ({ sku, qty }))
+        }
+        const { loadLines } = await import('../lib/checkout/server')
+        const { views, issues } = await loadLines(req.payload, next)
+        const saved = views.map((v) => ({ sku: v.sku, qty: v.qty }))
+        if (JSON.stringify(saved) !== JSON.stringify(current)) {
+          await req.payload.update({ collection: 'users', id: req.user.id, data: { cart: saved }, overrideAccess: true, req })
+        }
+        return Response.json({ lines: views, issues })
+      },
+    },
+    {
       // POST /api/users/wishlist { slugs: string[], mode: 'merge' | 'replace' } → the account's wishlist (TOS-203)
       path: '/wishlist',
       method: 'post',
@@ -232,6 +262,7 @@ export const Users: CollectionConfig = {
       admin: { position: 'sidebar', readOnly: true, description: 'Customer asked for their account to be deleted (process within 14 days).' },
     },
     { name: 'wishlist', type: 'json', admin: { hidden: true } },
+    { name: 'cart', type: 'json', admin: { hidden: true } },
     { name: 'staffNote', type: 'textarea', access: { read: staffOnly, update: staffOnly }, admin: { position: 'sidebar' } },
   ],
   timestamps: true,

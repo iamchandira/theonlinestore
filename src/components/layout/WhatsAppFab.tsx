@@ -2,15 +2,19 @@
 
 import { IconBrandWhatsapp } from '@tabler/icons-react'
 import { motion } from 'motion/react'
+import { usePathname } from 'next/navigation'
 
 import { site } from '@/config/site'
 
 /**
  * Floating WhatsApp chat (the dominant support channel in Sri Lanka). Sits above the mobile bottom nav.
  * Always a perfect circle: the "Chat with us" label is a separate tooltip bubble (desktop hover/focus),
- * so it never changes the button's shape.
+ * so it never changes the button's shape. Hidden on /checkout (still shown on the order-confirmed page).
  */
 export function WhatsAppFab() {
+  const pathname = usePathname()
+  // Hidden on the checkout form so it never covers the order total or the Place order button.
+  if (pathname === '/checkout') return null
   const text = encodeURIComponent('Hi The Online Store! I have a question about a product.')
   return (
     <motion.a

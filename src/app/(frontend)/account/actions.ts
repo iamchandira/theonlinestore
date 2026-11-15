@@ -55,6 +55,8 @@ export async function loginAction(_: FormState, fd: FormData): Promise<FormState
     const res = await payload.login({ collection: 'users', data: { email, password } })
     if (!res.token) return { error: 'We couldn’t sign you in. Please try again.', values }
     await setAuthCookie(res.token, res.exp, remember)
+    // TOS-307: guest orders placed with this (now proven) email join the account
+    if (res.user) await linkGuestOrders(res.user.id, email)
   } catch (err) {
     const name = (err as Error).name
     if (name === 'UnverifiedEmail') return { error: 'Please confirm your email first. We sent you a link when you signed up.', values: { ...values, unverified: '1' } }
@@ -121,6 +123,61 @@ export async function resendVerificationAction(_: FormState, fd: FormData): Prom
   await db.execute(sql`UPDATE users SET _verificationtoken = ${token} WHERE id = ${user.id}`)
   await payload.sendEmail({ to: email, subject: 'Confirm your email · The Online Store', html: verifyEmail(user.fullName, token) })
   return done
+}
+
+/** Attaches guest orders with this email to the account. Only called once the email is proven (sign-in). */
+async function linkGuestOrders(userId: number, email: string) {
+  const payload = await getPayloadClient()
+  await payload
+    .update({ collection: 'orders', where: { and: [{ 'contact.email': { equals: email } }, { customer: { exists: false } }] }, data: { customer: userId }, overrideAccess: true })
+    .catch((err) => payload.logger.warn({ err }, 'Could not link guest orders'))
+}
+
+/**
+ * TOS-307: create an account from the order confirmation page with just a password.
+ * Name, email, phone and the delivery address come from the order (checked with its private token).
+ * The usual email confirmation still applies; the order joins the account at first sign-in.
+ */
+export async function createAccountFromOrderAction(_: FormState, fd: FormData): Promise<FormState> {
+  const password = String(fd.get('password') ?? '')
+  if (password.length < 8) return { error: 'Use at least 8 characters.', fields: { password: 'At least 8 characters' } }
+  if (!allow(`register:${await requestIp()}`, 5, 60 * 60 * 1000)) return tooMany('sign-ups')
+  const payload = await getPayloadClient()
+  const order = (
+    await payload.find({ collection: 'orders', where: { orderNumber: { equals: str(fd, 'orderNumber', 40) } }, limit: 1, depth: 0, overrideAccess: true, showHiddenFields: true })
+  ).docs[0]
+  if (!order || !order.accessToken || order.accessToken !== str(fd, 'token', 100)) return { error: 'We couldn’t find that order.' }
+  const email = order.contact.email.toLowerCase()
+  if ((await payload.count({ collection: 'users', where: { email: { equals: email } }, overrideAccess: true })).totalDocs) {
+    return { error: 'An account with this email already exists. Sign in to see this order.' }
+  }
+  const a = order.shippingAddress
+  await payload.create({
+    collection: 'users',
+    overrideAccess: false,
+    data: {
+      email,
+      password,
+      fullName: order.contact.fullName,
+      phone: order.contact.phone,
+      roles: ['customer'],
+      addresses: [
+        {
+          label: 'Home',
+          recipientName: a.recipientName,
+          phone: a.phone,
+          line1: a.line1,
+          line2: a.line2 ?? null,
+          city: a.city,
+          district: a.district,
+          postalCode: a.postalCode ?? null,
+          landmark: a.landmark ?? null,
+          isDefault: true,
+        },
+      ],
+    },
+  })
+  return { ok: true, message: email }
 }
 
 /* --------------------------------------------------------- password reset */

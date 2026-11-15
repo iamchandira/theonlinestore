@@ -32,11 +32,11 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 | Categories / brands / tags / taxonomies | CRUD | CRUD | CRUD | R | R | CRU | R | R |
 | Stock movements | CRUD | CRUD | CR | CR | R | — | R | — |
 | Media | CRUD | CRUD | CRUD | CRU | R | CRU | R | R |
-| Orders | CRUD | CRUD | CRU | R | RU (status, shipment) | R | RU (notes) | Own R |
+| Orders | RUD | RUD | RU | R | RU (status, shipment) | R | RU (notes) | Own R |
 | Refunds / returns | CRUD | CRUD | CRU | R | R | — | CR (request) | Own C (request) |
 | Transactions | R | R | R | — | — | — | R | — |
-| Coupons & promotions | CRUD | CRUD | CRUD | — | — | CRUD | R | — |
-| Shipping zones & rates | CRUD | CRUD | RU | — | R | — | R | — |
+| Coupons & promotions (`discounts`) | CRUD | CRUD | CRUD | — | — | CRUD | R | — |
+| Checkout settings (delivery zones & rates, COD/bank rules, gift wrap, terms version) | RU | RU | RU | R | R | R | R | R (fees only, via checkout) |
 | **Payment settings & credentials** | RU | R\* | — | — | — | — | — | — |
 | Notification templates & toggles | CRUD | CRUD | R | — | — | CRU | R | — |
 | Pages / blog / home page | CRUD | CRUD | CRU | — | — | CRUD | R | R (published) |
@@ -97,5 +97,16 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 - **Inventory screen:** stock changes need store manager or inventory manager. Fulfilment and support see it read-only, and marketing doesn't see it.
 - **Customers:** blocked from `/admin` (403). A customer API call only ever returns their own user record.
 
+## Rules implemented in Sprint 4 (checkout)
+- **Orders:**
+  - **Nobody creates an order directly**, staff included. Orders are only made by `POST /api/orders/place`, which prices everything on the server.
+  - Every staff role reads orders. Customers read only their own (`customer = me`); guests see theirs only on the confirmation page, with the private link token.
+  - Update: store manager, fulfilment and support (and admin). Delete: admins only. Field-level limits for fulfilment (status, shipment) and support (notes) arrive with the fulfilment screens in Sprint 6.
+  - `accessToken` (the guest link) is never readable through the API. `staffNotes` and the client IP are staff only.
+  - Money fields (prices, discounts, totals) are read-only in the admin.
+- **Discounts:** read by store manager, marketing and support; created, edited and deleted by store manager and marketing. Each create or change of value or status is audited.
+- **Checkout settings:** anyone can read (the checkout needs the fees); only store managers (and admins) change them, and each change is audited.
+- **Checkout endpoints:** `quote` is rate-limited to 120 per minute per IP and `place` to 10 orders per 10 minutes per IP.
+
 ## Testing
-`tests/int/rbac.int.spec.ts` (TOS-401) signs in as every role and checks the allowed and denied operations above through the same access rules the API uses (16 checks). Any access change must update this matrix and that test together.
+`tests/int/rbac.int.spec.ts` (TOS-401) signs in as every role and checks the allowed and denied operations above through the same access rules the API uses (20 checks, including orders, discounts and checkout settings). `tests/int/checkout.int.spec.ts` covers order privacy (customers see only their own, the token is never exposed). Any access change must update this matrix and that test together.

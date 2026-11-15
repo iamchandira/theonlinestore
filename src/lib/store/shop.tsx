@@ -63,6 +63,8 @@ type ShopState = {
   lastAdded: string | null
   /** False until the saved bag/wishlist have been read from this device */
   hydrated: boolean
+  /** Replace the bag with server-priced lines (checkout uses this when prices or stock changed) */
+  setLinesFromServer: (lines: CartLine[]) => void
   cartOpen: boolean
   setCartOpen: (open: boolean) => void
   quickAdd: Product | null
@@ -172,10 +174,67 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     }, 500)
     return () => window.clearTimeout(t)
   }, [wishlist, user])
+  /*
+   * Bag sync (TOS-501): same pattern as the wishlist. At sign-in the device bag and the account bag
+   * are merged (larger quantity wins) and re-priced by the server; then every change is saved.
+   */
+  const bagMergedFor = useRef<number | null>(null)
+  const lastBagSent = useRef('')
+  const applyServerLines = useCallback((views: (CartLine & { productId?: number })[]) => {
+    const next = views.map(({ productId: _p, ...l }) => l as CartLine)
+    setLines((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next))
+  }, [])
   useEffect(() => {
-    const onOut = () => setWishlist([])
+    if (!hydrated || !user) {
+      bagMergedFor.current = null
+      return
+    }
+    if (bagMergedFor.current === user.id) return
+    bagMergedFor.current = -1
+    const local = readJSON<unknown[]>(CART_KEY, []).filter(isLine).map((l) => ({ sku: l.sku, qty: l.qty }))
+    void fetch('/api/users/cart', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: local, mode: 'merge' }) })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res: { lines?: (CartLine & { productId?: number })[] } | null) => {
+        if (res?.lines) {
+          lastBagSent.current = JSON.stringify(res.lines.map((l) => [l.sku, l.qty]))
+          applyServerLines(res.lines)
+        }
+        bagMergedFor.current = user.id
+      })
+      .catch(() => (bagMergedFor.current = null))
+  }, [hydrated, user, applyServerLines])
+  useEffect(() => {
+    if (!user || bagMergedFor.current !== user.id) return
+    const payload = JSON.stringify(lines.map((l) => [l.sku, l.qty]))
+    if (payload === lastBagSent.current) return
+    const t = window.setTimeout(() => {
+      lastBagSent.current = payload
+      void fetch('/api/users/cart', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items: lines.map((l) => ({ sku: l.sku, qty: l.qty })), mode: 'replace' }),
+      }).catch(() => {})
+    }, 600)
+    return () => window.clearTimeout(t)
+  }, [lines, user])
+
+  useEffect(() => {
+    const onOut = () => {
+      setWishlist([])
+      setLines([])
+    }
     window.addEventListener('tos:signed-out', onOut)
-    return () => window.removeEventListener('tos:signed-out', onOut)
+    // After an order is placed the bag is emptied (the server already cleared the account bag)
+    const onOrdered = () => {
+      lastBagSent.current = '[]'
+      setLines([])
+    }
+    window.addEventListener('tos:order-placed', onOrdered)
+    return () => {
+      window.removeEventListener('tos:signed-out', onOut)
+      window.removeEventListener('tos:order-placed', onOrdered)
+    }
   }, [])
 
   const launchFlight = useCallback(
@@ -280,6 +339,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       rememberViewed,
       lastAdded,
       hydrated,
+      setLinesFromServer: applyServerLines,
       cartOpen,
       setCartOpen,
       quickAdd,
@@ -288,7 +348,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       addPulse,
       announcement,
     }
-  }, [lines, wishlist, recentlyViewed, lastAdded, hydrated, cartOpen, quickAdd, addPulse, announcement, addToCart, setQty, removeLine, toggleWishlist, addManyToWishlist, removeFromWishlist, rememberViewed])
+  }, [lines, wishlist, recentlyViewed, lastAdded, hydrated, cartOpen, quickAdd, addPulse, announcement, addToCart, setQty, removeLine, toggleWishlist, addManyToWishlist, removeFromWishlist, rememberViewed, applyServerLines])
 
   return (
     <ShopContext.Provider value={value}>

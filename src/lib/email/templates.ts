@@ -61,3 +61,53 @@ export const deletionRequested = (name: string | null | undefined) =>
     after: 'Changed your mind? Sign in and cancel the request from <strong>Account › Privacy</strong> before then.',
     footnote: 'If you didn’t make this request, sign in and change your password straight away.',
   })
+
+/* --------------------------------------------------------------- orders */
+
+type OrderEmail = {
+  orderNumber: string
+  fullName: string
+  items: { name: string; brand?: string | null; variant?: string | null; quantity: number; lineTotal: number }[]
+  totals: { subtotal: number; discountTotal: number; delivery: number; giftWrap: number; total: number }
+  discounts: { label: string; amount: number }[]
+  address: { recipientName: string; phone: string; line1: string; line2?: string | null; city: string; district: string }
+  delivery: { method: string; eta?: string | null }
+  paymentMethod: 'cod' | 'bank-transfer'
+  bankInstructions?: string
+  viewUrl: string
+}
+
+const rs = (n: number) => `Rs ${n.toLocaleString('en-LK')}`
+
+export function orderConfirmation(o: OrderEmail) {
+  const row = (label: string, value: string, strong = false) =>
+    `<tr><td style="padding:4px 0;color:#5b6b85;font-size:14px">${label}</td><td align="right" style="padding:4px 0;font-size:14px;${strong ? 'font-weight:700;color:#0e1a33;font-size:16px' : 'color:#0e1a33'}">${value}</td></tr>`
+  const items = o.items
+    .map(
+      (i) =>
+        `<tr><td style="padding:10px 0;border-bottom:1px solid #ece7e2;font-size:14px;color:#0e1a33"><strong>${esc(i.name)}</strong>${i.brand ? `<br><span style="color:#5b6b85;font-size:12px">${esc(i.brand)}${i.variant ? ` · ${esc(i.variant)}` : ''}</span>` : ''}<br><span style="color:#5b6b85;font-size:12px">Qty ${i.quantity}</span></td><td align="right" style="padding:10px 0;border-bottom:1px solid #ece7e2;font-size:14px;white-space:nowrap">${rs(i.lineTotal)}</td></tr>`,
+    )
+    .join('')
+  const payment =
+    o.paymentMethod === 'cod'
+      ? '<strong>Cash on delivery.</strong> Please keep the exact amount ready; most couriers also take cards.'
+      : `<strong>Bank transfer.</strong> Please transfer <strong>${rs(o.totals.total)}</strong> using <strong>${esc(o.orderNumber)}</strong> as the reference. We ship as soon as it arrives.${o.bankInstructions ? `<br><span style="color:#5b6b85">${esc(o.bankInstructions)}</span>` : ''}`
+  const a = o.address
+  const intro = `Hi ${first(o.fullName)}, thank you for your order <strong>${esc(o.orderNumber)}</strong>. Here’s your summary.
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0 6px">${items}</table>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+${row('Subtotal', rs(o.totals.subtotal))}
+${o.discounts.map((d) => row(esc(d.label), `− ${rs(d.amount)}`)).join('')}
+${row(`Delivery (${o.delivery.method === 'same-day' ? 'same-day' : 'standard'})`, o.totals.delivery ? rs(o.totals.delivery) : 'Free')}
+${o.totals.giftWrap ? row('Gift wrap', rs(o.totals.giftWrap)) : ''}
+${row('Total', rs(o.totals.total), true)}
+</table>
+<p style="margin:18px 0 0;font-size:14px;line-height:1.6;color:#344157">${payment}</p>
+<p style="margin:14px 0 0;font-size:14px;line-height:1.6;color:#344157"><strong>Delivering to</strong><br>${esc(a.recipientName)} · ${esc(a.phone)}<br>${esc(a.line1)}${a.line2 ? `, ${esc(a.line2)}` : ''}<br>${esc(a.city)}, ${esc(a.district)} District${o.delivery.eta ? `<br><span style="color:#5b6b85">Expected: ${esc(o.delivery.eta)}</span>` : ''}</p>`
+  return layout({
+    heading: 'Order confirmed',
+    intro,
+    cta: { label: 'View your order', url: o.viewUrl },
+    footnote: 'Questions about your order? Reply to this email or message us on WhatsApp with your order number.',
+  })
+}

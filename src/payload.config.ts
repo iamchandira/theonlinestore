@@ -11,6 +11,8 @@ import { fileURLToPath } from 'url'
 
 import { AuditLogs } from './collections/AuditLogs'
 import { Brands } from './collections/Brands'
+import { Discounts } from './collections/Discounts'
+import { Orders } from './collections/Orders'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
@@ -20,6 +22,7 @@ import { SearchQueries } from './collections/SearchQueries'
 import { StockMovements } from './collections/StockMovements'
 import { Concerns, Occasions, Recipients, Tags } from './collections/Taxonomies'
 import { Users } from './collections/Users'
+import { CheckoutSettings } from './globals/CheckoutSettings'
 import { HomePage } from './globals/HomePage'
 
 const filename = fileURLToPath(import.meta.url)
@@ -57,8 +60,8 @@ export default buildConfig({
     },
     theme: 'light',
   },
-  collections: [Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, AuditLogs],
-  globals: [HomePage],
+  collections: [Orders, Discounts, Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, AuditLogs],
+  globals: [HomePage, CheckoutSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {

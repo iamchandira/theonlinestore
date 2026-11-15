@@ -1407,6 +1407,8 @@ $tos-sections: (
   stock-movements: 'Insights',
   users: 'People',
   audit-logs: 'Settings',
+  orders: 'Sales',
+  discounts: 'Sales',
   review-media: 'Catalogue',
 );
 @each $slug, $label in $tos-sections {
@@ -2133,4 +2135,17 @@ $tos-sections: (
       opacity: 1;
     }
   }
+}
+.tos-sales-figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
+.template-default__wrap:has(.global-edit--checkout-settings) .doc-header__header::before {
+  content: 'Settings';
 }

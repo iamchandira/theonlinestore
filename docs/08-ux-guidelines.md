@@ -82,7 +82,8 @@
 | Listing (PLP) | Breadcrumbs, result count, sort, filter chips, sticky filter bar, bottom-sheet filters on mobile, 2-column mobile grid, "load more" button that keeps the scroll position |
 | Product (PDP) | Gallery (swipe + zoom), brand, name, rating, price, BNPL, variant pills or swatches, stock status, delivery estimate by district, add to bag + wishlist, sticky add-to-bag bar on mobile, Benefits / How to use / Ingredients accordions, FAQ, "Pairs well with", reviews |
 | Bag | Drawer first. Free-delivery progress, quantity stepper, remove with undo (toast), cross-sell, totals, one primary CTA |
-| Checkout | One page with progressive sections. Guest by default with an optional login. Phone-first. District → city. Delivery fee visible before payment. Trust badges beside the pay button. |
+| Checkout | One page with numbered sections: contact → address → delivery → payment → gift & notes. Guest by default with an optional sign-in; signed-in shoppers pick a saved address. Phone-first, district → town suggestions. Every fee (delivery, COD, gift wrap) is in the summary before the Place order button, and the button repeats the total. Errors are shown inline and the page scrolls to the first one. If the total changes (price, stock, same-day cut-off) the order is not placed and the shopper is told why. The summary is sticky on desktop and a collapsible bar on phones; the WhatsApp button is hidden so nothing covers the total. |
+| Order confirmed | "Thank you, <first name>!", the order number, what happens next (bank transfer details with the order number as reference, or COD reminder), address, items and totals. Guests can add a password to keep the order in an account. |
 | Account | Orders first (tracking, reorder), then addresses, profile and consents |
 
 **Search & discovery (Sprint 2):**
