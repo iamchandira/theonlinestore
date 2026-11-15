@@ -12,7 +12,7 @@
 | **1** ✅ | 15 Nov 2026 (started early) | **Catalogue live**: products, variants, categories, brands, inventory; listing and product pages | TOS-101 → 110 | Staff add a product; shoppers browse real listing and product pages |
 | **1.5** ✅ | 15 Nov 2026 (inserted) | **Lifestyle store & custom admin**: product types, two-option variants, gift shop, demo products; custom dashboard, products list, inventory, ⌘K | TOS-131 → 142 | Footwear size × colour picker; gift shop; admin dashboard and bulk stock update |
 | **2** ✅ | 15 Nov 2026 (started early) | **Find it fast**: search, filters, wishlist, cross-sell and upsell, reviews, CSV import/export | TOS-201 → 208, TOS-109 | Search "centella", filter by concern, save to wishlist |
-| **3** | 14 – 24 Dec | **Accounts & security**: register, login, reset, addresses, order history shell; RBAC enforced; audit log | TOS-301 → 307, 401 → 404 | A customer signs up; each staff role sees the right admin |
+| **3** ✅ | 15 Nov 2026 (started early) | **Accounts & security**: register, login, reset, addresses, order history shell; RBAC enforced; audit log | TOS-301 → 307, 401 → 404 | A customer signs up; each staff role sees the right admin |
 | — | 25 Dec – 1 Jan | Holiday buffer (bug fixes, content entry) | | |
 | **4** | 4 – 15 Jan 2027 | **Checkout**: server bag, coupons, discount engine, delivery fees, notes, T&C, gift options, confirmation | TOS-501 → 509 | Full COD order with a coupon and district delivery fee |
 | **5** | 18 – 29 Jan | **Payments**: payment settings; PayHere, Koko and Mintpay (sandbox); bank slip; COD rules; transactions | TOS-601 → 607 | Pay with PayHere sandbox; verify a bank slip |
@@ -46,7 +46,23 @@ Inserted at the owner's request after Sprint 1 (47 points, all done). The store 
 ## Sprint 2 (complete): find it fast
 All 8 stories done (45 points), plus TOS-109 (CSV import/export) carried over from Sprint 1. See `sprint-reports/sprint-02.md`.
 
-## Sprint 3 plan (next, 14 – 24 Dec)
+## Sprint 3 (complete): accounts & security
+Delivered TOS-301 → 304, 306, 401, 402 and 404, plus wishlist sync and account-linked reviews. Re-planned: TOS-305 history/reorder → Sprint 6, TOS-307 → Sprint 4, TOS-403 2FA → Sprint 10, SMS OTP → Sprint 7. See `sprint-reports/sprint-03.md`.
+
+## Sprint 4 plan (next, 4 – 15 Jan 2027)
+**Goal:** checkout. A shopper can place a cash-on-delivery order with a coupon and the right delivery fee for their district.
+
+| # | Task | Story |
+|---|---|---|
+| 1 | Server-side bag synced across devices (re-priced lines, stock checks) and the `orders` collection | TOS-501 |
+| 2 | One-page checkout (guest or signed in), address auto-filled from the account, city list by district | TOS-502, 509 |
+| 3 | Coupons and the discount engine | TOS-503, 504 |
+| 4 | Delivery fees by district, weight and order value; free-delivery threshold | TOS-505 |
+| 5 | Order notes, gift options, recorded T&C acceptance | TOS-506, 507 |
+| 6 | Order confirmation page and email | TOS-508 |
+| 7 | Create an account after a guest order | TOS-307 |
+
+## Sprint 3 plan (as planned)
 **Goal:** accounts and security. Customers can register, sign in, reset a password, keep addresses and see orders. Staff roles are enforced and tested.
 
 | # | Task | Story |

@@ -2,6 +2,7 @@ import { sql } from '@payloadcms/db-postgres'
 import type { Access, CollectionAfterChangeHook, CollectionAfterDeleteHook, CollectionConfig, FieldAccess, Payload, PayloadRequest, Where } from 'payload'
 
 import { allowRoles, hasRole, isStaff } from '../access/roles'
+import { audit } from '../lib/payload/audit'
 import { revalidate } from '../lib/payload/revalidate'
 import { allow, clientIp } from '../lib/server/rateLimit'
 
@@ -48,7 +49,15 @@ async function syncProduct(payload: Payload, productId: number, req?: PayloadReq
 
 const idOf = (v: unknown) => (typeof v === 'object' && v ? Number((v as { id: number }).id) : Number(v))
 
-const afterChange: CollectionAfterChangeHook = async ({ doc, previousDoc, req }) => {
+const afterChange: CollectionAfterChangeHook = async ({ doc, previousDoc, req, operation }) => {
+  if (operation === 'update' && previousDoc && previousDoc.status !== doc.status && req.user) {
+    await audit(req, {
+      action: 'review-moderation',
+      collection: 'reviews',
+      docId: doc.id,
+      summary: `Review “${doc.title || String(doc.body).slice(0, 40)}” by ${doc.authorName}: ${previousDoc.status} → ${doc.status}`,
+    })
+  }
   const products = new Set([idOf(doc.product), ...(previousDoc?.product ? [idOf(previousDoc.product)] : [])].filter(Boolean))
   for (const id of products) await syncProduct(req.payload, id, req)
   // Photos become visible only with an approved review
@@ -60,6 +69,7 @@ const afterChange: CollectionAfterChangeHook = async ({ doc, previousDoc, req })
 }
 
 const afterDelete: CollectionAfterDeleteHook = async ({ doc, req }) => {
+  if (req.user) await audit(req, { action: 'delete', collection: 'reviews', docId: doc.id, summary: `Review by ${doc.authorName} deleted` })
   if (doc.product) await syncProduct(req.payload, idOf(doc.product), req)
   return doc
 }
@@ -79,9 +89,10 @@ export const Reviews: CollectionConfig = {
   },
   access: {
     read: approvedOrStaff,
-    create: allowRoles(...MODERATORS),
+    // Reviews come from shoppers through /submit; staff moderate (RBAC matrix: store-manager RUD, marketing RU, support RU)
+    create: allowRoles(),
     update: allowRoles(...MODERATORS),
-    delete: allowRoles('store-manager', 'marketing'),
+    delete: allowRoles('store-manager'),
   },
   defaultSort: '-createdAt',
   hooks: { afterChange: [afterChange], afterDelete: [afterDelete] },

@@ -256,6 +256,14 @@ export const importEndpoint: Endpoint = {
         })
         productsUpdated++
       }
+      const { audit } = await import('../lib/payload/audit')
+      const changeCount = rows.reduce((n, r) => n + r.changes.length, 0)
+      await audit(req, {
+        action: 'csv-import',
+        collection: 'products',
+        summary: `CSV import: ${changeCount} change${changeCount === 1 ? '' : 's'} across ${productsUpdated} product${productsUpdated === 1 ? '' : 's'}`,
+        changes: rows.filter((r) => r.changes.length).map((r) => ({ sku: r.sku, changes: r.changes })),
+      })
     }
     const result: ImportResult = {
       rows: rows.filter((r) => r.error || r.changes.length || r.skipped.length),

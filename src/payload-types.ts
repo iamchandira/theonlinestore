@@ -80,6 +80,7 @@ export interface Config {
     'search-queries': SearchQuery;
     media: Media;
     users: User;
+    'audit-logs': AuditLog;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -101,6 +102,7 @@ export interface Config {
     'search-queries': SearchQueriesSelect<false> | SearchQueriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -654,6 +656,52 @@ export interface User {
    */
   phone?: string | null;
   /**
+   * Delivery addresses (TOS-304). The default one is pre-selected at checkout.
+   */
+  addresses?:
+    | {
+        label?: string | null;
+        recipientName: string;
+        phone: string;
+        line1: string;
+        line2?: string | null;
+        city: string;
+        district:
+          | 'Colombo'
+          | 'Gampaha'
+          | 'Kalutara'
+          | 'Kandy'
+          | 'Matale'
+          | 'Nuwara Eliya'
+          | 'Galle'
+          | 'Matara'
+          | 'Hambantota'
+          | 'Jaffna'
+          | 'Kilinochchi'
+          | 'Mannar'
+          | 'Vavuniya'
+          | 'Mullaitivu'
+          | 'Batticaloa'
+          | 'Ampara'
+          | 'Trincomalee'
+          | 'Kurunegala'
+          | 'Puttalam'
+          | 'Anuradhapura'
+          | 'Polonnaruwa'
+          | 'Badulla'
+          | 'Monaragala'
+          | 'Ratnapura'
+          | 'Kegalle';
+        postalCode?: string | null;
+        /**
+         * Helps the courier, e.g. "Opposite the Cargills Food City".
+         */
+        landmark?: string | null;
+        isDefault?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
    * Controls what this person can see and do. See docs/06-rbac-matrix.md.
    */
   roles: (
@@ -667,6 +715,25 @@ export interface User {
     | 'customer'
   )[];
   marketingOptIn?: boolean | null;
+  marketingChannels?: ('email' | 'sms' | 'whatsapp')[] | null;
+  /**
+   * When consent was last given or withdrawn (PDPA).
+   */
+  marketingConsentAt?: string | null;
+  /**
+   * Customer asked for their account to be deleted (process within 14 days).
+   */
+  deletionRequestedAt?: string | null;
+  wishlist?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  staffNote?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -675,6 +742,8 @@ export interface User {
   salt?: string | null;
   hash?: string | null;
   resetPasswordRequestedAt?: string | null;
+  _verified?: boolean | null;
+  _verificationToken?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
@@ -730,6 +799,41 @@ export interface SearchQuery {
    * Results shown the last time this was searched
    */
   results: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Who changed roles, prices, reviews and content, and when. Entries can’t be edited or deleted.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs".
+ */
+export interface AuditLog {
+  id: number;
+  action:
+    | 'role-change'
+    | 'staff-created'
+    | 'price-change'
+    | 'delete'
+    | 'review-moderation'
+    | 'deletion-request'
+    | 'content-change'
+    | 'csv-import';
+  summary: string;
+  resource?: string | null;
+  docId?: string | null;
+  changes?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  user?: (number | null) | User;
+  userEmail?: string | null;
+  ip?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -900,6 +1004,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'audit-logs';
+        value: number | AuditLog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -1292,8 +1400,28 @@ export interface MediaSelect<T extends boolean = true> {
 export interface UsersSelect<T extends boolean = true> {
   fullName?: T;
   phone?: T;
+  addresses?:
+    | T
+    | {
+        label?: T;
+        recipientName?: T;
+        phone?: T;
+        line1?: T;
+        line2?: T;
+        city?: T;
+        district?: T;
+        postalCode?: T;
+        landmark?: T;
+        isDefault?: T;
+        id?: T;
+      };
   roles?: T;
   marketingOptIn?: T;
+  marketingChannels?: T;
+  marketingConsentAt?: T;
+  deletionRequestedAt?: T;
+  wishlist?: T;
+  staffNote?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1302,6 +1430,8 @@ export interface UsersSelect<T extends boolean = true> {
   salt?: T;
   hash?: T;
   resetPasswordRequestedAt?: T;
+  _verified?: T;
+  _verificationToken?: T;
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
@@ -1311,6 +1441,22 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "audit-logs_select".
+ */
+export interface AuditLogsSelect<T extends boolean = true> {
+  action?: T;
+  summary?: T;
+  resource?: T;
+  docId?: T;
+  changes?: T;
+  user?: T;
+  userEmail?: T;
+  ip?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

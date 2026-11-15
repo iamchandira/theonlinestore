@@ -2,6 +2,34 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.5.0] - 2026-11-15 · Sprint 3: Accounts & security
+### Added
+- **Customer accounts:**
+  - Register with email confirmation, sign in with "Keep me signed in" (30 days, or the browser session), sign out.
+  - Single-use, 1-hour password reset links, with the same answer for unknown emails.
+  - A 15-minute lockout after 5 wrong passwords. Rate limits on sign-up, sign-in, reset and resend.
+- **Account area:**
+  - Overview, orders (ready for Sprint 6), profile and password.
+  - Address book with all 25 districts and town suggestions.
+  - Privacy & data: consent per channel with a timestamp, JSON data download, and an account deletion request that can be cancelled (PDPA).
+- **Wishlist sync:** merges into the account at sign-in and is available on every device. The review form is prefilled and linked for signed-in shoppers.
+- **Branded emails** (confirm email, reset password, deletion request) sent over SMTP. Mailpit is added to docker-compose for local email (inbox at http://localhost:8026).
+- **Audit log** (admins): role changes, new staff accounts, price/cost changes per SKU, deletions, review moderation, home page edits, CSV imports, deletion requests.
+- **Role-relevant admin dashboard:** inventory, marketing and support each see their own KPIs, cards and quick actions.
+- **Tests:** 16 RBAC integration checks and 5 account e2e tests with real emails (29 integration and 28 e2e tests in total).
+### Changed
+- **Access aligned with the RBAC matrix:**
+  - Only store managers delete catalogue items.
+  - Reviews are moderated by store manager, marketing and support, and deleted by store managers.
+  - Customer records are scoped per role.
+  - The Inventory screen is read-only for fulfilment and support and hidden for marketing.
+- Existing staff accounts were marked as verified. Staff created by an admin are verified automatically.
+- The header shows your initial when signed in.
+### Fixed
+- Rate limits no longer trust the client-controlled first `X-Forwarded-For` value.
+- Granting Super Admin as an admin now fails with a clear message instead of "Roles is invalid".
+- The confirmation toast no longer disappears when an action empties the current tab.
+
 ## [0.4.0] - 2026-11-15 · Sprint 2: Find it fast
 ### Added
 - **Typo-tolerant search** (Postgres trigram + edit distance):

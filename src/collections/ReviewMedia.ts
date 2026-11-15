@@ -17,7 +17,7 @@ export const ReviewMedia: CollectionConfig = {
     read: publicOrStaff,
     create: allowRoles('store-manager', 'marketing', 'support'),
     update: allowRoles('store-manager', 'marketing', 'support'),
-    delete: allowRoles('store-manager', 'marketing', 'support'),
+    delete: allowRoles('store-manager'),
   },
   fields: [
     { name: 'alt', type: 'text', defaultValue: 'Customer photo' },

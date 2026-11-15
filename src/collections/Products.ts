@@ -2,7 +2,8 @@ import { APIError, slugField, type CollectionConfig, type Where } from 'payload'
 import { exportEndpoint, importEndpoint } from '../endpoints/productsCsv'
 import { cardsEndpoint, facetsEndpoint, pairsEndpoint, suggestEndpoint } from '../endpoints/storefront'
 
-import { catalogAndStock, catalogEditors, fieldRoles, publishedOrStaff } from '../access/roles'
+import { catalogAndStock, catalogDeleters, catalogEditors, fieldRoles, publishedOrStaff } from '../access/roles'
+import { audit, auditDelete } from '../lib/payload/audit'
 import { revalidateStorefront, revalidateStorefrontOnDelete } from '../lib/payload/revalidate'
 
 type VariantRow = {
@@ -12,6 +13,7 @@ type VariantRow = {
   option2?: string | null
   price?: number
   compareAtPrice?: number | null
+  cost?: number | null
   stock?: number
   lowStockThreshold?: number
 }
@@ -61,7 +63,7 @@ export const Products: CollectionConfig = {
     read: publishedOrStaff,
     create: catalogEditors,
     update: catalogAndStock, // inventory managers can open products to change stock; field access limits the rest
-    delete: catalogEditors,
+    delete: catalogDeleters,
   },
   defaultSort: '-updatedAt',
   hooks: {
@@ -143,9 +145,33 @@ export const Products: CollectionConfig = {
         }
         return doc
       },
+      // Audit log (TOS-402): every price, "was" price and cost change, per SKU
+      async ({ doc, previousDoc, operation, req }) => {
+        if (operation !== 'update' || !previousDoc) return doc
+        const before = new Map(((previousDoc.variants ?? []) as VariantRow[]).map((v) => [v.sku, v]))
+        const changes: { sku: string; field: string; from: unknown; to: unknown }[] = []
+        for (const v of (doc.variants ?? []) as VariantRow[]) {
+          const p = before.get(v.sku)
+          if (!p) continue
+          for (const field of ['price', 'compareAtPrice', 'cost'] as const) {
+            if ((p[field] ?? null) !== (v[field] ?? null)) changes.push({ sku: String(v.sku), field, from: p[field] ?? null, to: v[field] ?? null })
+          }
+        }
+        if (changes.length) {
+          const first = changes[0]
+          await audit(req, {
+            action: 'price-change',
+            collection: 'products',
+            docId: doc.id,
+            summary: `${doc.name}: ${first.field} ${first.from ?? '—'} → ${first.to ?? '—'} (${first.sku})${changes.length > 1 ? ` and ${changes.length - 1} more` : ''}`,
+            changes,
+          })
+        }
+        return doc
+      },
       revalidateStorefront(paths),
     ],
-    afterDelete: [revalidateStorefrontOnDelete(paths)],
+    afterDelete: [revalidateStorefrontOnDelete(paths), auditDelete('products', (d) => String(d.name))],
   },
   endpoints: [
     {

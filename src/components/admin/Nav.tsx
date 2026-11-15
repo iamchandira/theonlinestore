@@ -1,6 +1,6 @@
 import type { ServerProps } from 'payload'
 
-import { ROLES, type Role } from '../../access/roles'
+import { hasRole, ROLES, type Role } from '../../access/roles'
 import { NavClient, type NavGroupDef } from './NavClient'
 
 /**
@@ -36,7 +36,8 @@ export async function Nav(props: ServerProps) {
       label: 'Catalogue',
       items: [
         ...(can('products') ? [{ label: 'Products', href: '/admin/collections/products', icon: 'products', badge: drafts?.totalDocs ? `${drafts.totalDocs} draft` : undefined }] : []),
-        ...(can('products') ? [{ label: 'Inventory', href: '/admin/inventory', icon: 'inventory', badge: lowStock?.totalDocs ? String(lowStock.totalDocs) : undefined, badgeTone: 'danger' as const }] : []),
+        // Inventory is for roles that work with stock (RBAC matrix)
+        ...(can('products') && hasRole(user, 'admin', 'store-manager', 'inventory-manager', 'order-fulfillment', 'support') ? [{ label: 'Inventory', href: '/admin/inventory', icon: 'inventory', badge: lowStock?.totalDocs ? String(lowStock.totalDocs) : undefined, badgeTone: 'danger' as const }] : []),
         ...(can('reviews')
           ? [{ label: 'Reviews', href: '/admin/collections/reviews', icon: 'reviews', badge: pendingReviews?.totalDocs ? String(pendingReviews.totalDocs) : undefined, badgeTone: 'danger' as const }]
           : []),
@@ -69,6 +70,7 @@ export async function Nav(props: ServerProps) {
       label: 'Settings',
       items: [
         ...(can('users') ? [{ label: 'Staff & roles', href: '/admin/collections/users?where[roles][not_in]=customer', icon: 'staff', match: 'not_in' }] : []),
+        ...(can('audit-logs') ? [{ label: 'Audit log', href: '/admin/collections/audit-logs', icon: 'audit' }] : []),
         { label: 'Payments', icon: 'payments', soon: 'Sprint 5' },
         { label: 'Shipping', icon: 'shipping', soon: 'Sprint 4' },
         { label: 'Notifications', icon: 'notifications', soon: 'Sprint 7' },

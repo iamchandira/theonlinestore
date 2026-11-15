@@ -163,6 +163,27 @@ The Payload admin is customised through its component API, without forking Paylo
 - `/admin/search-insights`.
 - `AdminPage` wraps custom routes in Payload's template.
 
+### Added in Sprint 3 (accounts & security)
+**Users (auth collection):**
+- Auth settings:
+  - `verify` (email confirmation) and `forgotPassword` (1 h, single use), both with branded templates in `lib/email/templates.ts`.
+  - Lockout after 5 attempts (15 min). Lax cookies, secure in production.
+- New fields: `addresses[]` (label, recipient, phone, line1/2, city, district (25), postalCode, landmark, isDefault), `marketingChannels`, `marketingConsentAt`, `deletionRequestedAt`, `wishlist` (json), `staffNote` (staff only).
+- Access is scoped per role (see the RBAC matrix). `POST /api/users/wishlist` merges or replaces the account wishlist.
+
+**Storefront auth:**
+- Server actions (`app/(frontend)/account/actions.ts`) call Payload's Local API (`login`, `forgotPassword`, `resetPassword`, `verifyEmail`). They set the http-only `payload-token` cookie themselves: 30 days with "Keep me signed in", otherwise a browser-session cookie.
+- `lib/auth/server.ts` (`getCurrentUser`, `requireUser`, `safeNext`) protects pages.
+- `AuthProvider` (client, `/api/users/me`) drives the header and the wishlist sync. Sign-out uses `POST /api/users/logout`, which also ends the server session.
+
+**Email:** `@payloadcms/email-nodemailer` over SMTP (`SMTP_*` and `EMAIL_FROM_*` env vars). Locally it sends to Mailpit (docker-compose, SMTP :1026, inbox :8026). Without `SMTP_HOST`, emails are printed to the console.
+
+**Audit log:**
+- `audit-logs` collection, written by `lib/payload/audit.ts` inside the request's transaction.
+- Hooks: users (roles, staff created, deletion requests, deletes), products (price, compare-at and cost diffs per SKU; deletes), reviews (moderation, deletes), categories, brands and taxonomies (deletes), the home-page global (edits), CSV import (apply).
+
+**Rate limiting:** `lib/server/rateLimit.ts`, in memory, keyed by `clientIp()` (`X-Real-IP`, then the last `X-Forwarded-For` entry).
+
 ### Target (Sprints 2–7)
 ```mermaid
 erDiagram

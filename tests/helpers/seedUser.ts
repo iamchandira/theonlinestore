@@ -56,3 +56,9 @@ export async function cleanupTestUser(user: { email: string } = testUser): Promi
     },
   })
 }
+
+/** Deletes any user with this email (storefront test customers). */
+export async function deleteUserByEmail(email: string): Promise<void> {
+  const payload = await getPayload({ config })
+  await payload.delete({ collection: 'users', where: { email: { equals: email } }, overrideAccess: true })
+}

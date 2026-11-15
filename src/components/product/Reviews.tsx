@@ -7,6 +7,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Drawer } from '@/components/ui/Drawer'
 import { Rating } from '@/components/ui/Rating'
+import { useAuth } from '@/lib/auth/AuthProvider'
 import type { PublicReview, ReviewSort, ReviewSummary } from '@/lib/catalog/server'
 import { cn } from '@/lib/utils/cn'
 
@@ -286,6 +287,9 @@ type FieldErrors = Partial<Record<'rating' | 'body' | 'name' | 'email' | 'photos
 
 function WriteReview({ open, onClose, productId, productName }: { open: boolean; onClose: () => void; productId: number; productName: string }) {
   const id = useId()
+  // Signed-in shoppers: name and email are filled in, and the review is linked to their account
+  const { user } = useAuth()
+  const shownName = user?.fullName ? `${user.fullName.split(' ')[0]} ${user.fullName.split(' ')[1]?.charAt(0) ?? ''}`.trim() + (user.fullName.split(' ')[1] ? '.' : '') : ''
   const [stars, setStars] = useState(0)
   const [hover, setHover] = useState(0)
   const [photos, setPhotos] = useState<{ file: File; url: string }[]>([])
@@ -394,12 +398,12 @@ function WriteReview({ open, onClose, productId, productName }: { open: boolean;
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-sm font-semibold">
               Name to show
-              <input name="name" required maxLength={60} autoComplete="given-name" aria-invalid={Boolean(errors.name)} className={field} placeholder="e.g. Nadeesha K." />
+              <input name="name" required maxLength={60} autoComplete="given-name" aria-invalid={Boolean(errors.name)} className={field} placeholder="e.g. Nadeesha K." defaultValue={shownName} />
               {err('name')}
             </label>
             <label className="text-sm font-semibold">
               Email <span className="font-normal text-ink-500">(private)</span>
-              <input name="email" type="email" required maxLength={120} autoComplete="email" aria-invalid={Boolean(errors.email)} className={field} placeholder="you@example.com" />
+              <input name="email" type="email" required maxLength={120} autoComplete="email" aria-invalid={Boolean(errors.email)} className={field} placeholder="you@example.com" defaultValue={user?.email ?? ''} />
               {err('email')}
             </label>
           </div>

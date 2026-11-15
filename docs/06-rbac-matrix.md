@@ -27,9 +27,9 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 | Admin panel access | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | Users: staff accounts & roles | CRUD | CRU (no super-admin) | — | — | — | — | — | — |
 | Users: customers | CRUD | CRUD | RU | — | R | R | RU | Own RU |
-| Products / variants | CRUD | CRUD | CRUD | R, U stock | R | R, U SEO | R | R (published) |
+| Products / variants | CRUD | CRUD | CRUD | R, U stock | R | CRU (no price, cost or stock) | R | R (published) |
 | Cost price field | RU | RU | RU | R | — | — | — | — |
-| Categories / brands / tags | CRUD | CRUD | CRUD | R | R | CRU | R | R |
+| Categories / brands / tags / taxonomies | CRUD | CRUD | CRUD | R | R | CRU | R | R |
 | Stock movements | CRUD | CRUD | CR | CR | R | — | R | — |
 | Media | CRUD | CRUD | CRUD | CRU | R | CRU | R | R |
 | Orders | CRUD | CRUD | CRU | R | RU (status, shipment) | R | RU (notes) | Own R |
@@ -40,7 +40,7 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 | **Payment settings & credentials** | RU | R\* | — | — | — | — | — | — |
 | Notification templates & toggles | CRUD | CRUD | R | — | — | CRU | R | — |
 | Pages / blog / home page | CRUD | CRUD | CRU | — | — | CRUD | R | R (published) |
-| Reviews moderation | CRUD | CRUD | RUD | — | — | RU | RU | Own CRU |
+| Reviews moderation | CRUD | CRUD | RUD | — | — | RU | RU | Own C (review form) |
 | Reports & analytics | ✅ all | ✅ all | ✅ sales, products | inventory only | fulfilment only | marketing, coupons | — | — |
 | Audit log | R | R | — | — | — | — | — | — |
 | Store settings | RU | RU | R | — | — | RU (announcements) | R | — |
@@ -83,5 +83,19 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
   - Export: admin, store-manager, inventory-manager, marketing. Cost is included only for price roles.
   - Import: prices and cost need store-manager; stock and the low-stock threshold need inventory-manager or store-manager. Fields a role can't change are reported as skipped, and the update runs with the caller's access.
 
+## Rules implemented in Sprint 3 (accounts & security)
+- **Users:**
+  - Admins read and edit everyone.
+  - Store managers and support read and edit customers (and themselves).
+  - Fulfilment and marketing read customers.
+  - Everyone else, customers included, reads and edits only their own account. Non-admin staff never see other staff accounts.
+  - Only admins change roles. Only a Super Admin grants Super Admin; anyone else gets a clear error.
+  - Public sign-up always creates a customer.
+- **Deletes:** products, categories, brands and taxonomies can only be deleted by store managers (and admins). Marketing creates and edits them.
+- **Reviews:** created by shoppers through the form (staff can't post reviews). Update by store manager, marketing and support; delete by store manager.
+- **Audit log:** read by admins (and super-admins). Nobody can create, edit or delete entries through the API.
+- **Inventory screen:** stock changes need store manager or inventory manager. Fulfilment and support see it read-only, and marketing doesn't see it.
+- **Customers:** blocked from `/admin` (403). A customer API call only ever returns their own user record.
+
 ## Testing
-From Sprint 3 (TOS-401), each cell in the table above gets an automated integration test (`tests/int/rbac.int.spec.ts`) that logs in as each role and checks the allowed and denied operations.
+`tests/int/rbac.int.spec.ts` (TOS-401) signs in as every role and checks the allowed and denied operations above through the same access rules the API uses (16 checks). Any access change must update this matrix and that test together.

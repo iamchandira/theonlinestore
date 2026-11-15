@@ -1,6 +1,7 @@
 import { slugField, type CollectionConfig } from 'payload'
 
-import { anyone, catalogEditors } from '../access/roles'
+import { anyone, catalogDeleters, catalogEditors } from '../access/roles'
+import { auditDelete } from '../lib/payload/audit'
 import { revalidateStorefront, revalidateStorefrontOnDelete } from '../lib/payload/revalidate'
 
 const paths = (doc: Record<string, unknown>) => ['/brands', `/brands/${doc.slug}`]
@@ -13,9 +14,9 @@ export const Brands: CollectionConfig = {
     defaultColumns: ['name', 'group', 'featured', 'updatedAt'],
     description: 'Brands on the store. Featured brands appear on the home page and in the Brands menu.',
   },
-  access: { read: anyone, create: catalogEditors, update: catalogEditors, delete: catalogEditors },
+  access: { read: anyone, create: catalogEditors, update: catalogEditors, delete: catalogDeleters },
   defaultSort: 'name',
-  hooks: { afterChange: [revalidateStorefront(paths)], afterDelete: [revalidateStorefrontOnDelete(paths)] },
+  hooks: { afterChange: [revalidateStorefront(paths)], afterDelete: [revalidateStorefrontOnDelete(paths), auditDelete('brands', (d) => String(d.name))] },
   fields: [
     { name: 'name', type: 'text', required: true, unique: true },
     slugField({ useAsSlug: 'name' }),

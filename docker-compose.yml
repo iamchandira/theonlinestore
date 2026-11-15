@@ -18,5 +18,13 @@ services:
       timeout: 5s
       retries: 10
 
+  # Local mail catcher: every email the app sends lands here (web inbox http://localhost:8026, SMTP :1026; elift-crm uses 8025/1025)
+  mailpit:
+    image: axllent/mailpit:v1.21
+    restart: unless-stopped
+    ports:
+      - '8026:8025'
+      - '1026:1025'
+
 volumes:
   pgdata:

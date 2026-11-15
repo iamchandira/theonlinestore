@@ -103,7 +103,14 @@ export function ProductsTable({
     </th>
   )
 
-  if (!rows.length) return <div className="tos-empty">No products match these filters.</div>
+  // Keep the confirmation visible even when a bulk action empties this tab (e.g. publishing every draft)
+  if (!rows.length)
+    return (
+      <>
+        <div className="tos-empty">No products match these filters.</div>
+        {toast && <div className={`tos-toast${toast.error ? ' tos-toast--error' : ''}`}>{toast.text}</div>}
+      </>
+    )
 
   return (
     <>

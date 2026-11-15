@@ -29,6 +29,7 @@ import {
   IconUsers,
   IconFileText,
   IconFileImport,
+  IconFileCertificate,
   IconListSearch,
   IconMessageStar,
 } from '@tabler/icons-react'
@@ -62,6 +63,7 @@ const ICONS: Record<string, ComponentType<{ size?: number; stroke?: number }>> =
   reviews: IconMessageStar,
   import: IconFileImport,
   search: IconListSearch,
+  audit: IconFileCertificate,
 }
 
 export type NavItemDef = {

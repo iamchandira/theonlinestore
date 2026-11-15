@@ -32,7 +32,9 @@
 | Copy | Sri Lankan English, friendly tone (see `05-brand-and-design-system.md`) |
 | Raw SQL in hooks | Use the request's transaction (see `db()` in `collections/Reviews.ts`), or the hook won't see the row being saved |
 | Database extras | Extensions and custom indexes go in the Postgres adapter config (`extensions`, `afterSchemaInit`), never ad-hoc SQL, so schema sync and migrations know about them |
-| E2E runs | Run against a production build (`pnpm build && pnpm start`, then `pnpm test:e2e`). The dev server can give false failures after long editing sessions. |
+| E2E runs | Run against a production build (`pnpm build && pnpm start`, then `pnpm test:e2e`). The dev server can give false failures after long editing sessions. Mailpit must be running (`docker compose up -d`): account tests read real emails. |
+| Permissions | Any access change updates `06-rbac-matrix.md` and `tests/int/rbac.int.spec.ts` in the same commit |
+| Client IPs | Use `clientIp()` (`lib/server/rateLimit.ts`), never the first `X-Forwarded-For` value |
 
 ## Quality gates (commands)
 ```bash

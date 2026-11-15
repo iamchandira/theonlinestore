@@ -19,6 +19,7 @@ import { primaryNav, type MegaKey } from '@/config/navigation'
 import { site } from '@/config/site'
 import type { NavData } from '@/lib/catalog/server'
 import { formatLKR } from '@/lib/format'
+import { useAuth } from '@/lib/auth/AuthProvider'
 import { useShop } from '@/lib/store/shop'
 import { cn } from '@/lib/utils/cn'
 
@@ -40,6 +41,7 @@ import { SearchBox } from './SearchBox'
  */
 export function Header({ nav }: { nav: NavData }) {
   const { itemCount, subtotal, wishlist, setCartOpen, cartIconRef, addPulse } = useShop()
+  const { user: authUser } = useAuth()
   const [mega, setMega] = useState<null | MegaKey>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [compact, setCompact] = useState(false)
@@ -96,8 +98,19 @@ export function Header({ nav }: { nav: NavData }) {
             <Link href="/track-order" className="hidden h-11 items-center gap-2 rounded-full px-3 text-sm font-semibold hover:bg-ink-50 xl:inline-flex">
               <IconPackage size={22} /> Track order
             </Link>
-            <Link href="/account" aria-label="Account" className="hidden size-11 place-items-center rounded-full hover:bg-ink-50 md:grid">
-              <IconUser size={23} />
+            <Link
+              href="/account"
+              aria-label={authUser ? `Your account (${authUser.email})` : 'Sign in or create an account'}
+              title={authUser ? 'Your account' : 'Sign in'}
+              className="hidden size-11 place-items-center rounded-full hover:bg-ink-50 md:grid"
+            >
+              {authUser ? (
+                <span aria-hidden className="grid size-8 place-items-center rounded-full bg-sunset-deep text-sm font-bold text-white">
+                  {(authUser.fullName || authUser.email).charAt(0).toUpperCase()}
+                </span>
+              ) : (
+                <IconUser size={23} />
+              )}
             </Link>
             <Link href="/wishlist" aria-label={`Wishlist (${wishlist.length})`} className="relative hidden size-11 place-items-center rounded-full hover:bg-ink-50 md:grid">
               <IconHeart size={23} />

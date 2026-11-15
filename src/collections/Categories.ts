@@ -1,6 +1,7 @@
 import { slugField, type CollectionConfig } from 'payload'
 
-import { anyone, catalogEditors } from '../access/roles'
+import { anyone, catalogDeleters, catalogEditors } from '../access/roles'
+import { auditDelete } from '../lib/payload/audit'
 import { revalidateStorefront, revalidateStorefrontOnDelete } from '../lib/payload/revalidate'
 
 /** `breadcrumbs` and `parent` are added by the nested-docs plugin (see payload.config.ts). */
@@ -18,9 +19,9 @@ export const Categories: CollectionConfig = {
     defaultColumns: ['name', 'slug', 'parent', 'order'],
     description: 'Departments and sub-categories shoppers browse by. Nest a category under a parent to build the menu.',
   },
-  access: { read: anyone, create: catalogEditors, update: catalogEditors, delete: catalogEditors },
+  access: { read: anyone, create: catalogEditors, update: catalogEditors, delete: catalogDeleters },
   defaultSort: 'order',
-  hooks: { afterChange: [revalidateStorefront(paths)], afterDelete: [revalidateStorefrontOnDelete(paths)] },
+  hooks: { afterChange: [revalidateStorefront(paths)], afterDelete: [revalidateStorefrontOnDelete(paths), auditDelete('categories', (d) => String(d.name))] },
   fields: [
     { name: 'name', type: 'text', required: true },
     slugField({ useAsSlug: 'name' }),

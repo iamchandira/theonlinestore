@@ -21,6 +21,7 @@ import {
 } from 'react'
 import { toast } from 'sonner'
 
+import { useAuth } from '@/lib/auth/AuthProvider'
 import type { Product, Variant } from '@/lib/catalog'
 
 export type CartLine = {
@@ -132,6 +133,50 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (hydrated) writeJSON(RECENT_KEY, recentlyViewed)
   }, [recentlyViewed, hydrated])
+
+  /*
+   * Wishlist sync (TOS-203): when a shopper signs in, the device list and the account list are merged;
+   * after that every change is saved to the account. Signing out clears it from this device.
+   */
+  const { user } = useAuth()
+  const mergedFor = useRef<number | null>(null)
+  useEffect(() => {
+    if (!hydrated || !user) {
+      mergedFor.current = null
+      return
+    }
+    if (mergedFor.current === user.id) return
+    mergedFor.current = -1
+    void fetch('/api/users/wishlist', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slugs: readJSON<string[]>(WISH_KEY, []), mode: 'merge' }),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((res: { slugs?: string[] } | null) => {
+        if (res?.slugs) setWishlist(res.slugs)
+        mergedFor.current = user.id
+      })
+      .catch(() => (mergedFor.current = null))
+  }, [hydrated, user])
+  useEffect(() => {
+    if (!user || mergedFor.current !== user.id) return
+    const t = window.setTimeout(() => {
+      void fetch('/api/users/wishlist', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slugs: wishlist, mode: 'replace' }),
+      }).catch(() => {})
+    }, 500)
+    return () => window.clearTimeout(t)
+  }, [wishlist, user])
+  useEffect(() => {
+    const onOut = () => setWishlist([])
+    window.addEventListener('tos:signed-out', onOut)
+    return () => window.removeEventListener('tos:signed-out', onOut)
+  }, [])
 
   const launchFlight = useCallback(
     (src: string, fromEl?: HTMLElement | null) => {

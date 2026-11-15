@@ -60,6 +60,8 @@ export const publishedOrStaff: Access = ({ req }) => {
 
 /** Catalogue editors (content, pricing, merchandising). */
 export const catalogEditors = allowRoles('store-manager', 'marketing')
+/** Destructive catalogue actions (delete products, categories, brands, taxonomies): store managers (and admins). */
+export const catalogDeleters = allowRoles('store-manager')
 /** Catalogue + stock editors. */
 export const catalogAndStock = allowRoles('store-manager', 'inventory-manager', 'marketing')
 

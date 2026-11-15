@@ -1406,6 +1406,8 @@ $tos-sections: (
   media: 'Content',
   stock-movements: 'Insights',
   users: 'People',
+  audit-logs: 'Settings',
+  review-media: 'Catalogue',
 );
 @each $slug, $label in $tos-sections {
   .collection-list--#{$slug} .list-header::before,

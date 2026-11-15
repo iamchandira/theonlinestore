@@ -17,10 +17,10 @@ if (!email || !password) {
 const payload = await getPayload({ config })
 const existing = await payload.find({ collection: 'users', where: { email: { equals: email } }, limit: 1, overrideAccess: true })
 if (existing.docs[0]) {
-  await payload.update({ collection: 'users', id: existing.docs[0].id, data: { password, roles: ['super-admin'] }, overrideAccess: true })
+  await payload.update({ collection: 'users', id: existing.docs[0].id, data: { password, roles: ['super-admin'], _verified: true }, overrideAccess: true })
   console.log(`Updated dev admin ${email}`)
 } else {
-  await payload.create({ collection: 'users', data: { email, password, fullName: 'Dev Admin', roles: ['super-admin'] }, overrideAccess: true })
+  await payload.create({ collection: 'users', data: { email, password, fullName: 'Dev Admin', roles: ['super-admin'], _verified: true }, disableVerificationEmail: true, overrideAccess: true })
   console.log(`Created dev admin ${email}`)
 }
 process.exit(0)

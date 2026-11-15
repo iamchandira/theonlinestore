@@ -66,7 +66,15 @@ export function ReviewsTable({ rows, tab }: { rows: ReviewRow[]; tab: string }) 
     start(() => router.refresh())
   }
 
-  if (!rows.length) return <div className="tos-empty">{tab === 'pending' ? 'No reviews are waiting. New reviews from shoppers will appear here.' : 'No reviews match.'}</div>
+  const toastEl = toast && <div className={`tos-toast${toast.error ? ' tos-toast--error' : ''}`}>{toast.text}</div>
+  // Keep the confirmation visible even when the last review leaves this tab
+  if (!rows.length)
+    return (
+      <>
+        <div className="tos-empty">{tab === 'pending' ? 'No reviews are waiting. New reviews from shoppers will appear here.' : 'No reviews match.'}</div>
+        {toastEl}
+      </>
+    )
 
   return (
     <>
@@ -181,7 +189,7 @@ export function ReviewsTable({ rows, tab }: { rows: ReviewRow[]; tab: string }) 
           </button>
         </div>
       )}
-      {toast && <div className={`tos-toast${toast.error ? ' tos-toast--error' : ''}`}>{toast.text}</div>}
+      {toastEl}
     </>
   )
 }

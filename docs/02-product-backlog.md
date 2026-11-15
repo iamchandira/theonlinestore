@@ -1,6 +1,6 @@
 # 02 · Product Backlog
 
-Version 1.3 · 15 Nov 2026 (after Sprint 2) · Owner: Product Owner. Ordered by priority within each epic.
+Version 1.4 · 15 Nov 2026 (after Sprint 3) · Owner: Product Owner. Ordered by priority within each epic.
 
 **Priority (MoSCoW):** M = Must, S = Should, C = Could, Sug = Suggested (an idea from the delivery team, needs PO approval).
 **Points:** Fibonacci (1, 2, 3, 5, 8, 13). **Status:** ✅ Done · 🔄 In progress · ⬜ To do.
@@ -13,8 +13,8 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 | E01 | Catalogue, variants & inventory | 10 | 55 | 1 ✅ (TOS-109 done in Sprint 2) |
 | E13 | Lifestyle catalogue & custom admin | 12 | 47 | 1.5 ✅ |
 | E02 | Discovery: search, filters, wishlist, recommendations | 8 | 42 | 2 ✅ (+TOS-109 carried over, done) |
-| E03 | Customer accounts | 7 | 29 | 3 |
-| E04 | RBAC & admin security | 4 | 18 | 3 |
+| E03 | Customer accounts | 7 | 29 | 3 ✅ (TOS-305 history → Sprint 6, TOS-307 → Sprint 4) |
+| E04 | RBAC & admin security | 4 | 18 | 3 ✅ (TOS-403 2FA → Sprint 10) |
 | E05 | Bag & checkout | 9 | 52 | 4 |
 | E06 | Payments | 7 | 47 | 5 |
 | E07 | Orders & delivery | 8 | 44 | 6 |
@@ -122,29 +122,29 @@ Added after Sprint 1 at the owner's request: the store is a lifestyle store, not
 - Clear-all is available.
 - Back/forward restores the filters.
 
-## E03 · Customer accounts (Sprint 3)
-| ID | Story | P | Pts |
-|---|---|---|---|
-| TOS-301 | As a shopper, I want to register with my email or mobile and verify it. | M | 5 |
-| TOS-302 | As a customer, I want to log in and out securely, with a "remember me" option. | M | 3 |
-| TOS-303 | As a customer, I want to reset my password by email (and by SMS OTP). | M | 5 |
-| TOS-304 | As a customer, I want an address book with districts and cities. | M | 3 |
-| TOS-305 | As a customer, I want to see my order history and reorder in one tap. | M | 5 |
-| TOS-306 | As a customer, I want to manage my marketing consent and request account deletion (PDPA). | M | 3 |
-| TOS-307 | As a guest, I want to create an account after checkout using my order details. | S | 5 |
+## E03 · Customer accounts (Sprint 3) ✅
+| ID | Story | P | Pts | Status |
+|---|---|---|---|---|
+| TOS-301 | As a shopper, I want to register with my email or mobile and verify it. | M | 5 | ✅ email + optional mobile; mobile-only sign-up with SMS OTP → Sprint 7 |
+| TOS-302 | As a customer, I want to log in and out securely, with a "remember me" option. | M | 3 | ✅ |
+| TOS-303 | As a customer, I want to reset my password by email (and by SMS OTP). | M | 5 | ✅ email; SMS OTP → Sprint 7 |
+| TOS-304 | As a customer, I want an address book with districts and cities. | M | 3 | ✅ |
+| TOS-305 | As a customer, I want to see my order history and reorder in one tap. | M | 5 | 🔄 page ready; history + reorder → Sprint 6 (needs orders) |
+| TOS-306 | As a customer, I want to manage my marketing consent and request account deletion (PDPA). | M | 3 | ✅ (+ download my data) |
+| TOS-307 | As a guest, I want to create an account after checkout using my order details. | S | 5 | ➡️ Sprint 4 (needs an order) |
 
 **AC (TOS-303):**
 - The reset link expires after 1 hour and can be used once.
 - The response never reveals whether an email exists.
 - Requests are rate-limited (5 per hour per IP).
 
-## E04 · RBAC & admin security (Sprint 3)
-| ID | Story | P | Pts |
-|---|---|---|---|
-| TOS-401 | As the owner, I want staff roles enforced on every collection and field according to the RBAC matrix. | M | 8 |
-| TOS-402 | As a super admin, I want an audit log of sensitive actions. | M | 5 |
-| TOS-403 | As a super admin, I want optional two-factor authentication for staff. | S | 3 |
-| TOS-404 | As the owner, I want the admin dashboard to show only what's relevant to each role. | S | 2 |
+## E04 · RBAC & admin security (Sprint 3) ✅
+| ID | Story | P | Pts | Status |
+|---|---|---|---|---|
+| TOS-401 | As the owner, I want staff roles enforced on every collection and field according to the RBAC matrix. | M | 8 | ✅ 16 automated checks |
+| TOS-402 | As a super admin, I want an audit log of sensitive actions. | M | 5 | ✅ |
+| TOS-403 | As a super admin, I want optional two-factor authentication for staff. | S | 3 | ➡️ Sprint 10 (custom admin sign-in) |
+| TOS-404 | As the owner, I want the admin dashboard to show only what's relevant to each role. | S | 2 | ✅ |
 
 **AC (TOS-401):**
 - Automated tests prove that each role can and cannot perform the actions listed in `06-rbac-matrix.md`.

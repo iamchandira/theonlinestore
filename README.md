@@ -6,7 +6,7 @@ Built with **Next.js 16**, **Payload CMS 3**, **PostgreSQL 16**, **Tailwind CSS 
 
 ## Quick start
 ```bash
-docker compose up -d          # Postgres 16 on localhost:5434
+docker compose up -d          # Postgres 16 on localhost:5434 + Mailpit (emails) at http://localhost:8026
 pnpm install
 cp .env.example .env          # set PAYLOAD_SECRET (openssl rand -hex 32) and the SEED_ADMIN_* values
 pnpm dev                      # storefront http://localhost:3000 · admin http://localhost:3000/admin
@@ -37,4 +37,4 @@ pnpm seed:catalog             # import the 88-product seed catalogue into Payloa
 - **Docs:** [`docs/`](docs/README.md): charter, SRS, backlog, sprint plan, architecture, design system, RBAC, UX
 
 ## Status
-Sprints 0, 1, 1.5 and 2 (find it fast: search, filters, wishlist, reviews, CSV) are complete. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.
+Sprints 0, 1, 1.5, 2 and 3 (accounts and security) are complete. Customer accounts live at `/account`, and local emails appear in Mailpit. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.

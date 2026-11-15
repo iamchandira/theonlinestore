@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { index } from '@payloadcms/db-postgres/drizzle/pg-core'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { seoPlugin } from '@payloadcms/plugin-seo'
@@ -8,6 +9,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { AuditLogs } from './collections/AuditLogs'
 import { Brands } from './collections/Brands'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
@@ -55,7 +57,7 @@ export default buildConfig({
     },
     theme: 'light',
   },
-  collections: [Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users],
+  collections: [Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, AuditLogs],
   globals: [HomePage],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -80,6 +82,19 @@ export default buildConfig({
     ],
   }),
   sharp,
+  // Transactional email over SMTP (local dev: Mailpit, inbox at http://localhost:8026). Without SMTP_HOST, emails go to the console.
+  email: process.env.SMTP_HOST
+    ? nodemailerAdapter({
+        defaultFromAddress: process.env.EMAIL_FROM_ADDRESS || 'hello@theonlinestore.lk',
+        defaultFromName: process.env.EMAIL_FROM_NAME || 'The Online Store',
+        transportOptions: {
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT || 587),
+          secure: Number(process.env.SMTP_PORT) === 465,
+          auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+        },
+      })
+    : undefined,
   // Runs scheduled publish/unpublish jobs (TOS-110) while the server is up
   jobs: {
     autoRun: [{ cron: '* * * * *', queue: 'default', limit: 20 }],

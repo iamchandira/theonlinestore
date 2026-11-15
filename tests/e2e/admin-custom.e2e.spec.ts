@@ -22,7 +22,7 @@ test.describe('Custom admin', () => {
   test('dashboard shows KPIs, launch checklist and the custom sidebar', async () => {
     await page.goto(`${BASE}/admin`)
     await expect(page.locator('.tos-hello h1')).toContainText(/Good (morning|afternoon|evening)/)
-    await expect(page.locator('.tos-kpi')).toHaveCount(6)
+    await expect(page.locator('.tos-kpi')).toHaveCount(7) // incl. "Reviews waiting" (Sprint 2)
     await expect(page.getByRole('heading', { name: 'Launch checklist' })).toBeVisible()
     await expect(page.locator('nav[aria-label="Admin"]')).toContainText('Inventory')
   })

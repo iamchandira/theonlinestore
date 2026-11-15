@@ -17,5 +17,16 @@ export function allow(key: string, max: number, windowMs: number) {
   return true
 }
 
-/** Best-effort client IP from proxy headers (falls back to a shared bucket). */
-export const clientIp = (headers: Headers) => (headers.get('x-forwarded-for') ?? headers.get('x-real-ip') ?? '').split(',')[0].trim() || 'local'
+/**
+ * Client IP for rate limiting. Prefers `x-real-ip` (overwritten by the hosting proxy), then the LAST
+ * `x-forwarded-for` entry (added by the nearest proxy). The first entry is client-controlled, so it's
+ * never trusted. Deployment (Sprint 10) must make the proxy set `x-real-ip`.
+ */
+export const clientIp = (headers: Headers) =>
+  headers.get('x-real-ip')?.trim() ||
+  (headers.get('x-forwarded-for') ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .at(-1) ||
+  'local'

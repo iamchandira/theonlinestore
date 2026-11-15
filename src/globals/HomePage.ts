@@ -1,6 +1,7 @@
 import type { GlobalConfig } from 'payload'
 
 import { allowRoles, anyone } from '../access/roles'
+import { audit } from '../lib/payload/audit'
 
 /**
  * Home page merchandising (TOS-108). Marketing picks the hero products and configures product rails
@@ -13,7 +14,8 @@ export const HomePage: GlobalConfig = {
   access: { read: anyone, update: allowRoles('store-manager', 'marketing') },
   hooks: {
     afterChange: [
-      async ({ doc, context }) => {
+      async ({ doc, context, req }) => {
+        if (req.user) await audit(req, { action: 'content-change', collection: 'home-page', summary: 'Home page merchandising updated (hero products / rails)' })
         if (context?.disableRevalidate) return doc
         try {
           const { revalidatePath } = await import('next/cache')

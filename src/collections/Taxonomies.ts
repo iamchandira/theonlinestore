@@ -1,12 +1,14 @@
 import { slugField, type CollectionConfig } from 'payload'
 
-import { anyone, catalogEditors } from '../access/roles'
+import { anyone, catalogDeleters, catalogEditors } from '../access/roles'
+import { auditDelete } from '../lib/payload/audit'
 
 const taxonomy = (slug: string, singular: string, plural: string, description: string): CollectionConfig => ({
   slug,
   labels: { singular, plural },
   admin: { useAsTitle: 'name', group: 'Catalogue', description },
-  access: { read: anyone, create: catalogEditors, update: catalogEditors, delete: catalogEditors },
+  access: { read: anyone, create: catalogEditors, update: catalogEditors, delete: catalogDeleters },
+  hooks: { afterDelete: [auditDelete(slug, (d) => String(d.name))] },
   defaultSort: 'name',
   fields: [{ name: 'name', type: 'text', required: true, unique: true }, slugField({ useAsSlug: 'name' })],
 })

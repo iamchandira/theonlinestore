@@ -56,7 +56,7 @@
 ├─ /p/{product-slug}               Product page (?variant=sku)
 ├─ /search?q=
 ├─ /wishlist   /categories
-├─ /account  (login, register, reset, orders, addresses, profile)
+├─ /account  (overview, orders, addresses, profile, privacy) · /account/{login|register|forgot-password|reset-password|verify}
 ├─ /checkout  →  /checkout/success/{order}
 ├─ /track-order
 ├─ /blog  →  /blog/{post}
@@ -97,6 +97,16 @@
   - Then "With photos", sort, "helpful" and store replies.
   - The write-a-review form is short (stars, text, name, private email, optional photos) and promises moderation up front.
 - **Wishlist:** works without an account, can be shared as a link, and "Save all" adds a shared list in one tap.
+
+**Accounts (Sprint 3):**
+- Guest checkout always stays available; an account is a convenience, not a gate.
+- Sign-in returns you to where you were.
+- "Keep me signed in" is on by default and can be unticked on shared devices.
+- Forms validate on the server and show errors next to the field (`aria-invalid` plus a message), with a summary at the top.
+- Password fields have a show/hide toggle.
+- Addresses: pick the district first, then the town (with suggestions for that district). A landmark field helps couriers. One address is the default.
+- Privacy is self-service: consent per channel, data download, and a deletion request that can be cancelled.
+- Copy never reveals whether an email has an account, except at sign-up where saying so is the kinder answer.
 
 ## 6. Microcopy examples
 | Situation | Copy |
