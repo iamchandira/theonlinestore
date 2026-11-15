@@ -2,6 +2,8 @@ import type { Payload, PayloadRequest, Where } from 'payload'
 
 import type { CheckoutSetting, Discount, Product } from '@/payload-types'
 
+import { isOnline, type PaymentMethod } from '../../collections/Transactions'
+import { gatewayRoute, loadPaymentConfig, type PaymentConfig } from '../payments/config'
 import { quote, type DeliverySettings, type DiscountRule, type PriceLine, type Quote } from './pricing'
 
 /**
@@ -43,8 +45,6 @@ export type CheckoutConfig = {
   cutoffHour: number
   giftWrapFee: number
   termsVersion: string
-  cod: { enabled: boolean; maxOrder: number; fee: number }
-  bankTransfer: { enabled: boolean; instructions: string; holdHours: number }
 }
 
 export async function loadCheckoutConfig(payload: Payload, req?: Partial<PayloadRequest>): Promise<CheckoutConfig> {
@@ -66,8 +66,6 @@ export async function loadCheckoutConfig(payload: Payload, req?: Partial<Payload
     cutoffHour: s.sameDay?.cutoffHour ?? 12,
     giftWrapFee: s.giftWrapFee ?? 250,
     termsVersion: s.termsVersion ?? '2026-11',
-    cod: { enabled: Boolean(s.cod?.enabled ?? true), maxOrder: s.cod?.maxOrder ?? 50000, fee: s.cod?.fee ?? 0 },
-    bankTransfer: { enabled: Boolean(s.bankTransfer?.enabled ?? true), instructions: s.bankTransfer?.instructions ?? '', holdHours: s.bankTransfer?.holdHours ?? 48 },
   }
 }
 
@@ -257,11 +255,22 @@ export type CheckoutQuoteInput = {
   method?: 'standard' | 'same-day'
   couponCode?: string | null
   giftWrap?: boolean
-  payment?: 'cod' | 'bank-transfer' | null
+  payment?: PaymentMethod | null
   shopper: { email?: string | null; phone?: string | null; userId?: number | null }
 }
 
-export type PaymentOption = { id: 'cod' | 'bank-transfer'; label: string; available: boolean; note?: string; fee: number }
+export type PaymentOption = {
+  id: PaymentMethod
+  label: string
+  available: boolean
+  note?: string
+  fee: number
+  online: boolean
+  /** Each of 3 instalments, for Koko and Mintpay */
+  instalment?: number
+  /** Runs on the built-in test gateway (no real money) */
+  test?: boolean
+}
 
 export type CheckoutQuote = {
   quote: Quote
@@ -273,10 +282,11 @@ export type CheckoutQuote = {
   /** Cash-on-delivery fee included in quote.total (0 unless COD is chosen and has a fee) */
   codFee: number
   config: CheckoutConfig
+  payConfig: PaymentConfig
 }
 
 export async function quoteCheckout(payload: Payload, input: CheckoutQuoteInput, req?: Partial<PayloadRequest>): Promise<CheckoutQuote> {
-  const config = await loadCheckoutConfig(payload, req)
+  const [config, payConfig] = await Promise.all([loadCheckoutConfig(payload, req), loadPaymentConfig(payload, req)])
   const [{ priceLines, views, issues }, first] = await Promise.all([loadLines(payload, input.items, req), isFirstOrder(payload, input.shopper, req)])
   const automatic = await loadAutomatic(payload, { isFirstOrder: first }, req)
   let couponRule: DiscountRule | null = null
@@ -303,19 +313,58 @@ export async function quoteCheckout(payload: Payload, input: CheckoutQuoteInput,
   })
   if (couponRule && q.coupon && !q.coupon.applied) couponError = q.coupon.message ?? 'This code can’t be used on this order.'
 
-  // Cash on delivery: fee and order limit; bank transfer: always available when enabled
-  const codFee = config.cod.fee
-  const payments: PaymentOption[] = [
-    {
-      id: 'cod',
-      label: 'Cash on delivery',
-      available: config.cod.enabled && q.total + codFee <= config.cod.maxOrder,
-      note: !config.cod.enabled ? 'Not available right now' : q.total + codFee > config.cod.maxOrder ? `Available on orders up to Rs ${config.cod.maxOrder.toLocaleString('en-LK')}` : 'Pay the courier in cash or by card when it arrives',
-      fee: codFee,
-    },
-    { id: 'bank-transfer', label: 'Bank transfer', available: config.bankTransfer.enabled, note: config.bankTransfer.enabled ? 'We’ll send our bank details. Your order ships once the payment is in.' : 'Not available right now', fee: 0 },
-  ]
-  const appliedCodFee = input.payment === 'cod' && codFee && payments[0].available ? codFee : 0
+  const payments = paymentOptions(payConfig, q.total, input.district ?? null)
+  const appliedCodFee = input.payment === 'cod' && payments.find((p) => p.id === 'cod')?.available ? payConfig.cod.fee : 0
   q.total += appliedCodFee
-  return { quote: q, views, issues, couponError, couponDoc, payments, codFee: appliedCodFee, config }
+  return { quote: q, views, issues, couponError, couponDoc, payments, codFee: appliedCodFee, config, payConfig }
+}
+
+/* ---------------------------------------------------------------- payment options */
+
+const lkr = (n: number) => `Rs ${n.toLocaleString('en-LK')}`
+const NOTES: Record<PaymentMethod, string> = {
+  payhere: 'Visa, Mastercard, Amex, eZ Cash, mCash or Genie. Secured by PayHere.',
+  koko: 'Pay a third today, the rest over two months. No interest.',
+  mintpay: 'Pay a third today, the rest over two months. No interest.',
+  cod: 'Pay the courier in cash or by card when it arrives',
+  'bank-transfer': 'We’ll send our bank details. Upload your slip and we ship once it’s confirmed.',
+}
+
+/**
+ * Payment methods for this order (Sprint 5, TOS-601/606): enabled ones only, in the admin's order, each
+ * with its limits checked. Online methods need a working route (real gateway or the test gateway).
+ */
+export function paymentOptions(cfg: PaymentConfig, total: number, district: string | null): PaymentOption[] {
+  const out: PaymentOption[] = []
+  for (const m of Object.values(cfg.methods).sort((a, b) => a.sortOrder - b.sortOrder)) {
+    if (!m.enabled) continue
+    const online = isOnline(m.id)
+    const route = online ? gatewayRoute(cfg, m.id as never) : null
+    if (online && !route) continue
+    const fee = m.id === 'cod' ? cfg.cod.fee : 0
+    const due = total + fee
+    let note = NOTES[m.id]
+    let available = true
+    if (m.minOrder && due < m.minOrder) {
+      available = false
+      note = `Available on orders from ${lkr(m.minOrder)}`
+    } else if (m.maxOrder && due > m.maxOrder) {
+      available = false
+      note = `Available on orders up to ${lkr(m.maxOrder)}`
+    } else if (m.id === 'cod' && district && cfg.cod.excludedDistricts.includes(district)) {
+      available = false
+      note = `Not available in ${district} District yet`
+    }
+    out.push({
+      id: m.id,
+      label: m.label,
+      available,
+      note,
+      fee,
+      online,
+      instalment: m.id === 'koko' || m.id === 'mintpay' ? Math.ceil(total / 3) : undefined,
+      test: route === 'simulator' || undefined,
+    })
+  }
+  return out
 }

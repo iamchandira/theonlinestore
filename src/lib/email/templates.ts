@@ -72,7 +72,7 @@ type OrderEmail = {
   discounts: { label: string; amount: number }[]
   address: { recipientName: string; phone: string; line1: string; line2?: string | null; city: string; district: string }
   delivery: { method: string; eta?: string | null }
-  paymentMethod: 'cod' | 'bank-transfer'
+  paymentMethod: 'cod' | 'bank-transfer' | 'payhere' | 'koko' | 'mintpay'
   bankInstructions?: string
   viewUrl: string
 }
@@ -88,10 +88,13 @@ export function orderConfirmation(o: OrderEmail) {
         `<tr><td style="padding:10px 0;border-bottom:1px solid #ece7e2;font-size:14px;color:#0e1a33"><strong>${esc(i.name)}</strong>${i.brand ? `<br><span style="color:#5b6b85;font-size:12px">${esc(i.brand)}${i.variant ? ` · ${esc(i.variant)}` : ''}</span>` : ''}<br><span style="color:#5b6b85;font-size:12px">Qty ${i.quantity}</span></td><td align="right" style="padding:10px 0;border-bottom:1px solid #ece7e2;font-size:14px;white-space:nowrap">${rs(i.lineTotal)}</td></tr>`,
     )
     .join('')
+  const paidOnline: Record<string, string> = { payhere: 'by card (PayHere)', koko: 'with Koko', mintpay: 'with Mintpay' }
   const payment =
     o.paymentMethod === 'cod'
       ? '<strong>Cash on delivery.</strong> Please keep the exact amount ready; most couriers also take cards.'
-      : `<strong>Bank transfer.</strong> Please transfer <strong>${rs(o.totals.total)}</strong> using <strong>${esc(o.orderNumber)}</strong> as the reference. We ship as soon as it arrives.${o.bankInstructions ? `<br><span style="color:#5b6b85">${esc(o.bankInstructions)}</span>` : ''}`
+      : o.paymentMethod === 'bank-transfer'
+        ? `<strong>Bank transfer.</strong> Please transfer <strong>${rs(o.totals.total)}</strong> using <strong>${esc(o.orderNumber)}</strong> as the reference, then upload the slip from your order page. We ship as soon as it’s confirmed.${o.bankInstructions ? `<br><span style="color:#5b6b85">${esc(o.bankInstructions)}</span>` : ''}`
+        : `<strong>Paid ${paidOnline[o.paymentMethod]}.</strong> We’ve received ${rs(o.totals.total)}. Thank you!`
   const a = o.address
   const intro = `Hi ${first(o.fullName)}, thank you for your order <strong>${esc(o.orderNumber)}</strong>. Here’s your summary.
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0 6px">${items}</table>
@@ -111,3 +114,20 @@ ${row('Total', rs(o.totals.total), true)}
     footnote: 'Questions about your order? Reply to this email or message us on WhatsApp with your order number.',
   })
 }
+
+/** Bank transfer confirmed by staff (Sprint 5). */
+export const paymentReceived = (o: { orderNumber: string; fullName: string; amount: number; viewUrl: string }) =>
+  layout({
+    heading: 'Payment received',
+    intro: `Hi ${first(o.fullName)}, we’ve confirmed your bank transfer of <strong>${rs(o.amount)}</strong> for order <strong>${esc(o.orderNumber)}</strong>. We’re getting it ready to ship.`,
+    cta: { label: 'View your order', url: o.viewUrl },
+  })
+
+/** A bank slip we couldn't match (Sprint 5). */
+export const slipRejected = (o: { orderNumber: string; fullName: string; reason: string; viewUrl: string }) =>
+  layout({
+    heading: 'We couldn’t confirm your payment',
+    intro: `Hi ${first(o.fullName)}, we couldn’t match the slip you sent for order <strong>${esc(o.orderNumber)}</strong>: ${esc(o.reason)}`,
+    cta: { label: 'Upload a new slip', url: o.viewUrl },
+    after: 'Reply to this email or message us on WhatsApp if you need help.',
+  })

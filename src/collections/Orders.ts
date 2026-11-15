@@ -1,9 +1,11 @@
 import type { Access, CollectionAfterChangeHook, CollectionBeforeChangeHook, CollectionConfig, Field } from 'payload'
 
-import { allowRoles, hasRole, isStaff } from '../access/roles'
+import { allowRoles, isStaff } from '../access/roles'
 import { DISTRICT_NAMES } from '../config/districts'
 import { placeEndpoint, quoteEndpoint } from '../endpoints/checkout'
+import { orderPaymentEndpoint, orderStatusEndpoint, slipUploadEndpoint } from '../endpoints/payments'
 import { audit } from '../lib/payload/audit'
+import { PAYMENT_METHODS } from './Transactions'
 
 /**
  * Orders (Sprint 4). Created only by the checkout (`POST /api/orders/place`, see endpoints/checkout.ts):
@@ -26,6 +28,15 @@ export const ORDER_STATUSES = [
   { label: 'Failed delivery', value: 'failed-delivery' },
 ] as const
 export type OrderStatus = (typeof ORDER_STATUSES)[number]['value']
+
+export const PAYMENT_STATUSES = [
+  { label: 'Unpaid', value: 'unpaid' },
+  { label: 'Payment processing', value: 'pending' },
+  { label: 'Slip to verify', value: 'slip-uploaded' },
+  { label: 'Paid', value: 'paid' },
+  { label: 'Payment failed', value: 'failed' },
+  { label: 'Refunded', value: 'refunded' },
+] as const
 
 /** RBAC matrix: staff read all orders; customers read their own; guests use the private confirmation link. */
 const readOrders: Access = ({ req }) => {
@@ -110,7 +121,7 @@ export const Orders: CollectionConfig = {
     delete: allowRoles(),
   },
   defaultSort: '-createdAt',
-  endpoints: [quoteEndpoint, placeEndpoint],
+  endpoints: [quoteEndpoint, placeEndpoint, orderStatusEndpoint, slipUploadEndpoint, orderPaymentEndpoint],
   hooks: {
     beforeChange: [timelineOnStatus],
     afterChange: [
@@ -274,10 +285,7 @@ export const Orders: CollectionConfig = {
       name: 'paymentMethod',
       type: 'select',
       required: true,
-      options: [
-        { label: 'Cash on delivery', value: 'cod' },
-        { label: 'Bank transfer', value: 'bank-transfer' },
-      ],
+      options: [...PAYMENT_METHODS],
       admin: { position: 'sidebar', readOnly: true },
     },
     {
@@ -285,13 +293,22 @@ export const Orders: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'unpaid',
-      options: [
-        { label: 'Unpaid', value: 'unpaid' },
-        { label: 'Paid', value: 'paid' },
-        { label: 'Refunded', value: 'refunded' },
-      ],
-      admin: { position: 'sidebar' },
-      access: { update: ({ req }) => hasRole(req.user, 'admin', 'store-manager') },
+      options: [...PAYMENT_STATUSES],
+      // Changed by gateways, slip decisions and the Payment panel (POST /api/orders/:id/payment), which keep the transactions log
+      admin: { position: 'sidebar', readOnly: true },
+    },
+    {
+      name: 'paymentDueAt',
+      label: 'Pay by',
+      type: 'date',
+      index: true,
+      admin: { position: 'sidebar', readOnly: true, date: { pickerAppearance: 'dayAndTime' }, description: 'Unpaid card, instalment and bank transfer orders are cancelled after this.' },
+    },
+    { name: 'paidAt', type: 'date', admin: { position: 'sidebar', readOnly: true, date: { pickerAppearance: 'dayAndTime' } } },
+    {
+      name: 'paymentPanel',
+      type: 'ui',
+      admin: { position: 'sidebar', components: { Field: '/components/admin/OrderPayment#OrderPayment' } },
     },
     { name: 'customer', type: 'relationship', relationTo: 'users', index: true, admin: { position: 'sidebar', readOnly: true } },
     { name: 'coupon', type: 'relationship', relationTo: 'discounts', admin: { position: 'sidebar', readOnly: true } },

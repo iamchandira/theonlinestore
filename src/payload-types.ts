@@ -68,6 +68,8 @@ export interface Config {
   blocks: {};
   collections: {
     orders: Order;
+    transactions: Transaction;
+    'payment-slips': PaymentSlip;
     discounts: Discount;
     products: Product;
     reviews: Review;
@@ -92,6 +94,8 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    transactions: TransactionsSelect<false> | TransactionsSelect<true>;
+    'payment-slips': PaymentSlipsSelect<false> | PaymentSlipsSelect<true>;
     discounts: DiscountsSelect<false> | DiscountsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
@@ -120,10 +124,14 @@ export interface Config {
   globals: {
     'home-page': HomePage;
     'checkout-settings': CheckoutSetting;
+    'payment-settings': PaymentSetting;
+    'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'checkout-settings': CheckoutSettingsSelect<false> | CheckoutSettingsSelect<true>;
+    'payment-settings': PaymentSettingsSelect<false> | PaymentSettingsSelect<true>;
+    'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -132,6 +140,7 @@ export interface Config {
   user: User;
   jobs: {
     tasks: {
+      releaseUnpaidOrders: TaskReleaseUnpaidOrders;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -274,8 +283,13 @@ export interface Order {
     | 'refunded'
     | 'returned'
     | 'failed-delivery';
-  paymentMethod: 'cod' | 'bank-transfer';
-  paymentStatus: 'unpaid' | 'paid' | 'refunded';
+  paymentMethod: 'payhere' | 'koko' | 'mintpay' | 'cod' | 'bank-transfer';
+  paymentStatus: 'unpaid' | 'pending' | 'slip-uploaded' | 'paid' | 'failed' | 'refunded';
+  /**
+   * Unpaid card, instalment and bank transfer orders are cancelled after this.
+   */
+  paymentDueAt?: string | null;
+  paidAt?: string | null;
   customer?: (number | null) | User;
   coupon?: (number | null) | Discount;
   termsAcceptedAt?: string | null;
@@ -892,6 +906,100 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Every payment attempt and gateway callback. Read-only: written by checkout, gateways and payment actions on an order.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions".
+ */
+export interface Transaction {
+  id: number;
+  /**
+   * Sent to the gateway as its order id (order number + attempt).
+   */
+  reference: string;
+  order: number | Order;
+  method: 'payhere' | 'koko' | 'mintpay' | 'cod' | 'bank-transfer';
+  kind: 'payment' | 'refund';
+  status: 'initiated' | 'pending' | 'paid' | 'failed' | 'cancelled' | 'chargeback' | 'slip-uploaded' | 'rejected';
+  amount: number;
+  currency?: string | null;
+  providerRef?: string | null;
+  message?: string | null;
+  /**
+   * The last gateway message for this attempt passed the signature check.
+   */
+  signatureValid?: boolean | null;
+  /**
+   * Made with the built-in test gateway (never real money).
+   */
+  simulated?: boolean | null;
+  slip?: (number | null) | PaymentSlip;
+  /**
+   * Staff member, for slip decisions and cash collected.
+   */
+  by?: (number | null) | User;
+  /**
+   * Each message from the gateway, as received (card details are never stored).
+   */
+  events?:
+    | {
+        at: string;
+        status?: string | null;
+        valid?: boolean | null;
+        ip?: string | null;
+        data?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Bank transfer slips from shoppers. Verify or reject them from the order’s Payment panel.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-slips".
+ */
+export interface PaymentSlip {
+  id: number;
+  order: number | Order;
+  orderNumber?: string | null;
+  note?: string | null;
+  status: 'pending' | 'verified' | 'rejected';
+  reason?: string | null;
+  reviewedBy?: (number | null) | User;
+  reviewedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    preview?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
  * Shopper reviews. New reviews wait for approval before they appear on the store.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1042,7 +1150,8 @@ export interface AuditLog {
     | 'review-moderation'
     | 'deletion-request'
     | 'content-change'
-    | 'csv-import';
+    | 'csv-import'
+    | 'payment';
   summary: string;
   resource?: string | null;
   docId?: string | null;
@@ -1130,7 +1239,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'releaseUnpaidOrders' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1163,10 +1272,19 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'releaseUnpaidOrders' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1180,6 +1298,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'transactions';
+        value: number | Transaction;
+      } | null)
+    | ({
+        relationTo: 'payment-slips';
+        value: number | PaymentSlip;
       } | null)
     | ({
         relationTo: 'discounts';
@@ -1369,6 +1495,8 @@ export interface OrdersSelect<T extends boolean = true> {
   status?: T;
   paymentMethod?: T;
   paymentStatus?: T;
+  paymentDueAt?: T;
+  paidAt?: T;
   customer?: T;
   coupon?: T;
   termsAcceptedAt?: T;
@@ -1378,6 +1506,75 @@ export interface OrdersSelect<T extends boolean = true> {
   clientIp?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "transactions_select".
+ */
+export interface TransactionsSelect<T extends boolean = true> {
+  reference?: T;
+  order?: T;
+  method?: T;
+  kind?: T;
+  status?: T;
+  amount?: T;
+  currency?: T;
+  providerRef?: T;
+  message?: T;
+  signatureValid?: T;
+  simulated?: T;
+  slip?: T;
+  by?: T;
+  events?:
+    | T
+    | {
+        at?: T;
+        status?: T;
+        valid?: T;
+        ip?: T;
+        data?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-slips_select".
+ */
+export interface PaymentSlipsSelect<T extends boolean = true> {
+  order?: T;
+  orderNumber?: T;
+  note?: T;
+  status?: T;
+  reason?: T;
+  reviewedBy?: T;
+  reviewedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        preview?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1857,6 +2054,7 @@ export interface PayloadJobsSelect<T extends boolean = true> {
   queue?: T;
   waitUntil?: T;
   processing?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1935,7 +2133,7 @@ export interface HomePage {
   createdAt?: string | null;
 }
 /**
- * Delivery fees, same-day, gift wrap, payment methods and terms version.
+ * Delivery fees, same-day, gift wrap and terms version. Payment methods are under Settings › Payments.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "checkout-settings".
@@ -2023,24 +2221,168 @@ export interface CheckoutSetting {
         )[]
       | null;
   };
-  cod?: {
-    enabled?: boolean | null;
-    maxOrder?: number | null;
-    fee?: number | null;
-  };
-  bankTransfer?: {
-    enabled?: boolean | null;
-    /**
-     * Shown after ordering and in the confirmation email. Use your order number as the reference.
-     */
-    instructions?: string | null;
-    holdHours?: number | null;
-  };
   giftWrapFee?: number | null;
   /**
    * Recorded on every order with the time the shopper accepted it. Change it when the terms change.
    */
   termsVersion?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Which payment methods shoppers see, in what order, with what limits; gateway credentials.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-settings".
+ */
+export interface PaymentSetting {
+  id: number;
+  /**
+   * Test uses each gateway’s sandbox. Switch to Live only with live credentials.
+   */
+  mode: 'test' | 'live';
+  /**
+   * Then the order is cancelled and its stock goes back.
+   */
+  onlineHoldMinutes?: number | null;
+  /**
+   * Lets you try card, Koko and Mintpay checkout locally with Approve / Decline buttons. Ignored on the live site.
+   */
+  simulateGateways?: boolean | null;
+  payhere?: {
+    enabled?: boolean | null;
+    /**
+     * Lower shows first
+     */
+    sortOrder?: number | null;
+    minOrder?: number | null;
+    /**
+     * 0 = no limit
+     */
+    maxOrder?: number | null;
+    /**
+     * Shown at checkout
+     */
+    label?: string | null;
+    merchantId?: string | null;
+    merchantSecret?: string | null;
+  };
+  koko?: {
+    enabled?: boolean | null;
+    /**
+     * Lower shows first
+     */
+    sortOrder?: number | null;
+    minOrder?: number | null;
+    /**
+     * 0 = no limit
+     */
+    maxOrder?: number | null;
+    label?: string | null;
+    merchantId?: string | null;
+    apiKey?: string | null;
+    /**
+     * Super Admin only. KOKO_PRIVATE_KEY overrides this.
+     */
+    privateKey?: string | null;
+    /**
+     * Super Admin only. Used to check Koko’s callbacks. KOKO_PUBLIC_KEY overrides this.
+     */
+    publicKey?: string | null;
+  };
+  mintpay?: {
+    enabled?: boolean | null;
+    /**
+     * Lower shows first
+     */
+    sortOrder?: number | null;
+    minOrder?: number | null;
+    /**
+     * 0 = no limit
+     */
+    maxOrder?: number | null;
+    label?: string | null;
+    merchantId?: string | null;
+    merchantSecret?: string | null;
+  };
+  cod?: {
+    enabled?: boolean | null;
+    /**
+     * Lower shows first
+     */
+    sortOrder?: number | null;
+    minOrder?: number | null;
+    /**
+     * 0 = no limit
+     */
+    maxOrder?: number | null;
+    fee?: number | null;
+    /**
+     * Districts the couriers can’t collect cash in.
+     */
+    excludedDistricts?:
+      | (
+          | 'Colombo'
+          | 'Gampaha'
+          | 'Kalutara'
+          | 'Kandy'
+          | 'Matale'
+          | 'Nuwara Eliya'
+          | 'Galle'
+          | 'Matara'
+          | 'Hambantota'
+          | 'Jaffna'
+          | 'Kilinochchi'
+          | 'Mannar'
+          | 'Vavuniya'
+          | 'Mullaitivu'
+          | 'Batticaloa'
+          | 'Ampara'
+          | 'Trincomalee'
+          | 'Kurunegala'
+          | 'Puttalam'
+          | 'Anuradhapura'
+          | 'Polonnaruwa'
+          | 'Badulla'
+          | 'Monaragala'
+          | 'Ratnapura'
+          | 'Kegalle'
+        )[]
+      | null;
+  };
+  bankTransfer?: {
+    enabled?: boolean | null;
+    /**
+     * Lower shows first
+     */
+    sortOrder?: number | null;
+    /**
+     * Shown after ordering and in the confirmation email. Shoppers use their order number as the reference.
+     */
+    instructions?: string | null;
+    /**
+     * Unpaid orders with no slip are cancelled after this and the stock goes back.
+     */
+    holdHours?: number | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats".
+ */
+export interface PayloadJobsStat {
+  id: number;
+  stats?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2100,22 +2442,83 @@ export interface CheckoutSettingsSelect<T extends boolean = true> {
         eta?: T;
         districts?: T;
       };
+  giftWrapFee?: T;
+  termsVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payment-settings_select".
+ */
+export interface PaymentSettingsSelect<T extends boolean = true> {
+  mode?: T;
+  onlineHoldMinutes?: T;
+  simulateGateways?: T;
+  payhere?:
+    | T
+    | {
+        enabled?: T;
+        sortOrder?: T;
+        minOrder?: T;
+        maxOrder?: T;
+        label?: T;
+        merchantId?: T;
+        merchantSecret?: T;
+      };
+  koko?:
+    | T
+    | {
+        enabled?: T;
+        sortOrder?: T;
+        minOrder?: T;
+        maxOrder?: T;
+        label?: T;
+        merchantId?: T;
+        apiKey?: T;
+        privateKey?: T;
+        publicKey?: T;
+      };
+  mintpay?:
+    | T
+    | {
+        enabled?: T;
+        sortOrder?: T;
+        minOrder?: T;
+        maxOrder?: T;
+        label?: T;
+        merchantId?: T;
+        merchantSecret?: T;
+      };
   cod?:
     | T
     | {
         enabled?: T;
+        sortOrder?: T;
+        minOrder?: T;
         maxOrder?: T;
         fee?: T;
+        excludedDistricts?: T;
       };
   bankTransfer?:
     | T
     | {
         enabled?: T;
+        sortOrder?: T;
         instructions?: T;
         holdHours?: T;
       };
-  giftWrapFee?: T;
-  termsVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs-stats_select".
+ */
+export interface PayloadJobsStatsSelect<T extends boolean = true> {
+  stats?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -2129,6 +2532,16 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskReleaseUnpaidOrders".
+ */
+export interface TaskReleaseUnpaidOrders {
+  input?: unknown;
+  output: {
+    released?: number | null;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

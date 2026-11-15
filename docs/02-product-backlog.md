@@ -16,7 +16,7 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 | E03 | Customer accounts | 7 | 29 | 3 ✅ (TOS-305 history → Sprint 6, TOS-307 done in Sprint 4) |
 | E04 | RBAC & admin security | 4 | 18 | 3 ✅ (TOS-403 2FA → Sprint 10) |
 | E05 | Bag & checkout | 9 | 52 | 4 ✅ |
-| E06 | Payments | 7 | 47 | 5 |
+| E06 | Payments | 7 | 47 | 5 ✅ (Koko/Mintpay live adapters wait for merchant guides; gateway refunds → Sprint 6) |
 | E07 | Orders & delivery | 8 | 44 | 6 |
 | E08 | Notifications | 6 | 34 | 7 |
 | E09 | Analytics & reporting | 5 | 29 | 8 |
@@ -174,33 +174,33 @@ Added after Sprint 1 at the owner's request: the store is a lifestyle store, not
 - No surprise fees: the delivery fee is visible before payment.
 - Works without JavaScript errors on Android Chrome and iOS Safari.
 
-## E06 · Payments (Sprint 5)
-| ID | Story | P | Pts |
-|---|---|---|---|
-| TOS-601 | As an admin, I want to enable, disable, order and configure each payment method (with sandbox and live credentials). | M | 8 |
-| TOS-602 | As a shopper, I want to pay by card or wallet via PayHere. | M | 8 |
-| TOS-603 | As a shopper, I want to pay in 3 instalments with Koko. | M | 8 |
-| TOS-604 | As a shopper, I want to pay in 3 instalments with Mintpay. | M | 8 |
-| TOS-605 | As a shopper, I want to pay by bank transfer and upload my slip, and staff want to verify it. | M | 5 |
-| TOS-606 | As a shopper, I want Cash on Delivery, with eligibility rules (maximum order value, excluded districts). | M | 5 |
-| TOS-607 | As finance, I want every payment attempt and callback stored and reconcilable. | M | 5 |
+## E06 · Payments (Sprint 5) ✅
+| ID | Story | P | Pts | Status |
+|---|---|---|---|---|
+| TOS-601 | As an admin, I want to enable, disable, order and configure each payment method (with sandbox and live credentials). | M | 8 | ✅ Settings › Payments: on/off, order, limits, Test/Live; credentials Super Admin only, env vars override |
+| TOS-602 | As a shopper, I want to pay by card or wallet via PayHere. | M | 8 | ✅ PayHere checkout form + signed notify; tested with the published formulas and the test gateway (sandbox account needed for a live sandbox run) |
+| TOS-603 | As a shopper, I want to pay in 3 instalments with Koko. | M | 8 | 🔄 full flow on the test gateway; live adapter waits for Koko's merchant guide |
+| TOS-604 | As a shopper, I want to pay in 3 instalments with Mintpay. | M | 8 | 🔄 full flow on the test gateway; live adapter waits for Mintpay's merchant guide |
+| TOS-605 | As a shopper, I want to pay by bank transfer and upload my slip, and staff want to verify it. | M | 5 | ✅ slip upload on the order page; Verify / Reject in the order's Payment panel; emails |
+| TOS-606 | As a shopper, I want Cash on Delivery, with eligibility rules (maximum order value, excluded districts). | M | 5 | ✅ max order, fee, excluded districts |
+| TOS-607 | As finance, I want every payment attempt and callback stored and reconcilable. | M | 5 | ✅ Transactions log: every attempt, callback (signature result), slip decision and cash collection |
 
 **AC (TOS-602):**
 - The notify callback is verified with an MD5 signature using the merchant secret.
 - Callbacks are idempotent.
 - Order status updates only after a verified callback.
-- Refunds can be issued from the admin.
+- Refunds can be issued from the admin. *(Moved to Sprint 6 with returns, TOS-706: needs PayHere's refund API.)*
 
 ## E07 · Orders & delivery (Sprint 6)
-| ID | Story | P | Pts |
-|---|---|---|---|
+| ID | Story | P | Pts | Notes |
+|---|---|---|---|---|
 | TOS-701 | As fulfilment staff, I want an order list with filters, search and bulk status changes. | M | 8 | (list, status tabs and search shipped early in Sprint 4; bulk changes to come) |
 | TOS-702 | As the business, I want a defined order status lifecycle with timestamps and history. | M | 5 |
 | TOS-703 | As fulfilment staff, I want to print packing slips and invoices (PDF). | M | 5 |
 | TOS-704 | As fulfilment staff, I want to assign a courier and tracking number. | M | 5 |
 | TOS-705 | As a shopper, I want to track my order (signed in, or as a guest with order number + phone). | M | 5 |
 | TOS-706 | As support, I want to process returns and refunds with stock restocked automatically. | M | 8 |
-| TOS-707 | As finance, I want a COD reconciliation per courier. | S | 5 |
+| TOS-707 | As finance, I want a COD reconciliation per courier. | S | 5 | ("Cash collected" per order shipped in Sprint 5; per-courier report to come) |
 | TOS-708 | As fulfilment staff, I want courier API integration (Koombiyo, Domex) to create shipments. | C | 3 |
 
 ## E08 · Notifications (Sprint 7)

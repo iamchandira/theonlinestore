@@ -14,11 +14,12 @@ export async function Nav(props: ServerProps) {
   const can = (slug: string) => visibleEntities?.collections?.includes(slug as never) ?? false
   const canGlobal = (slug: string) => visibleEntities?.globals?.includes(slug as never) ?? false
 
-  const [lowStock, drafts, pendingReviews, openOrders] = await Promise.all([
+  const [lowStock, drafts, pendingReviews, openOrders, slipsToCheck] = await Promise.all([
     can('products') ? payload.count({ collection: 'products', where: { and: [{ lowStock: { equals: true } }, { _status: { equals: 'published' } }] } }) : null,
     can('products') ? payload.count({ collection: 'products', where: { _status: { equals: 'draft' } } }) : null,
     can('reviews') ? payload.count({ collection: 'reviews', where: { status: { equals: 'pending' } } }) : null,
     can('orders') ? payload.count({ collection: 'orders', where: { status: { in: ['processing', 'pending-payment'] } }, overrideAccess: true }) : null,
+    can('payment-slips') ? payload.count({ collection: 'payment-slips', where: { status: { equals: 'pending' } }, overrideAccess: true }) : null,
   ])
 
   const groups: NavGroupDef[] = [
@@ -32,6 +33,9 @@ export async function Nav(props: ServerProps) {
           ? [{ label: 'Orders', href: '/admin/collections/orders', icon: 'orders', badge: openOrders?.totalDocs ? String(openOrders.totalDocs) : undefined, badgeTone: 'danger' as const }]
           : []),
         ...(can('users') ? [{ label: 'Customers', href: '/admin/collections/users?where[roles][contains]=customer', icon: 'customers', match: 'customer' }] : []),
+        ...(can('transactions')
+          ? [{ label: 'Transactions', href: '/admin/collections/transactions', icon: 'transactions', badge: slipsToCheck?.totalDocs ? `${slipsToCheck.totalDocs} slip${slipsToCheck.totalDocs > 1 ? 's' : ''}` : undefined, badgeTone: 'danger' as const }]
+          : []),
         ...(can('discounts') ? [{ label: 'Discounts', href: '/admin/collections/discounts', icon: 'discounts' }] : []),
       ],
     },
@@ -74,7 +78,7 @@ export async function Nav(props: ServerProps) {
       items: [
         ...(can('users') ? [{ label: 'Staff & roles', href: '/admin/collections/users?where[roles][not_in]=customer', icon: 'staff', match: 'not_in' }] : []),
         ...(can('audit-logs') ? [{ label: 'Audit log', href: '/admin/collections/audit-logs', icon: 'audit' }] : []),
-        { label: 'Payments', icon: 'payments', soon: 'Sprint 5' },
+        ...(canGlobal('payment-settings') ? [{ label: 'Payments', href: '/admin/globals/payment-settings', icon: 'payments' }] : []),
         ...(canGlobal('checkout-settings') ? [{ label: 'Checkout & delivery', href: '/admin/globals/checkout-settings', icon: 'shipping' }] : []),
         { label: 'Notifications', icon: 'notifications', soon: 'Sprint 7' },
       ],

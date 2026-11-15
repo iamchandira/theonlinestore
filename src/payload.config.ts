@@ -13,6 +13,8 @@ import { AuditLogs } from './collections/AuditLogs'
 import { Brands } from './collections/Brands'
 import { Discounts } from './collections/Discounts'
 import { Orders } from './collections/Orders'
+import { PaymentSlips } from './collections/PaymentSlips'
+import { Transactions } from './collections/Transactions'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
@@ -23,6 +25,7 @@ import { StockMovements } from './collections/StockMovements'
 import { Concerns, Occasions, Recipients, Tags } from './collections/Taxonomies'
 import { Users } from './collections/Users'
 import { CheckoutSettings } from './globals/CheckoutSettings'
+import { PaymentSettings } from './globals/PaymentSettings'
 import { HomePage } from './globals/HomePage'
 
 const filename = fileURLToPath(import.meta.url)
@@ -60,8 +63,8 @@ export default buildConfig({
     },
     theme: 'light',
   },
-  collections: [Orders, Discounts, Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, AuditLogs],
-  globals: [HomePage, CheckoutSettings],
+  collections: [Orders, Transactions, PaymentSlips, Discounts, Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, AuditLogs],
+  globals: [HomePage, CheckoutSettings, PaymentSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -98,9 +101,23 @@ export default buildConfig({
         },
       })
     : undefined,
-  // Runs scheduled publish/unpublish jobs (TOS-110) while the server is up
+  // Runs scheduled publish/unpublish jobs (TOS-110) and the unpaid-order release (Sprint 5) while the server is up.
+  // Not in tests: they call the release function directly.
   jobs: {
     autoRun: [{ cron: '* * * * *', queue: 'default', limit: 20 }],
+    shouldAutoRun: () => process.env.NODE_ENV !== 'test',
+    tasks: [
+      {
+        slug: 'releaseUnpaidOrders',
+        label: 'Release unpaid orders',
+        schedule: [{ cron: '*/5 * * * *', queue: 'default' }],
+        outputSchema: [{ name: 'released', type: 'number' }],
+        handler: async ({ req }) => {
+          const { releaseUnpaidOrders } = await import('./lib/payments/service')
+          return { output: { released: await releaseUnpaidOrders(req.payload) } }
+        },
+      },
+    ],
   },
   plugins: [
     // Category tree: adds `parent` + `breadcrumbs` (e.g. /skincare/serums) to categories

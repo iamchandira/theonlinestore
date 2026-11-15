@@ -1409,6 +1409,8 @@ $tos-sections: (
   audit-logs: 'Settings',
   orders: 'Sales',
   discounts: 'Sales',
+  transactions: 'Sales',
+  payment-slips: 'Sales',
   review-media: 'Catalogue',
 );
 @each $slug, $label in $tos-sections {
@@ -2146,6 +2148,132 @@ $tos-sections: (
     gap: 2px;
   }
 }
-.template-default__wrap:has(.global-edit--checkout-settings) .doc-header__header::before {
+.template-default__wrap:has(.global-edit--checkout-settings) .doc-header__header::before,
+.template-default__wrap:has(.global-edit--payment-settings) .doc-header__header::before {
   content: 'Settings';
+}
+
+/* ---------------------------------------------------------------- Order › Payment panel (Sprint 5) */
+.tos-btn--block {
+  width: 100%;
+  justify-content: center;
+}
+.tos-btn--danger {
+  background: var(--tos-danger);
+  border-color: var(--tos-danger);
+  color: #fff;
+}
+.tos-pay-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  margin: 4px 0 16px;
+  border: 1px solid var(--tos-line);
+  border-radius: 14px;
+  background: #fff;
+  font: 400 13px/1.45 var(--font-body);
+  color: var(--tos-ink);
+  &--loading {
+    color: var(--tos-muted);
+  }
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  &__title {
+    font: 700 14px var(--font-body);
+  }
+  &__amount {
+    margin: 0;
+    font: 700 22px var(--font-display, var(--font-body));
+    font-variant-numeric: tabular-nums;
+  }
+  &__hint {
+    margin: 0;
+    color: var(--tos-muted);
+  }
+}
+.tos-pay-slip {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 12px;
+  background: var(--tos-canvas);
+  &__thumb {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 80px;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--tos-danger);
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  &__body {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+.tos-pay-muted {
+  color: var(--tos-muted);
+}
+.tos-pay-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--tos-brand-600);
+  font-weight: 600;
+  text-decoration: none;
+}
+.tos-pay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.tos-pay-input {
+  flex: 1 1 100%;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--tos-line-strong);
+  border-radius: 8px;
+  font: 400 13px var(--font-body);
+}
+.tos-pay-error {
+  margin: 0;
+  color: var(--tos-danger);
+  font-weight: 600;
+}
+.tos-pay-txs {
+  border-top: 1px solid var(--tos-line);
+  padding-top: 8px;
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: 12px;
+  }
 }

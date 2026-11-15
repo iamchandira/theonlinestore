@@ -7,7 +7,7 @@ import { clientIp } from '../server/rateLimit'
  * moderation, account deletion requests, content changes). Written with the request's transaction,
  * so a rolled-back change leaves no log entry. Never throws: auditing must not block the action.
  */
-export type AuditAction = 'role-change' | 'staff-created' | 'price-change' | 'delete' | 'review-moderation' | 'deletion-request' | 'content-change' | 'csv-import'
+export type AuditAction = 'role-change' | 'staff-created' | 'price-change' | 'delete' | 'review-moderation' | 'deletion-request' | 'content-change' | 'csv-import' | 'payment'
 
 /** afterDelete hook: logs the deletion of any document (TOS-402). */
 export const auditDelete =

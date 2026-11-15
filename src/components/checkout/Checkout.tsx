@@ -2,7 +2,9 @@
 
 import {
   IconBuildingBank,
+  IconCalendarDollar,
   IconCash,
+  IconCreditCard,
   IconChevronDown,
   IconGift,
   IconLock,
@@ -27,19 +29,55 @@ import { formatLKR } from '@/lib/format'
 import { useShop, type CartLine } from '@/lib/store/shop'
 import { cn } from '@/lib/utils/cn'
 
-type SavedAddress = { id: string; label: string; recipientName: string; phone: string; line1: string; line2: string; city: string; district: string; postalCode: string; landmark: string; isDefault: boolean }
+type SavedAddress = {
+  id: string
+  label: string
+  recipientName: string
+  phone: string
+  line1: string
+  line2: string
+  city: string
+  district: string
+  postalCode: string
+  landmark: string
+  isDefault: boolean
+}
 type Props = {
   user: { fullName: string; email: string; phone: string; addresses: SavedAddress[] } | null
   giftWrapFee: number
   freeThreshold: number
   sameDayDistricts: string[]
 }
-type QuoteResponse = { quote: Quote; views: LineView[]; issues: Issue[]; couponError: string | null; payments: PaymentOption[]; codFee: number }
-type Errors = Partial<Record<'fullName' | 'email' | 'phone' | 'line1' | 'city' | 'district' | 'postalCode' | 'addressPhone' | 'payment' | 'terms' | 'coupon' | 'method', string>>
+type QuoteResponse = {
+  quote: Quote
+  views: LineView[]
+  issues: Issue[]
+  couponError: string | null
+  payments: PaymentOption[]
+  codFee: number
+}
+type Errors = Partial<
+  Record<
+    | 'fullName'
+    | 'email'
+    | 'phone'
+    | 'line1'
+    | 'city'
+    | 'district'
+    | 'postalCode'
+    | 'addressPhone'
+    | 'payment'
+    | 'terms'
+    | 'coupon'
+    | 'method',
+    string
+  >
+>
 
 const PHONE = /^(\+94|0)?7\d{8}$/
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
-const chevron = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6l6 -6'/%3E%3C/svg%3E\")"
+const chevron =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6b85' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6l6 -6'/%3E%3C/svg%3E\")"
 
 /**
  * One-page checkout (TOS-502): contact → address → delivery → payment → gift & notes, with a live,
@@ -51,11 +89,24 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
   const { lines, hydrated, setLinesFromServer, setCartOpen } = useShop()
   const defaultAddress = user?.addresses.find((a) => a.isDefault) ?? user?.addresses[0]
 
-  const [contact, setContact] = useState({ fullName: user?.fullName ?? '', email: user?.email ?? '', phone: user?.phone ?? '' })
+  const [contact, setContact] = useState({
+    fullName: user?.fullName ?? '',
+    email: user?.email ?? '',
+    phone: user?.phone ?? '',
+  })
   const [addressId, setAddressId] = useState<string>(defaultAddress?.id ?? 'new')
-  const [address, setAddress] = useState({ recipientName: '', phone: '', line1: '', line2: '', city: '', district: '', postalCode: '', landmark: '' })
+  const [address, setAddress] = useState({
+    recipientName: '',
+    phone: '',
+    line1: '',
+    line2: '',
+    city: '',
+    district: '',
+    postalCode: '',
+    landmark: '',
+  })
   const [method, setMethod] = useState<'standard' | 'same-day'>('standard')
-  const [chosenPayment, setPayment] = useState<'cod' | 'bank-transfer' | null>(null)
+  const [chosenPayment, setPayment] = useState<PaymentOption['id'] | null>(null)
   const [couponInput, setCouponInput] = useState('')
   const [coupon, setCoupon] = useState<string | null>(null)
   const [gift, setGift] = useState({ wrap: false, message: '', hidePrices: false })
@@ -69,12 +120,18 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
   const [summaryOpen, setSummaryOpen] = useState(false)
 
   // The chosen payment method if it's available, otherwise the first available one
-  const payment: 'cod' | 'bank-transfer' | null =
-    data?.payments.find((p) => p.id === chosenPayment && p.available)?.id ?? data?.payments.find((p) => p.available)?.id ?? chosenPayment
+  const payment: PaymentOption['id'] | null =
+    data?.payments.find((p) => p.id === chosenPayment && p.available)?.id ??
+    data?.payments.find((p) => p.available)?.id ??
+    chosenPayment
   const saved = user?.addresses.find((a) => a.id === addressId)
   const district = saved?.district ?? address.district
   const items = useMemo(() => lines.map((l) => ({ sku: l.sku, qty: l.qty })), [lines])
   const itemsKey = JSON.stringify(items)
+
+  // Only re-quote for contact details once they're complete enough to matter (first-order coupons)
+  const emailKey = contact.email.length > 5 ? contact.email : ''
+  const phoneKey = contact.phone.length >= 10 ? contact.phone : ''
 
   // Live, server-priced quote (debounced)
   const reqId = useRef(0)
@@ -88,7 +145,16 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ items, district, method, couponCode: coupon, giftWrap: gift.wrap, payment, email: contact.email, phone: contact.phone }),
+          body: JSON.stringify({
+            items,
+            district,
+            method,
+            couponCode: coupon,
+            giftWrap: gift.wrap,
+            payment,
+            email: contact.email,
+            phone: contact.phone,
+          }),
         })
         const json = (await res.json()) as QuoteResponse
         if (id !== reqId.current) return
@@ -97,15 +163,27 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
           setBanner({ tone: 'info', text: json.issues.map((i) => i.message).join(' ') })
           setLinesFromServer(json.views as unknown as CartLine[])
         }
-        if (coupon && json.couponError) setErrors((e) => ({ ...e, coupon: json.couponError ?? undefined }))
-        if (method === 'same-day' && json.quote.delivery.method !== 'same-day') setMethod('standard')
+        if (coupon && json.couponError)
+          setErrors((e) => ({ ...e, coupon: json.couponError ?? undefined }))
+        if (method === 'same-day' && json.quote.delivery.method !== 'same-day')
+          setMethod('standard')
       } finally {
         if (id === reqId.current) setQuoting(false)
       }
     }, 250)
     return () => window.clearTimeout(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, itemsKey, district, method, coupon, gift.wrap, payment, contact.email.length > 5 ? contact.email : '', contact.phone.length >= 10 ? contact.phone : ''])
+  }, [
+    hydrated,
+    itemsKey,
+    district,
+    method,
+    coupon,
+    gift.wrap,
+    payment,
+    emailKey,
+    phoneKey,
+  ])
 
   const q = data?.quote
   const payments = useMemo(() => data?.payments ?? [], [data])
@@ -129,13 +207,16 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
     const e: Errors = {}
     if (contact.fullName.trim().length < 2) e.fullName = 'Enter your name.'
     if (!EMAIL.test(contact.email.trim())) e.email = 'Enter a valid email for your receipt.'
-    if (!PHONE.test(contact.phone.replace(/[\s-]/g, ''))) e.phone = 'Enter a Sri Lankan mobile number, e.g. 077 123 4567.'
+    if (!PHONE.test(contact.phone.replace(/[\s-]/g, '')))
+      e.phone = 'Enter a Sri Lankan mobile number, e.g. 077 123 4567.'
     if (!saved) {
       if (address.line1.trim().length < 3) e.line1 = 'Enter the house number and street.'
       if (address.city.trim().length < 2) e.city = 'Enter the town or city.'
       if (!address.district) e.district = 'Choose a district.'
-      if (address.postalCode && !/^\d{5}$/.test(address.postalCode)) e.postalCode = 'Postal codes have 5 digits.'
-      if (address.phone && !PHONE.test(address.phone.replace(/[\s-]/g, ''))) e.addressPhone = 'Enter a Sri Lankan mobile number.'
+      if (address.postalCode && !/^\d{5}$/.test(address.postalCode))
+        e.postalCode = 'Postal codes have 5 digits.'
+      if (address.phone && !PHONE.test(address.phone.replace(/[\s-]/g, '')))
+        e.addressPhone = 'Enter a Sri Lankan mobile number.'
     }
     if (!payment) e.payment = 'Choose how you’d like to pay.'
     if (!terms) e.terms = 'Please accept the terms and conditions.'
@@ -145,7 +226,13 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
   const focusFirstError = (e: Errors) => {
     const first = Object.keys(e)[0]
     if (!first) return
-    window.requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-field="${first}"] input, [data-field="${first}"] select, [data-field="${first}"]`)?.focus())
+    window.requestAnimationFrame(() =>
+      document
+        .querySelector<HTMLElement>(
+          `[data-field="${first}"] input, [data-field="${first}"] select, [data-field="${first}"]`,
+        )
+        ?.focus(),
+    )
   }
 
   const place = async () => {
@@ -168,7 +255,13 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
           items,
           contact,
           addressId: saved ? saved.id : undefined,
-          address: saved ? undefined : { ...address, recipientName: address.recipientName || contact.fullName, phone: address.phone || contact.phone },
+          address: saved
+            ? undefined
+            : {
+                ...address,
+                recipientName: address.recipientName || contact.fullName,
+                phone: address.phone || contact.phone,
+              },
           method,
           payment,
           couponCode: coupon,
@@ -178,7 +271,16 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
           expectedTotal: q.total,
         }),
       })
-      const json = (await res.json()) as { ok?: boolean; redirect?: string; error?: string; fields?: Errors; issues?: Issue[]; quote?: Quote; views?: LineView[]; priceChanged?: boolean }
+      const json = (await res.json()) as {
+        ok?: boolean
+        redirect?: string
+        error?: string
+        fields?: Errors
+        issues?: Issue[]
+        quote?: Quote
+        views?: LineView[]
+        priceChanged?: boolean
+      }
       if (res.ok && json.redirect) {
         window.dispatchEvent(new Event('tos:order-placed'))
         router.push(json.redirect)
@@ -190,10 +292,18 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
       }
       if (json.views) setLinesFromServer(json.views as unknown as CartLine[])
       if (json.quote && data) setData({ ...data, quote: json.quote })
-      setBanner({ tone: 'error', text: [json.error, ...(json.issues ?? []).map((i) => i.message)].filter(Boolean).join(' ') || 'Something went wrong. Please try again.' })
+      setBanner({
+        tone: 'error',
+        text:
+          [json.error, ...(json.issues ?? []).map((i) => i.message)].filter(Boolean).join(' ') ||
+          'Something went wrong. Please try again.',
+      })
       setPlacing(false)
     } catch {
-      setBanner({ tone: 'error', text: 'We couldn’t reach the store. Check your connection and try again. You haven’t been charged.' })
+      setBanner({
+        tone: 'error',
+        text: 'We couldn’t reach the store. Check your connection and try again. You haven’t been charged.',
+      })
       setPlacing(false)
     }
   }
@@ -224,7 +334,18 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
     />
   )
 
-  const placeOrder = <PlaceOrder terms={terms} setTerms={setTerms} termsError={errors.terms} placing={placing} disabled={!q || quoting} total={q?.total} onPlace={place} />
+  const placeOrder = (
+    <PlaceOrder
+      terms={terms}
+      setTerms={setTerms}
+      termsError={errors.terms}
+      placing={placing}
+      disabled={!q || quoting}
+      total={q?.total}
+      online={Boolean(payments.find((p) => p.id === payment)?.online)}
+      onPlace={place}
+    />
+  )
 
   return (
     <div className="container-site py-6 md:py-10">
@@ -238,7 +359,10 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
         {!user && (
           <p className="text-sm text-ink-600">
             Have an account?{' '}
-            <Link href="/account/login?next=/checkout" className="font-semibold text-sunset-700 underline underline-offset-4">
+            <Link
+              href="/account/login?next=/checkout"
+              className="font-semibold text-sunset-700 underline underline-offset-4"
+            >
               Sign in
             </Link>{' '}
             for saved addresses.
@@ -256,7 +380,10 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
         >
           <span className="flex items-center gap-2 font-semibold">
             <IconShoppingBag size={19} /> {summaryOpen ? 'Hide' : 'Show'} order summary
-            <IconChevronDown size={17} className={cn('transition-transform', summaryOpen && 'rotate-180')} />
+            <IconChevronDown
+              size={17}
+              className={cn('transition-transform', summaryOpen && 'rotate-180')}
+            />
           </span>
           <span className="font-bold tabular-nums">{q ? formatLKR(q.total) : '…'}</span>
         </button>
@@ -265,18 +392,48 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_26rem] lg:gap-10">
         <div className="flex min-w-0 flex-col gap-5">
-          {banner && <FormAlert tone={banner.tone === 'error' ? 'error' : 'info'}>{banner.text}</FormAlert>}
+          {banner && (
+            <FormAlert tone={banner.tone === 'error' ? 'error' : 'info'}>{banner.text}</FormAlert>
+          )}
 
           <Section n={1} title="Contact">
             <div className="grid gap-4 sm:grid-cols-2">
               <div data-field="fullName" className="sm:col-span-2">
-                <Field label="Full name" name="fullName" autoComplete="name" value={contact.fullName} onChange={(e) => setContact({ ...contact, fullName: e.target.value })} error={errors.fullName} />
+                <Field
+                  label="Full name"
+                  name="fullName"
+                  autoComplete="name"
+                  value={contact.fullName}
+                  onChange={(e) => setContact({ ...contact, fullName: e.target.value })}
+                  error={errors.fullName}
+                />
               </div>
               <div data-field="email">
-                <Field label="Email" name="email" type="email" inputMode="email" autoComplete="email" value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} error={errors.email} hint="For your receipt and updates." />
+                <Field
+                  label="Email"
+                  name="email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  value={contact.email}
+                  onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                  error={errors.email}
+                  hint="For your receipt and updates."
+                />
               </div>
               <div data-field="phone">
-                <Field label="Mobile number" name="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="077 123 4567" value={contact.phone} onChange={(e) => setContact({ ...contact, phone: e.target.value })} error={errors.phone} hint="The courier calls before delivery." />
+                <Field
+                  label="Mobile number"
+                  name="phone"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  placeholder="077 123 4567"
+                  value={contact.phone}
+                  onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+                  error={errors.phone}
+                  hint="The courier calls before delivery."
+                />
               </div>
             </div>
           </Section>
@@ -286,14 +443,23 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
               <fieldset className="mb-4 grid gap-3 sm:grid-cols-2">
                 <legend className="sr-only">Saved addresses</legend>
                 {user.addresses.map((a) => (
-                  <RadioCard key={a.id} name="address" checked={addressId === a.id} onChange={() => setAddressId(a.id)}>
+                  <RadioCard
+                    key={a.id}
+                    name="address"
+                    checked={addressId === a.id}
+                    onChange={() => setAddressId(a.id)}
+                  >
                     <span className="text-sm font-bold">{a.label}</span>
                     <span className="text-sm text-ink-600">
                       {a.recipientName}, {a.line1}, {a.city}, {a.district}
                     </span>
                   </RadioCard>
                 ))}
-                <RadioCard name="address" checked={addressId === 'new'} onChange={() => setAddressId('new')}>
+                <RadioCard
+                  name="address"
+                  checked={addressId === 'new'}
+                  onChange={() => setAddressId('new')}
+                >
                   <span className="text-sm font-bold">A new address</span>
                   <span className="text-sm text-ink-600">Deliver somewhere else</span>
                 </RadioCard>
@@ -302,10 +468,26 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
             {!saved && (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div data-field="line1" className="sm:col-span-2">
-                  <Field label="Address line 1" name="line1" autoComplete="address-line1" placeholder="House number and street" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} error={errors.line1} />
+                  <Field
+                    label="Address line 1"
+                    name="line1"
+                    autoComplete="address-line1"
+                    placeholder="House number and street"
+                    value={address.line1}
+                    onChange={(e) => setAddress({ ...address, line1: e.target.value })}
+                    error={errors.line1}
+                  />
                 </div>
                 <div className="sm:col-span-2">
-                  <Field label="Address line 2" name="line2" autoComplete="address-line2" optional placeholder="Apartment, lane, area" value={address.line2} onChange={(e) => setAddress({ ...address, line2: e.target.value })} />
+                  <Field
+                    label="Address line 2"
+                    name="line2"
+                    autoComplete="address-line2"
+                    optional
+                    placeholder="Apartment, lane, area"
+                    value={address.line2}
+                    onChange={(e) => setAddress({ ...address, line2: e.target.value })}
+                  />
                 </div>
                 <div data-field="district">
                   <label className="text-sm font-semibold text-ink-800" htmlFor="co-district">
@@ -316,7 +498,10 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
                     value={address.district}
                     onChange={(e) => setAddress({ ...address, district: e.target.value })}
                     aria-invalid={Boolean(errors.district)}
-                    className={cn(inputClass, 'cursor-pointer appearance-none bg-[length:16px] bg-[right_14px_center] bg-no-repeat pr-10')}
+                    className={cn(
+                      inputClass,
+                      'cursor-pointer appearance-none bg-[length:16px] bg-[right_14px_center] bg-no-repeat pr-10',
+                    )}
                     style={{ backgroundImage: chevron }}
                   >
                     <option value="">Choose a district</option>
@@ -326,10 +511,21 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
                       </option>
                     ))}
                   </select>
-                  {errors.district && <p className="mt-1.5 text-sm text-danger-600">{errors.district}</p>}
+                  {errors.district && (
+                    <p className="mt-1.5 text-sm text-danger-600">{errors.district}</p>
+                  )}
                 </div>
                 <div data-field="city">
-                  <Field label="Town / city" name="city" autoComplete="address-level2" list="co-towns" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} error={errors.city} placeholder={towns[0] ?? 'e.g. Nugegoda'} />
+                  <Field
+                    label="Town / city"
+                    name="city"
+                    autoComplete="address-level2"
+                    list="co-towns"
+                    value={address.city}
+                    onChange={(e) => setAddress({ ...address, city: e.target.value })}
+                    error={errors.city}
+                    placeholder={towns[0] ?? 'e.g. Nugegoda'}
+                  />
                   <datalist id="co-towns">
                     {towns.map((t) => (
                       <option key={t} value={t} />
@@ -337,15 +533,47 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
                   </datalist>
                 </div>
                 <div data-field="postalCode">
-                  <Field label="Postal code" name="postalCode" inputMode="numeric" autoComplete="postal-code" optional value={address.postalCode} onChange={(e) => setAddress({ ...address, postalCode: e.target.value })} error={errors.postalCode} />
+                  <Field
+                    label="Postal code"
+                    name="postalCode"
+                    inputMode="numeric"
+                    autoComplete="postal-code"
+                    optional
+                    value={address.postalCode}
+                    onChange={(e) => setAddress({ ...address, postalCode: e.target.value })}
+                    error={errors.postalCode}
+                  />
                 </div>
-                <Field label="Landmark" name="landmark" optional placeholder="e.g. Opposite the temple" value={address.landmark} onChange={(e) => setAddress({ ...address, landmark: e.target.value })} />
+                <Field
+                  label="Landmark"
+                  name="landmark"
+                  optional
+                  placeholder="e.g. Opposite the temple"
+                  value={address.landmark}
+                  onChange={(e) => setAddress({ ...address, landmark: e.target.value })}
+                />
                 <details className="sm:col-span-2">
-                  <summary className="cursor-pointer text-sm font-semibold text-sunset-700">Sending to someone else?</summary>
+                  <summary className="cursor-pointer text-sm font-semibold text-sunset-700">
+                    Sending to someone else?
+                  </summary>
                   <div className="mt-3 grid gap-4 sm:grid-cols-2">
-                    <Field label="Recipient name" name="recipientName" optional value={address.recipientName} onChange={(e) => setAddress({ ...address, recipientName: e.target.value })} />
+                    <Field
+                      label="Recipient name"
+                      name="recipientName"
+                      optional
+                      value={address.recipientName}
+                      onChange={(e) => setAddress({ ...address, recipientName: e.target.value })}
+                    />
                     <div data-field="addressPhone">
-                      <Field label="Recipient mobile" name="recipientPhone" type="tel" optional value={address.phone} onChange={(e) => setAddress({ ...address, phone: e.target.value })} error={errors.addressPhone} />
+                      <Field
+                        label="Recipient mobile"
+                        name="recipientPhone"
+                        type="tel"
+                        optional
+                        value={address.phone}
+                        onChange={(e) => setAddress({ ...address, phone: e.target.value })}
+                        error={errors.addressPhone}
+                      />
                     </div>
                   </div>
                 </details>
@@ -356,28 +584,56 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
           <Section n={3} title="Delivery">
             <fieldset className="grid gap-3 sm:grid-cols-2" data-field="method">
               <legend className="sr-only">Delivery method</legend>
-              <RadioCard name="method" checked={method === 'standard'} onChange={() => setMethod('standard')}>
+              <RadioCard
+                name="method"
+                checked={method === 'standard'}
+                onChange={() => setMethod('standard')}
+              >
                 <span className="flex w-full items-center justify-between gap-2 text-sm font-bold">
                   <span className="flex items-center gap-2">
                     <IconTruckDelivery size={18} /> Standard
                   </span>
-                  <span className="tabular-nums">{q && method === 'standard' ? (q.delivery.free ? 'Free' : formatLKR(q.delivery.fee)) : district ? '' : '—'}</span>
+                  <span className="tabular-nums">
+                    {q && method === 'standard'
+                      ? q.delivery.free
+                        ? 'Free'
+                        : formatLKR(q.delivery.fee)
+                      : district
+                        ? ''
+                        : '—'}
+                  </span>
                 </span>
-                <span className="text-sm text-ink-600">{district ? (q?.delivery.method === 'standard' ? q.delivery.eta : 'Island-wide') : 'Choose a district to see the fee'}</span>
+                <span className="text-sm text-ink-600">
+                  {district
+                    ? q?.delivery.method === 'standard'
+                      ? q.delivery.eta
+                      : 'Island-wide'
+                    : 'Choose a district to see the fee'}
+                </span>
               </RadioCard>
-              <RadioCard name="method" checked={method === 'same-day'} onChange={() => setMethod('same-day')} disabled={!q?.delivery.sameDayAvailable}>
+              <RadioCard
+                name="method"
+                checked={method === 'same-day'}
+                onChange={() => setMethod('same-day')}
+                disabled={!q?.delivery.sameDayAvailable}
+              >
                 <span className="flex w-full items-center justify-between gap-2 text-sm font-bold">
                   <span>Same-day</span>
                   <span className="tabular-nums">{q ? formatLKR(q.delivery.sameDayFee) : ''}</span>
                 </span>
                 <span className="text-sm text-ink-600">
-                  {q?.delivery.sameDayAvailable ? 'Order before noon, delivered tonight' : sameDayPossible ? 'Closed for today (order before noon)' : `Only in ${sameDayDistricts.join(', ') || 'selected areas'}`}
+                  {q?.delivery.sameDayAvailable
+                    ? 'Order before noon, delivered tonight'
+                    : sameDayPossible
+                      ? 'Closed for today (order before noon)'
+                      : `Only in ${sameDayDistricts.join(', ') || 'selected areas'}`}
                 </span>
               </RadioCard>
             </fieldset>
             {q && !q.delivery.free && q.freeDeliveryRemaining > 0 && method === 'standard' && (
               <p className="mt-3 text-sm text-ink-600">
-                Add <strong className="text-ink-900">{formatLKR(q.freeDeliveryRemaining)}</strong> more for free delivery (over {formatLKR(freeThreshold)}).
+                Add <strong className="text-ink-900">{formatLKR(q.freeDeliveryRemaining)}</strong>{' '}
+                more for free delivery (over {formatLKR(freeThreshold)}).
               </p>
             )}
           </Section>
@@ -386,44 +642,94 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
             <fieldset className="grid gap-3" data-field="payment">
               <legend className="sr-only">Payment method</legend>
               {payments.map((p) => (
-                <RadioCard key={p.id} name="payment" checked={payment === p.id} onChange={() => setPayment(p.id)} disabled={!p.available}>
+                <RadioCard
+                  key={p.id}
+                  name="payment"
+                  checked={payment === p.id}
+                  onChange={() => setPayment(p.id)}
+                  disabled={!p.available}
+                >
                   <span className="flex w-full items-center justify-between gap-2 text-sm font-bold">
                     <span className="flex items-center gap-2">
-                      {p.id === 'cod' ? <IconCash size={18} /> : <IconBuildingBank size={18} />} {p.label}
+                      {p.id === 'cod' ? (
+                        <IconCash size={18} />
+                      ) : p.id === 'bank-transfer' ? (
+                        <IconBuildingBank size={18} />
+                      ) : p.instalment ? (
+                        <IconCalendarDollar size={18} />
+                      ) : (
+                        <IconCreditCard size={18} />
+                      )}{' '}
+                      {p.label}
+                      {p.test && (
+                        <span className="rounded-full bg-warning-50 px-2 py-0.5 text-[11px] font-semibold text-warning-600">
+                          Test mode
+                        </span>
+                      )}
                     </span>
-                    {p.fee > 0 && <span className="text-xs font-semibold text-ink-600">+ {formatLKR(p.fee)}</span>}
+                    {p.fee > 0 && (
+                      <span className="text-xs font-semibold text-ink-600">
+                        + {formatLKR(p.fee)}
+                      </span>
+                    )}
                   </span>
+                  {p.instalment && p.available && (
+                    <span className="text-sm font-semibold text-ink-800">
+                      3 × {formatLKR(p.instalment)}, today and over the next 2 months
+                    </span>
+                  )}
                   <span className="text-sm text-ink-600">{p.note}</span>
                 </RadioCard>
               ))}
-              <div className="flex items-start gap-3 rounded-xl border border-dashed border-line-strong px-4 py-3 text-sm text-ink-500">
-                <IconLock size={18} className="mt-0.5 shrink-0" />
-                <span>Card payments (PayHere) and 3 interest-free instalments with Koko or Mintpay are coming very soon.</span>
-              </div>
               {errors.payment && <p className="text-sm text-danger-600">{errors.payment}</p>}
             </fieldset>
           </Section>
 
           <Section n={5} title="Gift options & notes" optional>
             <label className="flex cursor-pointer items-start gap-3 text-sm">
-              <input type="checkbox" checked={gift.wrap} onChange={(e) => setGift({ ...gift, wrap: e.target.checked })} className="mt-0.5 size-[18px] accent-ink-900" />
+              <input
+                type="checkbox"
+                checked={gift.wrap}
+                onChange={(e) => setGift({ ...gift, wrap: e.target.checked })}
+                className="mt-0.5 size-[18px] accent-ink-900"
+              />
               <span>
                 <span className="flex items-center gap-1.5 font-semibold">
-                  <IconGift size={17} /> Gift wrap it {giftWrapFee > 0 ? `(+ ${formatLKR(giftWrapFee)})` : '(free)'}
+                  <IconGift size={17} /> Gift wrap it{' '}
+                  {giftWrapFee > 0 ? `(+ ${formatLKR(giftWrapFee)})` : '(free)'}
                 </span>
                 <span className="text-ink-600">Wrapped by hand in our signature paper.</span>
               </span>
             </label>
             <label className="mt-3 flex cursor-pointer items-start gap-3 text-sm">
-              <input type="checkbox" checked={gift.hidePrices} onChange={(e) => setGift({ ...gift, hidePrices: e.target.checked })} className="mt-0.5 size-[18px] accent-ink-900" />
+              <input
+                type="checkbox"
+                checked={gift.hidePrices}
+                onChange={(e) => setGift({ ...gift, hidePrices: e.target.checked })}
+                className="mt-0.5 size-[18px] accent-ink-900"
+              />
               <span>
                 <span className="font-semibold">Hide prices on the packing slip</span>
                 <span className="block text-ink-600">Handy when it’s a gift.</span>
               </span>
             </label>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <TextArea label="Gift message" optional max={300} value={gift.message} onChange={(v) => setGift({ ...gift, message: v })} placeholder="We’ll handwrite it on a card." />
-              <TextArea label="Note for us or the courier" optional max={500} value={note} onChange={setNote} placeholder="e.g. Call before delivery; leave with the security guard." />
+              <TextArea
+                label="Gift message"
+                optional
+                max={300}
+                value={gift.message}
+                onChange={(v) => setGift({ ...gift, message: v })}
+                placeholder="We’ll handwrite it on a card."
+              />
+              <TextArea
+                label="Note for us or the courier"
+                optional
+                max={500}
+                value={note}
+                onChange={setNote}
+                placeholder="e.g. Call before delivery; leave with the security guard."
+              />
             </div>
           </Section>
 
@@ -447,12 +753,24 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
 
 /* ------------------------------------------------------------------ parts */
 
-function Section({ n, title, optional, children }: { n: number; title: string; optional?: boolean; children: ReactNode }) {
+function Section({
+  n,
+  title,
+  optional,
+  children,
+}: {
+  n: number
+  title: string
+  optional?: boolean
+  children: ReactNode
+}) {
   const id = useId()
   return (
     <section aria-labelledby={id} className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
       <h2 id={id} className="mb-4 flex items-center gap-3 text-lg font-bold">
-        <span className="grid size-7 place-items-center rounded-full bg-ink-900 text-sm text-white">{n}</span>
+        <span className="grid size-7 place-items-center rounded-full bg-ink-900 text-sm text-white">
+          {n}
+        </span>
         {title}
         {optional && <span className="text-sm font-normal text-ink-500">(optional)</span>}
       </h2>
@@ -461,22 +779,57 @@ function Section({ n, title, optional, children }: { n: number; title: string; o
   )
 }
 
-function RadioCard({ name, checked, onChange, disabled, children }: { name: string; checked: boolean; onChange: () => void; disabled?: boolean; children: ReactNode }) {
+function RadioCard({
+  name,
+  checked,
+  onChange,
+  disabled,
+  children,
+}: {
+  name: string
+  checked: boolean
+  onChange: () => void
+  disabled?: boolean
+  children: ReactNode
+}) {
   return (
     <label
       className={cn(
         'relative flex cursor-pointer gap-3 rounded-xl border p-4 transition-[border-color,box-shadow] has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-sunset-600',
-        checked ? 'border-ink-900 shadow-[inset_0_0_0_1px_var(--color-ink-900)]' : 'border-line-strong hover:border-ink-500',
+        checked
+          ? 'border-ink-900 shadow-[inset_0_0_0_1px_var(--color-ink-900)]'
+          : 'border-line-strong hover:border-ink-500',
         disabled && 'cursor-not-allowed opacity-50',
       )}
     >
-      <input type="radio" name={name} checked={checked} onChange={onChange} disabled={disabled} className="mt-1 size-[18px] shrink-0 accent-ink-900" />
+      <input
+        type="radio"
+        name={name}
+        checked={checked}
+        onChange={onChange}
+        disabled={disabled}
+        className="mt-1 size-[18px] shrink-0 accent-ink-900"
+      />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">{children}</span>
     </label>
   )
 }
 
-function TextArea({ label, optional, max, value, onChange, placeholder }: { label: string; optional?: boolean; max: number; value: string; onChange: (v: string) => void; placeholder?: string }) {
+function TextArea({
+  label,
+  optional,
+  max,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string
+  optional?: boolean
+  max: number
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
   const id = useId()
   return (
     <div>
@@ -528,10 +881,21 @@ function OrderSummary({
   const couponApplied = q?.coupon?.applied
   const couponId = useId()
   return (
-    <section aria-label="Order summary" className={cn('rounded-2xl border border-line bg-surface p-5 transition-opacity sm:p-6', quoting && 'opacity-70')} aria-busy={quoting}>
+    <section
+      aria-label="Order summary"
+      className={cn(
+        'rounded-2xl border border-line bg-surface p-5 transition-opacity sm:p-6',
+        quoting && 'opacity-70',
+      )}
+      aria-busy={quoting}
+    >
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-bold">Order summary</h2>
-        <button type="button" onClick={onEditBag} className="text-sm font-semibold text-sunset-700 underline-offset-4 hover:underline">
+        <button
+          type="button"
+          onClick={onEditBag}
+          className="text-sm font-semibold text-sunset-700 underline-offset-4 hover:underline"
+        >
           Edit bag
         </button>
       </div>
@@ -540,16 +904,35 @@ function OrderSummary({
           const ql = bySku.get(l.sku)
           return (
             <li key={l.sku} className="flex items-center gap-3">
-              <span className={cn('relative size-14 shrink-0 overflow-hidden rounded-lg', categoryTint[l.category] ?? 'bg-ink-50')}>
-                {l.image && <Image src={l.image} alt="" fill sizes="56px" className="object-contain p-1 mix-blend-multiply" />}
-                <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-ink-900 px-1 text-[11px] font-bold text-white">{l.qty}</span>
+              <span
+                className={cn(
+                  'relative size-14 shrink-0 overflow-hidden rounded-lg',
+                  categoryTint[l.category] ?? 'bg-ink-50',
+                )}
+              >
+                {l.image && (
+                  <Image
+                    src={l.image}
+                    alt=""
+                    fill
+                    sizes="56px"
+                    className="object-contain p-1 mix-blend-multiply"
+                  />
+                )}
+                <span className="absolute -right-1 -top-1 grid min-w-5 place-items-center rounded-full bg-ink-900 px-1 text-[11px] font-bold text-white">
+                  {l.qty}
+                </span>
               </span>
               <span className="min-w-0 flex-1">
                 <span className="line-clamp-1 text-sm font-semibold">{l.name}</span>
-                <span className="block text-xs text-ink-500">{[l.brand, l.multi ? l.label : null].filter(Boolean).join(' · ')}</span>
+                <span className="block text-xs text-ink-500">
+                  {[l.brand, l.multi ? l.label : null].filter(Boolean).join(' · ')}
+                </span>
               </span>
               <span className="text-right text-sm tabular-nums">
-                {ql && ql.discount > 0 && <s className="block text-xs text-ink-400">{formatLKR(ql.lineSubtotal)}</s>}
+                {ql && ql.discount > 0 && (
+                  <s className="block text-xs text-ink-400">{formatLKR(ql.lineSubtotal)}</s>
+                )}
                 {formatLKR(ql?.lineTotal ?? l.price * l.qty)}
               </span>
             </li>
@@ -563,7 +946,12 @@ function OrderSummary({
             <span className="flex items-center gap-1.5 font-semibold">
               <IconTag size={16} /> {q?.coupon?.code} applied
             </span>
-            <button type="button" onClick={removeCoupon} className="grid size-8 place-items-center rounded-full hover:bg-white/60" aria-label={`Remove code ${q?.coupon?.code}`}>
+            <button
+              type="button"
+              onClick={removeCoupon}
+              className="grid size-8 place-items-center rounded-full hover:bg-white/60"
+              aria-label={`Remove code ${q?.coupon?.code}`}
+            >
               <IconX size={16} />
             </button>
           </div>
@@ -588,35 +976,71 @@ function OrderSummary({
               aria-invalid={Boolean(couponError)}
               className={cn(inputClass, 'mt-0 uppercase placeholder:normal-case')}
             />
-            <Button type="submit" variant="outline" className="h-12 shrink-0" disabled={!couponInput.trim()}>
+            <Button
+              type="submit"
+              variant="outline"
+              className="h-12 shrink-0"
+              disabled={!couponInput.trim()}
+            >
               Apply
             </Button>
           </form>
         )}
         {couponError && coupon && <p className="mt-2 text-sm text-danger-600">{couponError}</p>}
-        {q?.coupon?.applied && q.coupon.message && <p className="mt-2 text-xs text-ink-500">{q.coupon.message}</p>}
+        {q?.coupon?.applied && q.coupon.message && (
+          <p className="mt-2 text-xs text-ink-500">{q.coupon.message}</p>
+        )}
       </div>
 
       <dl className="mt-4 flex flex-col gap-2 border-t border-line pt-4 text-sm">
         <Row label="Subtotal" value={q ? formatLKR(q.subtotal) : '…'} />
         {q?.discounts.map((d) => (
-          <Row key={`${d.ruleId}-${d.label}`} label={d.label} value={d.freeDelivery && !d.amount ? 'Free delivery' : `− ${formatLKR(d.amount)}`} tone="success" />
+          <Row
+            key={`${d.ruleId}-${d.label}`}
+            label={d.label}
+            value={d.freeDelivery && !d.amount ? 'Free delivery' : `− ${formatLKR(d.amount)}`}
+            tone="success"
+          />
         ))}
         <Row
           label={q ? `Delivery · ${q.delivery.zone}` : 'Delivery'}
-          value={!q ? '…' : q.delivery.free ? <><s className="mr-1.5 text-ink-400">{formatLKR(q.delivery.baseFee)}</s>Free</> : formatLKR(q.delivery.fee)}
+          value={
+            !q ? (
+              '…'
+            ) : q.delivery.free ? (
+              <>
+                <s className="mr-1.5 text-ink-400">{formatLKR(q.delivery.baseFee)}</s>Free
+              </>
+            ) : (
+              formatLKR(q.delivery.fee)
+            )
+          }
         />
         {q && q.giftWrapFee > 0 && <Row label="Gift wrap" value={formatLKR(q.giftWrapFee)} />}
-        {q && q.total > q.subtotal - q.discountTotal + q.delivery.fee + q.giftWrapFee && <Row label="Cash on delivery fee" value={formatLKR(q.total - (q.subtotal - q.discountTotal + q.delivery.fee + q.giftWrapFee))} />}
+        {q && q.total > q.subtotal - q.discountTotal + q.delivery.fee + q.giftWrapFee && (
+          <Row
+            label="Cash on delivery fee"
+            value={formatLKR(
+              q.total - (q.subtotal - q.discountTotal + q.delivery.fee + q.giftWrapFee),
+            )}
+          />
+        )}
         <div className="mt-2 flex items-baseline justify-between border-t border-line pt-3">
           <dt className="text-base font-bold">Total</dt>
-          <dd className="font-display text-2xl font-bold tabular-nums">{q ? formatLKR(q.total) : '…'}</dd>
+          <dd className="font-display text-2xl font-bold tabular-nums">
+            {q ? formatLKR(q.total) : '…'}
+          </dd>
         </div>
-        {q && q.discountTotal > 0 && <p className="text-right text-sm font-semibold text-success-600">You save {formatLKR(q.discountTotal)}</p>}
+        {q && q.discountTotal > 0 && (
+          <p className="text-right text-sm font-semibold text-success-600">
+            You save {formatLKR(q.discountTotal)}
+          </p>
+        )}
       </dl>
       {q && q.freeDeliveryRemaining > 0 && q.delivery.method === 'standard' && (
         <p className="mt-3 rounded-lg bg-sunset-50 px-3 py-2 text-xs text-sunset-800">
-          {formatLKR(q.freeDeliveryRemaining)} away from free delivery (over {formatLKR(freeThreshold)})
+          {formatLKR(q.freeDeliveryRemaining)} away from free delivery (over{' '}
+          {formatLKR(freeThreshold)})
         </p>
       )}
     </section>
@@ -625,25 +1049,62 @@ function OrderSummary({
 
 function Row({ label, value, tone }: { label: string; value: ReactNode; tone?: 'success' }) {
   return (
-    <div className={cn('flex items-baseline justify-between gap-3', tone === 'success' && 'text-success-600')}>
+    <div
+      className={cn(
+        'flex items-baseline justify-between gap-3',
+        tone === 'success' && 'text-success-600',
+      )}
+    >
       <dt>{label}</dt>
       <dd className="tabular-nums">{value}</dd>
     </div>
   )
 }
 
-function PlaceOrder({ terms, setTerms, termsError, placing, disabled, total, onPlace }: { terms: boolean; setTerms: (v: boolean) => void; termsError?: string; placing: boolean; disabled: boolean; total?: number; onPlace: () => void }) {
+function PlaceOrder({
+  terms,
+  setTerms,
+  termsError,
+  placing,
+  disabled,
+  total,
+  online,
+  onPlace,
+}: {
+  terms: boolean
+  setTerms: (v: boolean) => void
+  termsError?: string
+  placing: boolean
+  disabled: boolean
+  total?: number
+  online: boolean
+  onPlace: () => void
+}) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-5 sm:p-6">
       <label className="flex cursor-pointer items-start gap-3 text-sm" data-field="terms">
-        <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} aria-invalid={Boolean(termsError)} className="mt-0.5 size-[18px] shrink-0 accent-ink-900" />
+        <input
+          type="checkbox"
+          checked={terms}
+          onChange={(e) => setTerms(e.target.checked)}
+          aria-invalid={Boolean(termsError)}
+          className="mt-0.5 size-[18px] shrink-0 accent-ink-900"
+        />
         <span>
           I accept the{' '}
-          <Link href="/terms" target="_blank" className="font-semibold underline underline-offset-2">
+          <Link
+            href="/terms"
+            target="_blank"
+            className="font-semibold underline underline-offset-2"
+          >
             terms &amp; conditions
           </Link>{' '}
           and{' '}
-          <Link href="/returns" target="_blank" className="font-semibold underline underline-offset-2">
+          <Link
+            href="/returns"
+            target="_blank"
+            className="font-semibold underline underline-offset-2"
+          >
             returns policy
           </Link>
           .
@@ -651,7 +1112,8 @@ function PlaceOrder({ terms, setTerms, termsError, placing, disabled, total, onP
       </label>
       {termsError && <p className="-mt-2 ml-[30px] text-sm text-danger-600">{termsError}</p>}
       <Button size="lg" block loading={placing} disabled={disabled && !placing} onClick={onPlace}>
-        <IconLock size={18} /> Place order{total ? ` · ${formatLKR(total)}` : ''}
+        <IconLock size={18} /> {online ? 'Continue to payment' : 'Place order'}
+        {total ? ` · ${formatLKR(total)}` : ''}
       </Button>
       <p className="flex items-center justify-center gap-1.5 text-xs text-ink-500">
         <IconShieldCheck size={15} /> 100% genuine products · Easy returns · Island-wide delivery

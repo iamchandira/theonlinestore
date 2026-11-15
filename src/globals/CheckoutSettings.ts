@@ -5,19 +5,19 @@ import { DISTRICT_NAMES } from '../config/districts'
 import { audit } from '../lib/payload/audit'
 
 /**
- * Checkout settings (Sprint 4): delivery zones and fees (TOS-505), same-day, gift wrap, payment
- * method switches and limits (expanded with gateways in Sprint 5), and the T&C version (TOS-507).
+ * Checkout settings (Sprint 4): delivery zones and fees (TOS-505), same-day, gift wrap and the T&C version
+ * (TOS-507). Payment methods moved to the Payments settings page in Sprint 5 (globals/PaymentSettings.ts).
  * Defaults are used until an admin saves this page.
  */
 export const CheckoutSettings: GlobalConfig = {
   slug: 'checkout-settings',
   label: 'Checkout settings',
-  admin: { group: 'Settings', description: 'Delivery fees, same-day, gift wrap, payment methods and terms version.' },
+  admin: { group: 'Settings', description: 'Delivery fees, same-day, gift wrap and terms version. Payment methods are under Settings › Payments.' },
   access: { read: anyone, update: allowRoles('store-manager') },
   hooks: {
     afterChange: [
       async ({ req }) => {
-        if (req.user) await audit(req, { action: 'content-change', collection: 'checkout-settings', summary: 'Checkout settings updated (delivery, payments or terms)' })
+        if (req.user) await audit(req, { action: 'content-change', collection: 'checkout-settings', summary: 'Checkout settings updated (delivery, gift wrap or terms)' })
       },
     ],
   },
@@ -79,42 +79,6 @@ export const CheckoutSettings: GlobalConfig = {
                   ],
                 },
                 { name: 'districts', type: 'select', hasMany: true, options: DISTRICT_NAMES, defaultValue: ['Colombo'] },
-              ],
-            },
-          ],
-        },
-        {
-          label: 'Payments',
-          description: 'Card, Koko and Mintpay arrive in Sprint 5.',
-          fields: [
-            {
-              name: 'cod',
-              type: 'group',
-              label: 'Cash on delivery',
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'enabled', type: 'checkbox', defaultValue: true, admin: { width: '33%' } },
-                    { name: 'maxOrder', label: 'Maximum order (Rs)', type: 'number', min: 0, defaultValue: 50000, admin: { width: '33%' } },
-                    { name: 'fee', label: 'COD fee (Rs)', type: 'number', min: 0, defaultValue: 0, admin: { width: '34%' } },
-                  ],
-                },
-              ],
-            },
-            {
-              name: 'bankTransfer',
-              type: 'group',
-              label: 'Bank transfer',
-              fields: [
-                { name: 'enabled', type: 'checkbox', defaultValue: true },
-                {
-                  name: 'instructions',
-                  type: 'textarea',
-                  defaultValue: 'Bank: [Bank name] · Account name: The Online Store (Pvt) Ltd · Account no: [to be added] · Branch: [branch]',
-                  admin: { description: 'Shown after ordering and in the confirmation email. Use your order number as the reference.' },
-                },
-                { name: 'holdHours', label: 'Hold the order for (hours)', type: 'number', min: 1, defaultValue: 48 },
               ],
             },
           ],

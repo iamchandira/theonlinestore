@@ -2,6 +2,29 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.7.0] · 2026-11-15 · Sprint 5: Payments
+### Added
+- **Settings › Payments** (TOS-601): each method on or off, its position at checkout, minimum and maximum order, label; Test or Live mode; how long unpaid online orders are held. Gateway credentials are Super Admin only, and environment variables override them.
+- **Card payments with PayHere** (TOS-602): signed checkout form, signed server notification (`/api/transactions/notify/payhere`) checked for merchant, signature and exact amount; repeats are ignored and a late failure never un-pays an order.
+- **Koko and Mintpay** (TOS-603/604): shown with "3 × Rs X"; the full flow runs on the built-in test gateway until each provider's merchant guide arrives.
+- **Built-in test gateway** with Approve / Decline / Cancel, signed like the real gateway; Test mode only, never on the live site.
+- **Pay page** (`/checkout/pay/…`): continues to the gateway, explains a cancelled or failed payment and offers Try again; the order page waits for confirmation instead of claiming success.
+- **Bank slips** (TOS-605): shoppers upload a photo or PDF on their order page; staff Verify or Reject it in the order's new Payment panel; the shopper is emailed either way.
+- **COD rules** (TOS-606): excluded districts, on top of the maximum and fee.
+- **Transactions** (TOS-607): every attempt, gateway message (with its signature result), slip decision and cash collection, read-only. "Cash collected" for COD orders.
+- **Unpaid orders are released** automatically after their pay-by time (60 min online, 48 h bank transfer) and the stock goes back.
+- Sidebar: Transactions (with slips waiting) and Settings › Payments.
+- Tests: `payments.int.spec.ts` (15), `payments.e2e.spec.ts` (3).
+
+### Changed
+- Cash on delivery and bank transfer settings moved from Checkout settings to Settings › Payments.
+- Online orders send their confirmation email once payment is confirmed; bank transfer emails ask for the slip.
+- Order payment status is no longer edited by hand; payment actions keep the log.
+- Place-order limit raised to 30 per 10 minutes per connection (mobile networks share addresses).
+
+### Fixed
+- Opening any order page emptied the shopper's current bag; now only right after ordering.
+
 ## [0.6.0] · 2026-11-15 · Sprint 4: Checkout
 ### Added
 - **One-page checkout** (`/checkout`), guest or signed in: contact, address (saved addresses or new, all 25 districts with town suggestions), delivery (standard or same-day in Colombo before noon), payment (cash on delivery or bank transfer; card, Koko and Mintpay marked "coming soon"), gift wrap and message, notes and a coupon box. The summary is sticky on desktop and folds away on phones.

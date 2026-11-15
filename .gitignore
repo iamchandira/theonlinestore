@@ -53,3 +53,6 @@ node_modules/
 /screenshots/
 
 /review-media
+
+# Bank transfer slips (customer uploads, never committed)
+/private

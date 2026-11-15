@@ -34,8 +34,9 @@ pnpm seed:catalog             # import the 88-product seed catalogue into Payloa
 - **Catalogue seed:** `seed/catalogue/products.json` + `public/catalogue/`
 - **Custom admin:** `src/components/admin/` + `src/app/(payload)/custom.scss`
 - **Checkout:** pricing `src/lib/checkout/pricing.ts`, server `src/lib/checkout/server.ts`, endpoints `src/endpoints/checkout.ts`, page `src/components/checkout/`; fees in Admin › Settings › Checkout & delivery
+- **Payments:** `src/lib/payments/` (config, PayHere signing, service), `src/endpoints/payments.ts`, pay pages under `src/app/(frontend)/checkout/pay/`; credentials via `PAYHERE_*`, `KOKO_*`, `MINTPAY_*` env vars or Settings › Payments (Super Admin)
 - **RBAC:** `src/access/roles.ts`
 - **Docs:** [`docs/`](docs/README.md): charter, SRS, backlog, sprint plan, architecture, design system, RBAC, UX
 
 ## Status
-Sprints 0 to 4 are complete (v0.6.0, checkout). Shoppers can check out as guests or signed in, with cash on delivery or bank transfer; orders appear in Admin › Orders and confirmation emails in Mailpit. Online payments (PayHere, Koko, Mintpay) come in Sprint 5. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.
+Sprints 0 to 5 are complete (v0.7.0, payments). Shoppers pay by card (PayHere), Koko, Mintpay, cash on delivery or bank transfer with a slip upload. Locally, card and instalment payments go through a built-in test gateway (Approve / Decline) until gateway credentials are added in Admin › Settings › Payments or in `.env`. Orders, slips and transactions are in Admin › Sales; emails appear in Mailpit. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.

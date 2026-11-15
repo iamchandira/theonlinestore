@@ -34,6 +34,7 @@ export const AuditLogs: CollectionConfig = {
         { label: 'Account deletion request', value: 'deletion-request' },
         { label: 'Content change', value: 'content-change' },
         { label: 'CSV import', value: 'csv-import' },
+        { label: 'Payment', value: 'payment' },
       ],
     },
     { name: 'summary', type: 'text', required: true },

@@ -3,6 +3,7 @@ import { randomBytes } from 'node:crypto'
 import { sql } from '@payloadcms/db-postgres'
 import type { Endpoint, PayloadRequest } from 'payload'
 
+import { isOnline, PAYMENT_METHODS, type PaymentMethod } from '../collections/Transactions'
 import { DISTRICT_NAMES } from '../config/districts'
 import { allow, clientIp } from '../lib/server/rateLimit'
 
@@ -18,6 +19,7 @@ const PHONE = /^(\+94|0)?7\d{8}$/
 const normPhone = (p: unknown) => String(p ?? '').replace(/[\s-]/g, '').slice(0, 15)
 const str = (v: unknown, max: number) => String(v ?? '').trim().slice(0, max)
 const shopperUser = (req: PayloadRequest) => (req.user && req.user.collection === 'users' ? req.user : null)
+const paymentOf = (v: unknown): PaymentMethod | null => (PAYMENT_METHODS.some((m) => m.value === v) ? (v as PaymentMethod) : null)
 const items = (v: unknown) => (Array.isArray(v) ? v : []).slice(0, 60).map((i) => ({ sku: str((i as { sku?: string }).sku, 80), qty: Number((i as { qty?: number }).qty) || 0 }))
 
 export const quoteEndpoint: Endpoint = {
@@ -34,7 +36,7 @@ export const quoteEndpoint: Endpoint = {
       method: body.method === 'same-day' ? 'same-day' : 'standard',
       couponCode: str(body.couponCode, 40) || null,
       giftWrap: Boolean(body.giftWrap),
-      payment: body.payment === 'cod' || body.payment === 'bank-transfer' ? body.payment : null,
+      payment: paymentOf(body.payment),
       shopper: { email: str(body.email, 120).toLowerCase() || user?.email, phone: normPhone(body.phone) || null, userId: user?.id ?? null },
     })
     return Response.json({
@@ -63,7 +65,8 @@ export const placeEndpoint: Endpoint = {
   method: 'post',
   handler: async (req) => {
     const ip = clientIp(req.headers)
-    if (!allow(`place:${ip}`, 10, 10 * 60_000)) return Response.json({ error: 'Too many orders from this connection. Please wait a few minutes.' }, { status: 429 })
+    // 30 per 10 min: mobile networks put many shoppers behind one address (CGNAT)
+    if (!allow(`place:${ip}`, 30, 10 * 60_000)) return Response.json({ error: 'Too many orders from this connection. Please wait a few minutes.' }, { status: 429 })
     const body = ((await req.json?.().catch(() => null)) ?? {}) as Record<string, unknown>
     const user = shopperUser(req)
     const payload = req.payload
@@ -101,7 +104,7 @@ export const placeEndpoint: Endpoint = {
       if (address.postalCode && !/^\d{5}$/.test(address.postalCode)) fields.postalCode = 'Postal codes have 5 digits.'
       if (!PHONE.test(address.phone!)) fields.addressPhone = 'Enter a Sri Lankan mobile number for the courier.'
     }
-    const payment: 'cod' | 'bank-transfer' | null = body.payment === 'cod' || body.payment === 'bank-transfer' ? body.payment : null
+    const payment = paymentOf(body.payment)
     if (!payment) fields.payment = 'Choose how you’d like to pay.'
     if (body.acceptTerms !== true) fields.terms = 'Please accept the terms and conditions to place your order.'
     const gift = { wrap: Boolean((body.gift as Record<string, unknown>)?.wrap), message: str((body.gift as Record<string, unknown>)?.message, 300) || null, hidePrices: Boolean((body.gift as Record<string, unknown>)?.hidePrices) }
@@ -171,6 +174,10 @@ export const placeEndpoint: Endpoint = {
         data: {
           orderNumber: number,
           status: payment === 'cod' ? 'processing' : 'pending-payment',
+          paymentDueAt:
+            payment === 'cod'
+              ? null
+              : new Date(Date.now() + (isOnline(payment!) ? q.payConfig.onlineHoldMinutes * 60_000 : q.payConfig.bankTransfer.holdHours * 3_600_000)).toISOString(),
           paymentMethod: payment!,
           paymentStatus: 'unpaid',
           customer: user?.id,
@@ -205,7 +212,13 @@ export const placeEndpoint: Endpoint = {
           termsVersion: q.config.termsVersion,
           accessToken: token,
           clientIp: ip,
-          timeline: [{ at: now, event: payment === 'cod' ? 'Order placed (cash on delivery)' : 'Order placed, waiting for bank transfer', by: contact.email }],
+          timeline: [
+            {
+              at: now,
+              event: payment === 'cod' ? 'Order placed (cash on delivery)' : payment === 'bank-transfer' ? 'Order placed, waiting for bank transfer' : `Order placed, waiting for ${{ payhere: 'card (PayHere)', koko: 'Koko', mintpay: 'Mintpay' }[payment as string] ?? payment} payment`,
+              by: contact.email,
+            },
+          ],
         },
       })
       orderId = order.id
@@ -221,6 +234,9 @@ export const placeEndpoint: Endpoint = {
       payload.logger.error({ err }, 'Place order failed')
       return Response.json({ error: 'We couldn’t place your order. Nothing was charged. Please try again.' }, { status: 500 })
     }
+
+    // Card and instalment orders continue to the gateway; their confirmation email goes once payment is confirmed
+    if (isOnline(payment!)) return Response.json({ ok: true, orderNumber: number, redirect: `/checkout/pay/${number}?t=${token}` })
 
     /* -------- confirmation email (after commit; never blocks the order) -------- */
     const site = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '')
@@ -239,7 +255,7 @@ export const placeEndpoint: Endpoint = {
           address: address as never,
           delivery: { method: q.quote.delivery.method, eta: q.quote.delivery.eta },
           paymentMethod: payment!,
-          bankInstructions: q.config.bankTransfer.instructions,
+          bankInstructions: q.payConfig.bankTransfer.instructions,
           viewUrl,
         }),
       })

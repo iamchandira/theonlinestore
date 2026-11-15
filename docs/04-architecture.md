@@ -205,6 +205,25 @@ The integration test races two shoppers for the last units: exactly one order su
 
 **Stock history:** `stock-movements.product` is now optional, so deleting a product keeps its history (SKU and variant name stay on each row).
 
+### Added in Sprint 5 (payments)
+**Collections and globals:** `payment-settings` (mode Test/Live, hold time for online orders, test gateway switch; per method: on/off, position, min/max order, label; PayHere, Koko and Mintpay credentials; COD fee and excluded districts; bank instructions and hold hours). `transactions` (reference = the gateway's order id `TOS-…-P1`, order, method, status, amount, gateway payment id, signature result, test flag, slip, staff member, events[]). `payment-slips` (private uploads in `private/payment-slips`, status pending/verified/rejected). Orders gain `paymentDueAt` and `paidAt`; payment status adds processing, slip to verify and failed.
+
+**Flow for card and instalments:**
+1. Place order creates the order as *pending payment* with a pay-by time (60 min) and reserves stock, then sends the browser to `/checkout/pay/[orderNumber]?t=…`.
+2. The pay page starts an attempt (`startAttempt`, one `transactions` row per attempt) and either posts PayHere's signed form (`hash = UPPER(MD5(merchant_id + order_id + amount + currency + UPPER(MD5(secret))))`) or, without credentials in Test mode, opens the built-in test gateway.
+3. PayHere calls `POST /api/transactions/notify/payhere`. `parsePayhereNotify` checks the merchant and `md5sig`; `applyGatewayResult` locks the attempt row, ignores repeats, refuses a wrong amount (order put on hold), and marks the order paid → processing. The confirmation email goes after payment.
+4. The shopper returns to the order page, which polls `GET /api/orders/payment-status` until the gateway has answered.
+
+**Test gateway:** `/checkout/pay/test-gateway` signs its result exactly like the gateway (PayHere's md5sig, or HMAC-SHA256 for Koko/Mintpay) with a secret derived from `PAYLOAD_SECRET`, and goes through the same `applyGatewayResult`. It runs only in Test mode and only outside production, unless `ALLOW_TEST_GATEWAY=true` (local `.env` only, so production builds can be tested).
+
+**Koko and Mintpay:** both APIs are shared only with signed-up merchants, so their live adapters are not written yet. `gatewayRoute()` returns the test gateway for them in Test mode and hides them otherwise. Adding a live adapter means one `start` (build the request) and one notify endpoint (verify the signature, then call `applyGatewayResult`).
+
+**Bank transfer:** slip upload (`POST /api/orders/slip`) → order *slip to verify* → staff Verify / Reject in the order's Payment panel (`POST /api/orders/:id/payment`) → paid + processing, or back to unpaid with the reason emailed.
+
+**Releasing unpaid orders:** a Payload job (`releaseUnpaidOrders`, every 5 minutes via `jobs.autoRun`) cancels pending-payment orders past their pay-by time that are unpaid or failed (not those with a slip waiting or a gateway still processing); the order hook returns the stock.
+
+**Secrets:** `PAYHERE_MERCHANT_ID/SECRET`, `KOKO_*`, `MINTPAY_*` env vars override stored values. Gateway notify URLs must be public HTTPS, so a live sandbox run needs a deployed staging site or a tunnel.
+
 ### Target (Sprints 2–7)
 ```mermaid
 erDiagram

@@ -34,10 +34,11 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 | Media | CRUD | CRUD | CRUD | CRU | R | CRU | R | R |
 | Orders | RUD | RUD | RU | R | RU (status, shipment) | R | RU (notes) | Own R |
 | Refunds / returns | CRUD | CRUD | CRU | R | R | — | CR (request) | Own C (request) |
-| Transactions | R | R | R | — | — | — | R | — |
+| Transactions (payment log) | R | R | R | — | — | — | R | — |
+| Bank slips: view, verify / reject | R, verify | R, verify | R, verify | — | R | — | R, verify | Own upload (private link) |
 | Coupons & promotions (`discounts`) | CRUD | CRUD | CRUD | — | — | CRUD | R | — |
 | Checkout settings (delivery zones & rates, COD/bank rules, gift wrap, terms version) | RU | RU | RU | R | R | R | R | R (fees only, via checkout) |
-| **Payment settings & credentials** | RU | R\* | — | — | — | — | — | — |
+| **Payment settings & credentials** | RU | RU\* (no credentials) | R\* | — | — | — | R\* | — |
 | Notification templates & toggles | CRUD | CRUD | R | — | — | CRU | R | — |
 | Pages / blog / home page | CRUD | CRUD | CRU | — | — | CRUD | R | R (published) |
 | Reviews moderation | CRUD | CRUD | RUD | — | — | RU | RU | Own C (review form) |
@@ -107,6 +108,14 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 - **Discounts:** read by store manager, marketing and support; created, edited and deleted by store manager and marketing. Each create or change of value or status is audited.
 - **Checkout settings:** anyone can read (the checkout needs the fees); only store managers (and admins) change them, and each change is audited.
 - **Checkout endpoints:** `quote` is rate-limited to 120 per minute per IP and `place` to 10 orders per 10 minutes per IP.
+
+## Rules implemented in Sprint 5 (payments)
+- **Payment settings:** read by store manager and support (and admins); changed by admins. Gateway credentials (merchant IDs, secrets, API keys, keys) are read and changed by **Super Admins only**, and an environment variable always overrides the stored value.
+- **Transactions:** read by store manager and support (and admins). Nobody creates, edits or deletes them through the API; the server writes them. Raw gateway data on each event is admin-only, and card details are never stored.
+- **Bank slips:** never public. Uploaded only with the order's private link or by the signed-in owner (`POST /api/orders/slip`, 10 per hour per IP, photo or PDF up to 8 MB). Read by store manager, support and fulfilment.
+- **Payment actions** (`POST /api/orders/:id/payment`): verify or reject a slip: store manager and support; mark a bank transfer received: store manager; cash collected: store manager and fulfilment (admins can do all). Each is audited (`payment`) and logged as a transaction.
+- **Order payment status** can no longer be edited by hand: only gateways, slip decisions and the actions above change it, so the transactions log always explains it.
+- **Gateway notifications** are accepted only with a valid signature and the exact order amount; anything else is recorded and changes nothing.
 
 ## Testing
 `tests/int/rbac.int.spec.ts` (TOS-401) signs in as every role and checks the allowed and denied operations above through the same access rules the API uses (20 checks, including orders, discounts and checkout settings). `tests/int/checkout.int.spec.ts` covers order privacy (customers see only their own, the token is never exposed). Any access change must update this matrix and that test together.
