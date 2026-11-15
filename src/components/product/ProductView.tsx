@@ -37,7 +37,9 @@ type Props = { product: ProductDetail; details?: ReactNode }
  * The variant is kept in the URL (?variant=SKU) so a shared link opens the same shade or size.
  */
 export function ProductView({ product, details }: Props) {
-  const { addToCart, toggleWishlist, isWishlisted } = useShop()
+  const { addToCart, toggleWishlist, isWishlisted, rememberViewed } = useShop()
+  // Recently viewed (TOS-205)
+  useEffect(() => rememberViewed(product.slug), [product.slug, rememberViewed])
   const firstInStock = product.variants.find((v) => v.stock > 0) ?? product.variants[0]
   const [sku, setSku] = useState(firstInStock.sku)
   const [qty, setQty] = useState(1)
@@ -138,9 +140,16 @@ export function ProductView({ product, details }: Props) {
               {product.brand}
             </Link>
             <h1 className="text-[1.75rem] font-bold leading-tight md:text-[2.25rem]">{product.name}</h1>
-            {product.reviewCount > 0 && (
-              <a href="#details" className="w-fit">
-                <Rating value={product.rating} count={product.reviewCount} size={16} />
+            {product.reviewCount > 0 ? (
+              <a href="#reviews" className="flex w-fit items-center gap-2 text-sm text-ink-600 hover:text-ink-900">
+                <Rating value={product.rating} size={16} />
+                <span className="underline underline-offset-4">
+                  {product.rating.toFixed(1)} · {product.reviewCount} review{product.reviewCount === 1 ? '' : 's'}
+                </span>
+              </a>
+            ) : (
+              <a href="#reviews" className="w-fit text-sm text-ink-600 underline underline-offset-4 hover:text-ink-900">
+                Be the first to review
               </a>
             )}
           </div>

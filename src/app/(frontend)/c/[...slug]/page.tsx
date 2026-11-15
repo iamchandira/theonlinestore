@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { EmptyListing, ListingPage } from '@/components/catalog/ListingPage'
 import { site } from '@/config/site'
 import { parseListParams, type RawSearchParams } from '@/lib/catalog/params'
-import { BEAUTY_SLUGS, buildFilterChips, getCategoryByPath, getCategoryTree, listProducts } from '@/lib/catalog/server'
+import { activeFilterChips, BEAUTY_SLUGS, categoryFacetOptions, clearFiltersHref, getCategoryByPath, getCategoryTree, getListing } from '@/lib/catalog/server'
 
 type Props = { params: Promise<{ slug: string[] }>; searchParams: Promise<RawSearchParams> }
 
@@ -26,16 +26,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   if (!cat) notFound()
   const { node, ids, breadcrumbs } = cat
   const lp = parseListParams(sp)
-  const result = await listProducts({
-    categoryIds: ids,
-    concernSlug: lp.concern,
-    recipientSlug: lp.recipient,
-    occasionSlug: lp.occasion,
-    tagSlug: lp.tag,
-    maxPrice: lp.maxPrice,
-    sort: lp.sort,
-    page: lp.page,
-  })
+  const { result, facets, scopeToken } = await getListing({ categoryIds: ids, tagSlug: lp.tag, categoryOptions: await categoryFacetOptions(node) }, lp)
 
   // Chips: children of this category, or siblings when we're on a leaf
   const { roots, bySlug } = await getCategoryTree()
@@ -59,14 +50,17 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       breadcrumbs={trail}
       tint={node.tint}
       chips={chips}
-      filters={await buildFilterChips(node.href, lp.keep)}
+      filters={await activeFilterChips(node.href, lp.keep, facets)}
+      clearHref={clearFiltersHref(node.href, lp.keep)}
+      facets={facets}
+      scopeToken={scopeToken}
       result={result}
       sort={lp.sort}
       basePath={node.href}
       params={lp.keep}
       empty={
-        lp.concern || lp.tag || lp.maxPrice || lp.recipient || lp.occasion ? (
-          <EmptyListing title="No matches for these filters" text="Try removing a filter above, or browse the full range." />
+        lp.activeFilterCount || lp.tag ? (
+          <EmptyListing title="No matches for these filters" text="Try removing a filter, or clear them all to see the full range." />
         ) : (
           <EmptyListing title={`Our ${node.name.toLowerCase()} range is coming soon`} />
         )

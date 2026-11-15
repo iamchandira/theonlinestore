@@ -68,6 +68,8 @@ export interface Config {
   blocks: {};
   collections: {
     products: Product;
+    reviews: Review;
+    'review-media': ReviewMedia;
     categories: Category;
     brands: Brand;
     tags: Tag;
@@ -75,6 +77,7 @@ export interface Config {
     occasions: Occasion;
     recipients: Recipient;
     'stock-movements': StockMovement;
+    'search-queries': SearchQuery;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -86,6 +89,8 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     products: ProductsSelect<false> | ProductsSelect<true>;
+    reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    'review-media': ReviewMediaSelect<false> | ReviewMediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
@@ -93,6 +98,7 @@ export interface Config {
     occasions: OccasionsSelect<false> | OccasionsSelect<true>;
     recipients: RecipientsSelect<false> | RecipientsSelect<true>;
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
+    'search-queries': SearchQueriesSelect<false> | SearchQueriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -324,7 +330,7 @@ export interface Product {
    */
   salesCount?: number | null;
   /**
-   * Placeholder until reviews launch (Sprint 2).
+   * Average of approved reviews (updated automatically).
    */
   rating?: number | null;
   reviewCount?: number | null;
@@ -549,29 +555,90 @@ export interface Concern {
   createdAt: string;
 }
 /**
- * Every stock change, who made it and why. Written automatically; adjust stock from Inventory.
+ * Shopper reviews. New reviews wait for approval before they appear on the store.
  *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "stock-movements".
+ * via the `definition` "reviews".
  */
-export interface StockMovement {
+export interface Review {
   id: number;
   product: number | Product;
-  sku: string;
-  variantLabel?: string | null;
   /**
-   * Positive = stock in, negative = stock out
+   * 1 to 5 stars
    */
-  change: number;
-  resultingStock: number;
-  reason: 'initial' | 'adjustment' | 'restock' | 'sale' | 'return' | 'damaged' | 'count';
-  note?: string | null;
+  rating: number;
+  title?: string | null;
+  body: string;
+  photos?: (number | ReviewMedia)[] | null;
   /**
-   * Who made the change (empty = system).
+   * Shown under the review as "Reply from The Online Store".
    */
+  reply?: string | null;
+  authorName: string;
+  /**
+   * Never shown on the store.
+   */
+  authorEmail?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  /**
+   * Bought this product from us. Set from orders once checkout launches (Sprint 6).
+   */
+  verifiedBuyer?: boolean | null;
+  helpfulCount?: number | null;
   user?: (number | null) | User;
+  /**
+   * Illustrative review on a demo product. Removed with the demo products.
+   */
+  isSample?: boolean | null;
+  /**
+   * Internal note (why it was rejected, etc.).
+   */
+  moderationNote?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * Photos shoppers attached to reviews. Visible on the store once the review is approved.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "review-media".
+ */
+export interface ReviewMedia {
+  id: number;
+  alt?: string | null;
+  /**
+   * Set automatically when the review is approved.
+   */
+  public?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumb?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    large?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
 }
 /**
  * Customers and staff accounts. Roles control what each staff member can see and do.
@@ -619,6 +686,52 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * Every stock change, who made it and why. Written automatically; adjust stock from Inventory.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stock-movements".
+ */
+export interface StockMovement {
+  id: number;
+  product: number | Product;
+  sku: string;
+  variantLabel?: string | null;
+  /**
+   * Positive = stock in, negative = stock out
+   */
+  change: number;
+  resultingStock: number;
+  reason: 'initial' | 'adjustment' | 'restock' | 'sale' | 'return' | 'damaged' | 'count';
+  note?: string | null;
+  /**
+   * Who made the change (empty = system).
+   */
+  user?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * What shoppers search for, per day. Zero-result searches show what to stock or rename.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search-queries".
+ */
+export interface SearchQuery {
+  id: number;
+  term: string;
+  /**
+   * YYYY-MM-DD (Asia/Colombo)
+   */
+  day: string;
+  count: number;
+  /**
+   * Results shown the last time this was searched
+   */
+  results: number;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -741,6 +854,14 @@ export interface PayloadLockedDocument {
         value: number | Product;
       } | null)
     | ({
+        relationTo: 'reviews';
+        value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'review-media';
+        value: number | ReviewMedia;
+      } | null)
+    | ({
         relationTo: 'categories';
         value: number | Category;
       } | null)
@@ -767,6 +888,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'stock-movements';
         value: number | StockMovement;
+      } | null)
+    | ({
+        relationTo: 'search-queries';
+        value: number | SearchQuery;
       } | null)
     | ({
         relationTo: 'media';
@@ -908,6 +1033,71 @@ export interface ProductsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "reviews_select".
+ */
+export interface ReviewsSelect<T extends boolean = true> {
+  product?: T;
+  rating?: T;
+  title?: T;
+  body?: T;
+  photos?: T;
+  reply?: T;
+  authorName?: T;
+  authorEmail?: T;
+  status?: T;
+  verifiedBuyer?: T;
+  helpfulCount?: T;
+  user?: T;
+  isSample?: T;
+  moderationNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "review-media_select".
+ */
+export interface ReviewMediaSelect<T extends boolean = true> {
+  alt?: T;
+  public?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumb?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
@@ -1017,6 +1207,18 @@ export interface StockMovementsSelect<T extends boolean = true> {
   reason?: T;
   note?: T;
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "search-queries_select".
+ */
+export interface SearchQueriesSelect<T extends boolean = true> {
+  term?: T;
+  day?: T;
+  count?: T;
+  results?: T;
   updatedAt?: T;
   createdAt?: T;
 }

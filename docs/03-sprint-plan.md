@@ -11,7 +11,7 @@
 | **0** ✅ | 15 Nov 2026 | Foundation, brand and UX system, storefront shell, catalogue extraction, docs | TOS-001 → 008 | Home page, styleguide, branded admin |
 | **1** ✅ | 15 Nov 2026 (started early) | **Catalogue live**: products, variants, categories, brands, inventory; listing and product pages | TOS-101 → 110 | Staff add a product; shoppers browse real listing and product pages |
 | **1.5** ✅ | 15 Nov 2026 (inserted) | **Lifestyle store & custom admin**: product types, two-option variants, gift shop, demo products; custom dashboard, products list, inventory, ⌘K | TOS-131 → 142 | Footwear size × colour picker; gift shop; admin dashboard and bulk stock update |
-| **2** | 16 – 27 Nov 2026 | **Find it fast**: search, filters, wishlist, cross-sell and upsell, reviews, CSV import/export | TOS-201 → 208, TOS-109 | Search "centella", filter by concern, save to wishlist |
+| **2** ✅ | 15 Nov 2026 (started early) | **Find it fast**: search, filters, wishlist, cross-sell and upsell, reviews, CSV import/export | TOS-201 → 208, TOS-109 | Search "centella", filter by concern, save to wishlist |
 | **3** | 14 – 24 Dec | **Accounts & security**: register, login, reset, addresses, order history shell; RBAC enforced; audit log | TOS-301 → 307, 401 → 404 | A customer signs up; each staff role sees the right admin |
 | — | 25 Dec – 1 Jan | Holiday buffer (bug fixes, content entry) | | |
 | **4** | 4 – 15 Jan 2027 | **Checkout**: server bag, coupons, discount engine, delivery fees, notes, T&C, gift options, confirmation | TOS-501 → 509 | Full COD order with a coupon and district delivery fee |
@@ -43,7 +43,21 @@ All Must stories done (52 of 55 points). TOS-109 (CSV import/export) moved to Sp
 ## Sprint 1.5 (complete): lifestyle store & custom admin
 Inserted at the owner's request after Sprint 1 (47 points, all done). The store now models every department, not only beauty, and staff work in a purpose-built admin. Sprint 2 dates are unchanged. See `sprint-reports/sprint-01-5.md`.
 
-## Sprint 2 plan (next)
+## Sprint 2 (complete): find it fast
+All 8 stories done (45 points), plus TOS-109 (CSV import/export) carried over from Sprint 1. See `sprint-reports/sprint-02.md`.
+
+## Sprint 3 plan (next, 14 – 24 Dec)
+**Goal:** accounts and security. Customers can register, sign in, reset a password, keep addresses and see orders. Staff roles are enforced and tested.
+
+| # | Task | Story |
+|---|---|---|
+| 1 | Customer registration, login/logout, password reset, email verification (Payload auth) | TOS-301 → 303 |
+| 2 | Account area: profile, address book (district/city pickers), order history shell | TOS-304 → 306 |
+| 3 | Wishlist sync: the device wishlist merges into the account at sign-in; reviews linked to the signed-in customer | TOS-307 (from TOS-203/206) |
+| 4 | RBAC enforced on every collection and endpoint, with an automated test per role | TOS-401 → 403 |
+| 5 | Audit log for staff actions | TOS-404 |
+
+## Sprint 2 plan (as planned)
 **Goal:** find it fast. Shoppers can find any product by name, brand or concern, even with typos, narrow results with filters, and save favourites.
 
 | # | Task | Story |

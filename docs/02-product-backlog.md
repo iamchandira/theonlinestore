@@ -1,6 +1,6 @@
 # 02 · Product Backlog
 
-Version 1.2 · 15 Nov 2026 (after Sprint 1.5) · Owner: Product Owner. Ordered by priority within each epic.
+Version 1.3 · 15 Nov 2026 (after Sprint 2) · Owner: Product Owner. Ordered by priority within each epic.
 
 **Priority (MoSCoW):** M = Must, S = Should, C = Could, Sug = Suggested (an idea from the delivery team, needs PO approval).
 **Points:** Fibonacci (1, 2, 3, 5, 8, 13). **Status:** ✅ Done · 🔄 In progress · ⬜ To do.
@@ -10,9 +10,9 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 | Epic | Name | Stories | Points | Sprint(s) |
 |---|---|---|---|---|
 | E00 | Foundation & design system | 8 | 34 | 0 ✅ |
-| E01 | Catalogue, variants & inventory | 10 | 55 | 1 ✅ (52 pts done; TOS-109 moved to Sprint 2) |
+| E01 | Catalogue, variants & inventory | 10 | 55 | 1 ✅ (TOS-109 done in Sprint 2) |
 | E13 | Lifestyle catalogue & custom admin | 12 | 47 | 1.5 ✅ |
-| E02 | Discovery: search, filters, wishlist, recommendations | 9 | 45 | 2 (+TOS-109 carried over) |
+| E02 | Discovery: search, filters, wishlist, recommendations | 8 | 42 | 2 ✅ (+TOS-109 carried over, done) |
 | E03 | Customer accounts | 7 | 29 | 3 |
 | E04 | RBAC & admin security | 4 | 18 | 3 |
 | E05 | Bag & checkout | 9 | 52 | 4 |
@@ -49,7 +49,7 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 | TOS-106 | As a shopper, I want a product page (PDP) with a gallery and zoom, variant selector, stock status, delivery estimate, BNPL line, accordions and a sticky add-to-bag bar on mobile. | M | 8 | ✅ (district-specific delivery estimate comes with shipping zones in Sprint 4) |
 | TOS-107 | As the owner, I want the 88 catalogue products imported automatically from `seed/catalogue/products.json`. | M | 3 | ✅ |
 | TOS-108 | As marketing, I want the home page sections (hero, banners, product rails) managed from the CMS. | S | 5 | ✅ (hero products and product rails; banner copy stays in code until Sprint 9 CMS blocks) |
-| TOS-109 | As a store manager, I want CSV import and export for products and stock. | S | 3 | ➡️ Moved to Sprint 2 |
+| TOS-109 | As a store manager, I want CSV import and export for products and stock. | S | 3 | ✅ Sprint 2 (updates existing SKUs; new products are created in the admin) |
 | TOS-110 | As a store manager, I want to schedule product publishing and sale prices. | C | 2 | ✅ (drafts + scheduled publish) |
 
 **AC (TOS-102):**
@@ -99,17 +99,17 @@ Added after Sprint 1 at the owner's request: the store is a lifestyle store, not
 - Every change is logged with the user, reason and note.
 - Changes are saved per product in one request.
 
-## E02 · Discovery (Sprint 2)
-| ID | Story | P | Pts |
-|---|---|---|---|
-| TOS-201 | As a shopper, I want typo-tolerant search with autosuggest (products, brands, categories) so that I find things even if I misspell them. | M | 8 |
-| TOS-202 | As a shopper, I want filters (category, brand, price, concern, rating, in stock, on sale) with result counts, saved in the URL. | M | 8 |
-| TOS-203 | As a shopper, I want a wishlist that works without an account and syncs when I sign in. | M | 5 |
-| TOS-204 | As a shopper, I want "pairs well with" (cross-sell) and "upgrade to" (upsell) suggestions on the product page and in the bag. | M | 5 |
-| TOS-205 | As a shopper, I want to see recently viewed products. | S | 3 |
-| TOS-206 | As a shopper, I want to read and write reviews with photos, and to see a verified-buyer badge. | S | 8 |
-| TOS-207 | As a shopper, I want a useful "no results" page with suggestions. | M | 2 |
-| TOS-208 | As marketing, I want to see what people search for, including searches with zero results. | C | 3 |
+## E02 · Discovery (Sprint 2) ✅
+| ID | Story | P | Pts | Status |
+|---|---|---|---|---|
+| TOS-201 | As a shopper, I want typo-tolerant search with autosuggest (products, brands, categories) so that I find things even if I misspell them. | M | 8 | ✅ |
+| TOS-202 | As a shopper, I want filters (category, brand, price, concern, rating, in stock, on sale) with result counts, saved in the URL. | M | 8 | ✅ (plus type-specific: size, colour, scent, dietary, recipient, occasion) |
+| TOS-203 | As a shopper, I want a wishlist that works without an account and syncs when I sign in. | M | 5 | ✅ guest + share link; merge at sign-in with Sprint 3 accounts |
+| TOS-204 | As a shopper, I want "pairs well with" (cross-sell) and "upgrade to" (upsell) suggestions on the product page and in the bag. | M | 5 | ✅ |
+| TOS-205 | As a shopper, I want to see recently viewed products. | S | 3 | ✅ |
+| TOS-206 | As a shopper, I want to read and write reviews with photos, and to see a verified-buyer badge. | S | 8 | ✅ (verified badge set by staff until orders exist, Sprint 6) |
+| TOS-207 | As a shopper, I want a useful "no results" page with suggestions. | M | 2 | ✅ |
+| TOS-208 | As marketing, I want to see what people search for, including searches with zero results. | C | 3 | ✅ |
 
 **AC (TOS-201):**
 - "cerave", "cera ve" and "cerav" all find CeraVe.

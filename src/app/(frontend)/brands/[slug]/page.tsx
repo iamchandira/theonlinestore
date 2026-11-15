@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { ListingPage } from '@/components/catalog/ListingPage'
 import { site } from '@/config/site'
 import { parseListParams, type RawSearchParams } from '@/lib/catalog/params'
-import { buildFilterChips, getBrandBySlug, getBrands, listProducts } from '@/lib/catalog/server'
+import { activeFilterChips, categoryFacetOptions, clearFiltersHref, getBrandBySlug, getBrands, getListing } from '@/lib/catalog/server'
 
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<RawSearchParams> }
 
@@ -28,9 +28,7 @@ export default async function BrandPage({ params, searchParams }: Props) {
   const brand = await getBrandBySlug(slug)
   if (!brand) notFound()
   const lp = parseListParams(sp)
-  const result = await listProducts({ brandSlug: slug, concernSlug: lp.concern,
-    recipientSlug: lp.recipient,
-    occasionSlug: lp.occasion, tagSlug: lp.tag, maxPrice: lp.maxPrice, sort: lp.sort, page: lp.page })
+  const { result, facets, scopeToken } = await getListing({ brandSlug: slug, tagSlug: lp.tag, categoryOptions: await categoryFacetOptions(null) }, lp)
   const basePath = `/brands/${slug}`
   return (
     <ListingPage
@@ -39,7 +37,10 @@ export default async function BrandPage({ params, searchParams }: Props) {
       description={brand.description ?? `Every ${brand.name} product we sell is 100% genuine, sourced from authorised suppliers.`}
       breadcrumbs={[{ name: 'Brands', href: '/brands' }]}
       tint="sky"
-      filters={await buildFilterChips(basePath, lp.keep)}
+      filters={await activeFilterChips(basePath, lp.keep, facets)}
+      clearHref={clearFiltersHref(basePath, lp.keep)}
+      facets={facets}
+      scopeToken={scopeToken}
       result={result}
       sort={lp.sort}
       basePath={basePath}

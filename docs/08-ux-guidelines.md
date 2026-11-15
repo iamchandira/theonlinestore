@@ -85,6 +85,19 @@
 | Checkout | One page with progressive sections. Guest by default with an optional login. Phone-first. District → city. Delivery fee visible before payment. Trust badges beside the pay button. |
 | Account | Orders first (tracking, reorder), then addresses, profile and consents |
 
+**Search & discovery (Sprint 2):**
+- **Search never dead-ends.** Typos are tolerated, and a zero-result query is corrected automatically ("Showing results for cerave"). If nothing at all matches, show popular searches, bestsellers, recently viewed and a WhatsApp request.
+- **Filters:**
+  - Desktop: a sticky sidebar that applies instantly.
+  - Phone: a bottom sheet with live counts and one "Show n results" button.
+  - Both: counts on every option, active filters as removable chips with "Clear all", state in the URL so Back works and links can be shared.
+  - Show only the filters that matter for the listing (Shoe size for footwear, Dietary for chocolates).
+- **Reviews:**
+  - Summary first: the average and a star histogram you can tap to filter.
+  - Then "With photos", sort, "helpful" and store replies.
+  - The write-a-review form is short (stars, text, name, private email, optional photos) and promises moderation up front.
+- **Wishlist:** works without an account, can be shared as a link, and "Save all" adds a shared list in one tap.
+
 ## 6. Microcopy examples
 | Situation | Copy |
 |---|---|

@@ -116,9 +116,9 @@ export async function ProductsList(props: ListViewServerProps) {
           </p>
         </div>
         <div className="tos-actions">
-          <span className="tos-btn" aria-disabled="true" title="CSV import and export arrive in Sprint 2" style={{ opacity: 0.55, cursor: 'not-allowed' }}>
+          <Link className="tos-btn" href="/admin/import-export">
             <IconFileExport size={17} /> Import / export
-          </span>
+          </Link>
           <Link className="tos-btn tos-btn--primary" href="/admin/collections/products/create">
             <IconPlus size={17} /> Add product
           </Link>

@@ -69,25 +69,30 @@ test.describe('Custom admin', () => {
   })
 
   test('sidebar collapse is remembered on laptops and reopens from the menu button', async ({ browser }) => {
+    // Fresh login + two reloads: give it room when the whole suite shares one dev server
+    test.setTimeout(180_000)
     // Fresh context so the preference change can't leak into the tests above
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } })
     const p = await ctx.newPage()
     await login({ page: p, user: testUser })
     const isOpen = () => p.locator('.template-default').evaluate((el) => el.classList.contains('template-default--nav-open'))
+    // The stored sidebar preference (what a reload will use)
+    const savedOpen = () => p.evaluate(async () => ((await (await fetch('/api/payload-preferences/nav', { credentials: 'include' })).json()) as { value?: { open?: boolean } }).value?.open)
 
     await p.goto(`${BASE}/admin/collections/tags`)
     await expect.poll(isOpen).toBe(true) // open by default on a 1280px laptop (Payload alone would close it)
     await expect(p.locator('.template-default__nav-toggler-wrapper')).toBeHidden() // no stray toggle over the logo
 
+    await expect(p.locator('aside.nav--nav-hydrated')).toBeAttached() // interactive before we click
     await p.getByRole('button', { name: 'Collapse sidebar' }).click()
     await expect.poll(isOpen).toBe(false)
-    await p.waitForTimeout(500) // preference is saved asynchronously
+    await expect.poll(savedOpen, { timeout: 30_000 }).toBe(false) // stored before reloading
     await p.reload()
     await expect.poll(isOpen).toBe(false)
 
     await p.locator('.template-default__nav-toggler').click()
     await expect.poll(isOpen).toBe(true)
-    await p.waitForTimeout(500)
+    await expect.poll(savedOpen, { timeout: 30_000 }).toBe(true)
     await p.reload()
     await expect.poll(isOpen).toBe(true)
     await ctx.close()

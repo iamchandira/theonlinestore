@@ -146,7 +146,12 @@ export function Hero({ picks }: { picks: Product[] }) {
               <span className="min-w-0">
                 <span className="block truncate text-xs font-semibold">{d.brand} {d.name}</span>
                 <span className="flex items-center gap-1 text-[0.6875rem] text-ink-500">
-                  <IconStarFilled size={11} className="text-star" /> {d.rating} · {formatLKR(minPrice(d))}
+                  {d.reviewCount > 0 && (
+                    <>
+                      <IconStarFilled size={11} className="text-star" /> {d.rating.toFixed(1)} ·{' '}
+                    </>
+                  )}
+                  {formatLKR(minPrice(d))}
                 </span>
               </span>
             </Link>

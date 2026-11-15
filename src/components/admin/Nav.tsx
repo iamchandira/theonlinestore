@@ -14,9 +14,10 @@ export async function Nav(props: ServerProps) {
   const can = (slug: string) => visibleEntities?.collections?.includes(slug as never) ?? false
   const canGlobal = (slug: string) => visibleEntities?.globals?.includes(slug as never) ?? false
 
-  const [lowStock, drafts] = await Promise.all([
+  const [lowStock, drafts, pendingReviews] = await Promise.all([
     can('products') ? payload.count({ collection: 'products', where: { and: [{ lowStock: { equals: true } }, { _status: { equals: 'published' } }] } }) : null,
     can('products') ? payload.count({ collection: 'products', where: { _status: { equals: 'draft' } } }) : null,
+    can('reviews') ? payload.count({ collection: 'reviews', where: { status: { equals: 'pending' } } }) : null,
   ])
 
   const groups: NavGroupDef[] = [
@@ -36,6 +37,10 @@ export async function Nav(props: ServerProps) {
       items: [
         ...(can('products') ? [{ label: 'Products', href: '/admin/collections/products', icon: 'products', badge: drafts?.totalDocs ? `${drafts.totalDocs} draft` : undefined }] : []),
         ...(can('products') ? [{ label: 'Inventory', href: '/admin/inventory', icon: 'inventory', badge: lowStock?.totalDocs ? String(lowStock.totalDocs) : undefined, badgeTone: 'danger' as const }] : []),
+        ...(can('reviews')
+          ? [{ label: 'Reviews', href: '/admin/collections/reviews', icon: 'reviews', badge: pendingReviews?.totalDocs ? String(pendingReviews.totalDocs) : undefined, badgeTone: 'danger' as const }]
+          : []),
+        ...(can('products') ? [{ label: 'Import / export', href: '/admin/import-export', icon: 'import' }] : []),
         ...(can('categories') ? [{ label: 'Categories', href: '/admin/collections/categories', icon: 'categories' }] : []),
         ...(can('brands') ? [{ label: 'Brands', href: '/admin/collections/brands', icon: 'brands' }] : []),
         ...(can('tags') ? [{ label: 'Tags', href: '/admin/collections/tags', icon: 'tags' }] : []),
@@ -55,6 +60,7 @@ export async function Nav(props: ServerProps) {
     {
       label: 'Insights',
       items: [
+        ...(can('search-queries') ? [{ label: 'Search insights', href: '/admin/search-insights', icon: 'search' }] : []),
         { label: 'Analytics', icon: 'analytics', soon: 'Sprint 8' },
         ...(can('stock-movements') ? [{ label: 'Stock history', href: '/admin/collections/stock-movements', icon: 'history' }] : []),
       ],

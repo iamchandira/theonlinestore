@@ -1,4 +1,6 @@
 import { APIError, slugField, type CollectionConfig, type Where } from 'payload'
+import { exportEndpoint, importEndpoint } from '../endpoints/productsCsv'
+import { cardsEndpoint, facetsEndpoint, pairsEndpoint, suggestEndpoint } from '../endpoints/storefront'
 
 import { catalogAndStock, catalogEditors, fieldRoles, publishedOrStaff } from '../access/roles'
 import { revalidateStorefront, revalidateStorefrontOnDelete } from '../lib/payload/revalidate'
@@ -181,47 +183,12 @@ export const Products: CollectionConfig = {
         return Response.json({ ok: true, totalStock: updated.totalStock, lowStock: updated.lowStock })
       },
     },
-    {
-      // GET /api/products/suggest?q=centella → autosuggest for the header search (public, published only)
-      path: '/suggest',
-      method: 'get',
-      handler: async (req) => {
-        const q = String(req.searchParams.get('q') ?? '').trim().toLowerCase().slice(0, 60)
-        if (q.length < 2) return Response.json({ products: [], brands: [] })
-        const terms = q.split(/\s+/).filter(Boolean).slice(0, 5)
-        const [products, brands] = await Promise.all([
-          req.payload.find({
-            collection: 'products',
-            where: { and: [{ _status: { equals: 'published' } }, ...terms.map((t) => ({ searchText: { like: t } }))] },
-            limit: 6,
-            depth: 1,
-            sort: '-salesCount',
-            select: { name: true, slug: true, brand: true, minPrice: true, variants: { image: true } },
-            overrideAccess: true,
-          }),
-          req.payload.find({ collection: 'brands', where: { name: { like: q } }, limit: 3, depth: 0, select: { name: true, slug: true } }),
-        ])
-        const origin = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '')
-        const rel = (u?: string | null) => (u ? (u.startsWith(origin) ? u.slice(origin.length) : u) : null)
-        const imageOf = (img: unknown) => {
-          const m = img as { url?: string; sizes?: { thumb?: { url?: string } } } | null
-          return rel(m?.sizes?.thumb?.url) || rel(m?.url)
-        }
-        return Response.json(
-          {
-            products: products.docs.map((p) => ({
-              slug: p.slug,
-              name: p.name,
-              brand: typeof p.brand === 'object' && p.brand ? p.brand.name : '',
-              price: p.minPrice,
-              image: imageOf(p.variants?.[0]?.image),
-            })),
-            brands: brands.docs.map((b) => ({ name: b.name, slug: b.slug })),
-          },
-          { headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' } },
-        )
-      },
-    },
+    exportEndpoint,
+    importEndpoint,
+    suggestEndpoint,
+    facetsEndpoint,
+    cardsEndpoint,
+    pairsEndpoint,
   ],
   fields: [
     {
@@ -556,7 +523,7 @@ export const Products: CollectionConfig = {
     {
       name: 'rating',
       type: 'number',
-      admin: { readOnly: true, position: 'sidebar', description: 'Placeholder until reviews launch (Sprint 2).' },
+      admin: { readOnly: true, position: 'sidebar', description: 'Average of approved reviews (updated automatically).' },
     },
     { name: 'reviewCount', type: 'number', admin: { readOnly: true, position: 'sidebar' } },
     { name: 'searchText', type: 'text', index: true, admin: { hidden: true } },

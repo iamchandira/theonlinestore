@@ -1,4 +1,5 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
+import { index } from '@payloadcms/db-postgres/drizzle/pg-core'
 import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { seoPlugin } from '@payloadcms/plugin-seo'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
@@ -11,6 +12,9 @@ import { Brands } from './collections/Brands'
 import { Categories } from './collections/Categories'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
+import { ReviewMedia } from './collections/ReviewMedia'
+import { Reviews } from './collections/Reviews'
+import { SearchQueries } from './collections/SearchQueries'
 import { StockMovements } from './collections/StockMovements'
 import { Concerns, Occasions, Recipients, Tags } from './collections/Taxonomies'
 import { Users } from './collections/Users'
@@ -45,11 +49,13 @@ export default buildConfig({
       views: {
         dashboard: { Component: '/components/admin/views/Dashboard#Dashboard' },
         inventory: { Component: '/components/admin/views/Inventory#Inventory', path: '/inventory' },
+        importExport: { Component: '/components/admin/views/ImportExport#ImportExport', path: '/import-export' },
+        searchInsights: { Component: '/components/admin/views/SearchInsights#SearchInsights', path: '/search-insights' },
       },
     },
     theme: 'light',
   },
-  collections: [Products, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, Media, Users],
+  collections: [Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users],
   globals: [HomePage],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
@@ -60,6 +66,18 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    // Typo-tolerant search (TOS-201): trigram matching + edit distance, created before the schema syncs
+    extensions: ['pg_trgm', 'fuzzystrmatch'],
+    afterSchemaInit: [
+      ({ schema, extendTable }) => {
+        // Declared here (not in raw SQL) so Payload's schema sync and migrations know about the index
+        extendTable({
+          table: schema.tables.products,
+          extraConfig: (t) => ({ productsSearchTextTrgm: index('products_search_text_trgm').using('gin', t.searchText.op('gin_trgm_ops')) }),
+        })
+        return schema
+      },
+    ],
   }),
   sharp,
   // Runs scheduled publish/unpublish jobs (TOS-110) while the server is up

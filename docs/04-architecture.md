@@ -87,7 +87,7 @@ theonlinestore/
 | `stock-movements` | Inventory audit log, written automatically and never edited | product, sku, variantLabel, change, resultingStock, reason, note, user |
 | `home-page` (global) | Home merchandising | heroProducts (≤ 4), rails[] (source: manual, sale, bestsellers, new, tag, category, under price; placement; style; countdown) |
 
-\* rating and reviewCount are placeholders until reviews launch in Sprint 2.
+\* rating and reviewCount are calculated from approved reviews (Sprint 2).
 
 **How data reaches pages:**
 - Server Components call `src/lib/catalog/server.ts` (Payload Local API, wrapped in React `cache()`), which maps documents into plain `Product` / `ProductDetail` objects.
@@ -118,6 +118,50 @@ The Payload admin is customised through its component API, without forking Paylo
 | Variant `RowLabel` | `VariantRowLabel.tsx` | Readable collapsed variant rows |
 
 **Demo data:** products with `isDemo` come from `pnpm seed:demo` (SKUs `DEMO-…`, media `demo-*.webp`, four fictional brands). Their pages are `noindex`. `pnpm seed:demo --remove` deletes the products, their stock history, their media and the demo brands.
+
+### Added in Sprint 2 (discovery)
+| Collection | Purpose | Key fields |
+|---|---|---|
+| `reviews` | Shopper reviews, moderated | product, rating 1–5, title, body, photos (≤3), reply, authorName, authorEmail (staff-only read), status (pending/approved/rejected), verifiedBuyer, helpfulCount, isSample, moderationNote (staff-only), user |
+| `review-media` | Review photo uploads (kept apart from the product Media library) | file (WebP, thumb + large sizes), `public` (true only while its review is approved) |
+| `search-queries` | Search analytics, one row per normalised term per day | term, day (YYYY-MM-DD, Asia/Colombo), count, results; unique (term, day) |
+
+**Search (`src/lib/catalog/search.ts`):**
+- PostgreSQL `pg_trgm` + `fuzzystrmatch`, declared in the Postgres adapter (`extensions` and an `afterSchemaInit` GIN index on `products.search_text`), so schema sync and migrations create them.
+- A query matches when every word is in the product's search text, either as a substring or by trigram word-similarity, or when the whole query matches with spaces removed.
+- Ranking: name matches, then similarity, then popularity.
+- Zero results: an edit-distance correction against the store's own vocabulary ("cervae" → "cerave"), which is applied automatically.
+- Each search is upserted into `search_queries` after the response (`after()`).
+
+**Facets (`src/lib/catalog/facets.ts`):**
+- An in-memory snapshot of the published catalogue (one light record per product), rebuilt when the catalogue changes (`bumpCatalogVersion()` in the revalidate hooks) or after 60 s.
+- Filtering, disjunctive counts and sorting run in one pass. Only the current page is loaded in full.
+- Every listing uses `getListing(scope, params)`; search uses `getSearchListing`.
+- Filters live in the URL (`?brand=a,b&min=&max=&rating=&stock=1&sale=1&size=&colour=&scent=&diet=&cat=&type=&concern=&recipient=&occasion=`).
+
+**Reviews:**
+- The approved-review average and count are written straight to the product row inside the review's transaction, with no new product version, and the product page is revalidated.
+- The public reads approved reviews only. Field access hides the email, user and moderation note.
+
+**New endpoints:**
+| Endpoint | Who | Purpose |
+|---|---|---|
+| `GET /api/products/suggest?q=` | Public | Typo-tolerant suggestions: products, brands, categories, correction, total (cached 60 s) |
+| `GET /api/products/facets?scope=&…filters` | Public | Live count + facets for the phone filter sheet (`scope` is an encoded listing scope, validated on the server; only published products are ever returned) |
+| `GET /api/products/cards?slugs=` | Public | Product cards for wishlist and recently viewed |
+| `GET /api/products/pairs?slug=` | Public | Cross-sells for the bag drawer |
+| `GET /api/products/export` | Admin, store/inventory manager, marketing | CSV of every SKU (cost only for price roles) |
+| `POST /api/products/import` `{ csv, apply }` | Price roles / stock roles | Preview or apply price and stock updates by SKU |
+| `POST /api/reviews/submit` (multipart) | Public, rate-limited, honeypot | New review (pending) with up to 3 photos |
+| `GET /api/reviews/list?product=&sort=&rating=&photos=` | Public | Approved reviews, paginated |
+| `POST /api/reviews/:id/helpful` | Public, once per visitor | +1 helpful |
+| `POST /api/reviews/moderate` `{ ids, status }` | Moderators | Approve or reject in bulk |
+
+**New admin views:**
+- Reviews moderation (list view override).
+- `/admin/import-export`.
+- `/admin/search-insights`.
+- `AdminPage` wraps custom routes in Payload's template.
 
 ### Target (Sprints 2–7)
 ```mermaid

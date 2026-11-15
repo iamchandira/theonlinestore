@@ -2,10 +2,14 @@ import 'server-only'
 
 import config from '@payload-config'
 import { getPayload, type Where } from 'payload'
+import { after } from 'next/server'
 import { cache } from 'react'
 
 import type { Brand, Category, Concern, Media, Occasion, Product as PProduct, Recipient, Tag } from '@/payload-types'
 
+import { encodeScope, loadPage, runFacets, type FacetGroup, type ListScope } from './facets'
+import type { parseListParams } from './params'
+import { didYouMean, logSearch, searchProductIds } from './search'
 import type { BrandSummary, CategoryNode, Crumb, ListResult, Product, ProductDetail, SortKey } from './types'
 
 /**
@@ -317,6 +321,28 @@ export const getCrossSells = cache(async (slug: string, limit = 8): Promise<Prod
   return auto.docs.map(toProduct)
 })
 
+/**
+ * "Upgrade your pick" (upsells, TOS-204): hand-picked upsells, else bestsellers from the same
+ * sub-category priced 15%–200% above this product (a natural step up, not a different budget).
+ */
+export const getUpsells = cache(async (product: Product, limit = 8): Promise<Product[]> => {
+  const payload = await getPayloadClient()
+  const res = await payload.find({ collection: 'products', where: { and: [PUBLISHED, { id: { equals: product.id } }] }, limit: 1, depth: 2, select: { upsells: true } })
+  const picked = ((res.docs[0]?.upsells as unknown[]) ?? []).map((u) => asObj<PProduct>(u)).filter((p): p is PProduct => Boolean(p && p._status === 'published'))
+  if (picked.length) return picked.slice(0, limit).map(toProduct)
+  const { bySlug } = await getCategoryTree()
+  const leaf = bySlug.get(product.subcategory)
+  if (!leaf) return []
+  const base = Math.min(...product.variants.map((v) => v.price))
+  const pool = await listProducts({ categoryIds: descendantIds(leaf), excludeIds: [product.id], sort: 'bestsellers', limit: 40 })
+  return pool.products
+    .filter((p) => {
+      const price = Math.min(...p.variants.map((v) => v.price))
+      return price >= base * 1.15 && price <= base * 3 && p.variants.some((v) => v.stock > 0)
+    })
+    .slice(0, limit)
+})
+
 /** "You may also like": same main category, best sellers first. */
 export const getRelated = cache(async (product: Product, limit = 12): Promise<Product[]> => {
   const { bySlug } = await getCategoryTree()
@@ -499,18 +525,151 @@ export const getTaxonomyName = cache(async (collection: 'tags' | 'concerns' | 'r
   return res.docs[0]?.name ?? null
 })
 
-/** Active-filter chips for listing pages: each one links to the same page without that filter. */
-export async function buildFilterChips(basePath: string, keep: Record<string, string>) {
-  const chips: { label: string; removeHref: string }[] = []
-  const without = (key: string) => {
-    const q = new URLSearchParams(keep)
-    q.delete(key)
-    return `${basePath}${q.size ? `?${q}` : ''}`
+/* ------------------------------------------------------- faceted listings */
+
+type ListParams = ReturnType<typeof parseListParams>
+
+/**
+ * The "Category" filter for a listing: the children of the current category, or (for listings that
+ * span the store: search, offers, brands, gift shop) the top-level departments.
+ */
+export const categoryFacetOptions = cache(async (node?: CategoryNode | null) => {
+  const { roots, bySlug } = await getCategoryTree()
+  const source = node ? node.children : [...BEAUTY_SLUGS.map((s) => bySlug.get(s)).filter(Boolean), ...roots.filter((r) => !BEAUTY_SLUGS.includes(r.slug))]
+  return (source as CategoryNode[]).map((c) => ({ slug: c.slug, name: c.name, ids: descendantIds(c) }))
+})
+
+/** Runs a faceted listing: filters, facet counts, sort, then loads the current page (24 per page). */
+export async function getListing(scope: ListScope, lp: ListParams) {
+  const payload = await getPayloadClient()
+  const run = await runFacets(payload, scope, lp.filters, lp.sort)
+  const result = await loadPage(payload, run.ids, toProduct, lp.page, 24)
+  return { result, facets: run.facets, scopeToken: encodeScope(scope) }
+}
+
+/**
+ * Search results page: typo-tolerant search, then the same facets as any listing; logs the search.
+ * When nothing matches but a spelling correction does ("cervae" → "cerave"), the corrected results
+ * are shown instead, Google-style.
+ */
+export async function getSearchListing(lp: ListParams) {
+  const payload = await getPayloadClient()
+  const q = lp.q ?? ''
+  let searchIds = q ? await searchProductIds(payload, q) : []
+  let corrected: string | null = null
+  if (q && !searchIds.length) {
+    const fix = await didYouMean(payload, q)
+    const alt = fix ? await searchProductIds(payload, fix) : []
+    if (fix && alt.length) {
+      corrected = fix
+      searchIds = alt
+    }
   }
-  if (keep.concern) chips.push({ label: `Concern: ${(await getTaxonomyName('concerns', keep.concern)) ?? keep.concern}`, removeHref: without('concern') })
+  const scope: ListScope = { searchIds, q: corrected ?? q, categoryOptions: await categoryFacetOptions(null) }
+  const listing = await getListing(scope, lp)
+  // Only the first page of an unfiltered search counts as "a search" for analytics
+  if (q && lp.page === 1 && !lp.activeFilterCount) after(() => logSearch(payload, q, searchIds.length))
+  return { ...listing, corrected, matched: searchIds.length }
+}
+
+const fmtRs = (n: number) => `Rs ${n.toLocaleString('en-LK')}`
+
+/** Removable chips for every active filter (and the hidden ?tag= scope filter). */
+export async function activeFilterChips(basePath: string, keep: Record<string, string>, facets: FacetGroup[]) {
+  const chips: { label: string; removeHref: string }[] = []
+  const href = (q: URLSearchParams) => `${basePath}${q.size ? `?${q}` : ''}`
+  const without = (key: string, value?: string) => {
+    const q = new URLSearchParams(keep)
+    q.delete('page')
+    if (value) {
+      const rest = (q.get(key) ?? '').split(',').filter((v) => v && v !== value)
+      if (rest.length) q.set(key, rest.join(','))
+      else q.delete(key)
+    } else q.delete(key)
+    return href(q)
+  }
+  for (const g of facets) {
+    if (g.kind === 'list') for (const o of g.options.filter((x) => x.selected)) chips.push({ label: o.label, removeHref: without(g.key, o.value) })
+    if (g.kind === 'rating') for (const o of g.options.filter((x) => x.selected)) chips.push({ label: o.label, removeHref: without('rating') })
+    if (g.kind === 'toggle' && g.selected) chips.push({ label: g.key === 'stock' ? 'In stock' : 'On sale', removeHref: without(g.key) })
+    if (g.kind === 'price' && (g.selMin || g.selMax)) {
+      const q = new URLSearchParams(keep)
+      q.delete('min')
+      q.delete('max')
+      q.delete('page')
+      const label = g.selMin && g.selMax ? `${fmtRs(g.selMin)} – ${fmtRs(g.selMax)}` : g.selMax ? `Under ${fmtRs(g.selMax)}` : `From ${fmtRs(g.selMin!)}`
+      chips.push({ label, removeHref: href(q) })
+    }
+  }
   if (keep.tag) chips.push({ label: (await getTaxonomyName('tags', keep.tag)) ?? keep.tag, removeHref: without('tag') })
-  if (keep.recipient) chips.push({ label: (await getTaxonomyName('recipients', keep.recipient)) ?? keep.recipient, removeHref: without('recipient') })
-  if (keep.occasion) chips.push({ label: `Occasion: ${(await getTaxonomyName('occasions', keep.occasion)) ?? keep.occasion}`, removeHref: without('occasion') })
-  if (keep.max) chips.push({ label: `Under Rs ${Number(keep.max).toLocaleString('en-LK')}`, removeHref: without('max') })
   return chips
 }
+
+/** Link that keeps only the page's scope (?q= / ?tag=) and sort, dropping every filter. */
+export const clearFiltersHref = (basePath: string, keep: Record<string, string>) => {
+  const q = new URLSearchParams()
+  for (const k of ['q', 'sort']) if (keep[k]) q.set(k, keep[k])
+  return `${basePath}${q.size ? `?${q}` : ''}`
+}
+
+/* ------------------------------------------------------------------ reviews */
+
+export type ReviewSort = 'recent' | 'helpful' | 'highest' | 'lowest'
+export type PublicReview = {
+  id: number
+  rating: number
+  title: string | null
+  body: string
+  authorName: string
+  verifiedBuyer: boolean
+  isSample: boolean
+  helpfulCount: number
+  reply: string | null
+  createdAt: string
+  photos: { thumb: string; large: string }[]
+}
+export type ReviewSummary = { count: number; average: number; histogram: Record<1 | 2 | 3 | 4 | 5, number>; withPhotos: number; samplesOnly: boolean }
+
+const REVIEW_SORTS: Record<ReviewSort, string> = { recent: '-createdAt', helpful: '-helpfulCount', highest: '-rating', lowest: 'rating' }
+
+export function toPublicReview(r: Record<string, unknown>): PublicReview {
+  const photos = ((r.photos as unknown[]) ?? [])
+    .map((p) => asObj<{ url?: string; sizes?: { thumb?: { url?: string }; large?: { url?: string } } }>(p))
+    .filter(Boolean)
+    .map((p) => ({ thumb: relativeUrl(p!.sizes?.thumb?.url) || relativeUrl(p!.url), large: relativeUrl(p!.sizes?.large?.url) || relativeUrl(p!.url) }))
+    .filter((p) => p.thumb)
+  return {
+    id: r.id as number,
+    rating: Number(r.rating),
+    title: (r.title as string) || null,
+    body: String(r.body ?? ''),
+    authorName: String(r.authorName ?? 'Customer'),
+    verifiedBuyer: Boolean(r.verifiedBuyer),
+    isSample: Boolean(r.isSample),
+    helpfulCount: Number(r.helpfulCount ?? 0),
+    reply: (r.reply as string) || null,
+    createdAt: String(r.createdAt),
+    photos,
+  }
+}
+
+/** Approved reviews for a product: summary + the first page (TOS-206). */
+export const getProductReviews = cache(async (productId: number, limit = 6) => {
+  const payload = await getPayloadClient()
+  const where: Where = { and: [{ product: { equals: productId } }, { status: { equals: 'approved' } }] }
+  const [all, first] = await Promise.all([
+    payload.find({ collection: 'reviews', where, limit: 0, pagination: false, depth: 0, select: { rating: true, photos: true, isSample: true } }),
+    payload.find({ collection: 'reviews', where, sort: REVIEW_SORTS.recent, limit, depth: 1 }),
+  ])
+  const histogram = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as ReviewSummary['histogram']
+  for (const r of all.docs) histogram[Math.min(5, Math.max(1, Math.round(r.rating))) as 1] += 1
+  const count = all.docs.length
+  const summary: ReviewSummary = {
+    count,
+    average: count ? Math.round((all.docs.reduce((n, r) => n + r.rating, 0) / count) * 10) / 10 : 0,
+    histogram,
+    withPhotos: all.docs.filter((r) => (r.photos as unknown[] | null)?.length).length,
+    samplesOnly: count > 0 && all.docs.every((r) => r.isSample),
+  }
+  return { summary, reviews: first.docs.map((d) => toPublicReview(d as unknown as Record<string, unknown>)), totalPages: first.totalPages }
+})

@@ -7,7 +7,9 @@ import { RailSection } from '@/components/home/RailSection'
 import { ProductDetails } from '@/components/product/ProductDetails'
 import { ProductView } from '@/components/product/ProductView'
 import { site } from '@/config/site'
-import { getAllProductSlugs, getCrossSells, getProductBySlug, getRelated } from '@/lib/catalog/server'
+import { RecentlyViewed } from '@/components/product/RecentlyViewed'
+import { Reviews } from '@/components/product/Reviews'
+import { getAllProductSlugs, getCrossSells, getProductBySlug, getProductReviews, getRelated, getUpsells } from '@/lib/catalog/server'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -39,9 +41,11 @@ export default async function ProductPage({ params }: Props) {
   const { slug } = await params
   const product = await getProductBySlug(slug)
   if (!product) notFound()
-  const [pairs, related] = await Promise.all([getCrossSells(slug), getRelated(product)])
+  const [pairs, upsellsRaw, related, reviews] = await Promise.all([getCrossSells(slug), getUpsells(product), getRelated(product), getProductReviews(product.id)])
   const pairSlugs = new Set(pairs.map((p) => p.slug))
-  const alsoLike = related.filter((p) => !pairSlugs.has(p.slug))
+  const upsells = upsellsRaw.filter((p) => !pairSlugs.has(p.slug))
+  const shown = new Set([...pairSlugs, ...upsells.map((p) => p.slug)])
+  const alsoLike = related.filter((p) => !shown.has(p.slug))
 
   const beautyRoots = ['skincare', 'hair-care', 'body-care', 'lips']
   const trail = [...(beautyRoots.includes(product.category) ? [{ name: 'Beauty', href: '/c/beauty' }] : []), ...product.breadcrumbs]
@@ -59,6 +63,19 @@ export default async function ProductPage({ params }: Props) {
     brand: { '@type': 'Brand', name: product.brand },
     url: `${site.url}/p/${product.slug}`,
   }
+  // Ratings in search results only from genuine reviews (never sample reviews on demo products)
+  if (reviews.summary.count > 0 && !reviews.summary.samplesOnly && !product.isDemo) {
+    const genuine = reviews.reviews.filter((r) => !r.isSample)
+    productLd.aggregateRating = { '@type': 'AggregateRating', ratingValue: reviews.summary.average, reviewCount: reviews.summary.count, bestRating: 5, worstRating: 1 }
+    productLd.review = genuine.slice(0, 5).map((r) => ({
+      '@type': 'Review',
+      reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
+      author: { '@type': 'Person', name: r.authorName },
+      datePublished: r.createdAt.slice(0, 10),
+      ...(r.title ? { name: r.title } : {}),
+      reviewBody: r.body,
+    }))
+  }
   if (!product.priceTBC) {
     productLd.offers =
       product.variants.length > 1
@@ -74,10 +91,15 @@ export default async function ProductPage({ params }: Props) {
         </div>
         <ProductView product={product} details={<ProductDetails product={product} />} />
       </div>
+      <Reviews productId={product.id} productName={`${product.brand} ${product.name}`} summary={reviews.summary} initial={reviews.reviews} totalPages={reviews.totalPages} />
       {pairs.length > 0 && (
         <RailSection id="pairs-title" eyebrow="Complete your routine" title="Pairs well with" products={pairs} tone="blush" />
       )}
+      {upsells.length > 0 && (
+        <RailSection id="upsell-title" eyebrow="Treat yourself" title="Upgrade your pick" description="Bigger sizes, richer formulas and premium alternatives." products={upsells} />
+      )}
       {alsoLike.length > 0 && <RailSection id="related-title" eyebrow="More to explore" title="You may also like" products={alsoLike} />}
+      <RecentlyViewed excludeSlug={product.slug} />
       <JsonLd data={productLd} />
     </>
   )

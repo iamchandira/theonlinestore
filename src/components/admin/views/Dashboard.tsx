@@ -61,7 +61,7 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
   const { payload, user } = req
   const name = ((user as { fullName?: string } | null)?.fullName || user?.email?.split('@')[0] || 'there').split(' ')[0]
 
-  const [all, movements, staff, home] = await Promise.all([
+  const [all, movements, staff, home, pendingReviews] = await Promise.all([
     payload.find({
       collection: 'products',
       limit: 0,
@@ -73,6 +73,7 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     payload.find({ collection: 'stock-movements', sort: '-createdAt', limit: 8, depth: 1 }),
     payload.count({ collection: 'users', where: { roles: { not_in: ['customer'] } } }),
     payload.findGlobal({ slug: 'home-page', depth: 0 }),
+    payload.find({ collection: 'reviews', where: { status: { equals: 'pending' } }, sort: 'createdAt', limit: 4, depth: 1, overrideAccess: true }),
   ])
 
   const products = all.docs
@@ -204,6 +205,29 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
               <div className="tos-empty">All variants are comfortably stocked.</div>
             )}
           </section>
+
+          {pendingReviews.totalDocs > 0 && (
+            <section className="tos-card" aria-labelledby="d-reviews">
+              <div className="tos-card__head">
+                <h2 id="d-reviews">Reviews waiting for approval · {pendingReviews.totalDocs}</h2>
+                <Link href="/admin/collections/reviews">Moderate →</Link>
+              </div>
+              <ul className="tos-list">
+                {pendingReviews.docs.map((r) => (
+                  <li key={r.id}>
+                    <span className="tos-list__main">
+                      <Link href={`/admin/collections/reviews/${r.id}`}>{r.title || r.body.slice(0, 60)}</Link>
+                      <small>
+                        {'★'.repeat(r.rating)}
+                        {'☆'.repeat(5 - r.rating)} · {r.authorName} · {r.product && typeof r.product === 'object' ? r.product.name : ''}
+                      </small>
+                    </span>
+                    <span className="tos-pill tos-pill--warning">Waiting</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section className="tos-card" aria-labelledby="d-activity">
             <div className="tos-card__head">

@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { EmptyListing, ListingPage } from '@/components/catalog/ListingPage'
 import { occasions, recipients } from '@/config/navigation'
 import { parseListParams, type RawSearchParams } from '@/lib/catalog/params'
-import { buildFilterChips, listProducts } from '@/lib/catalog/server'
+import { activeFilterChips, categoryFacetOptions, clearFiltersHref, getListing } from '@/lib/catalog/server'
 
 type Props = { searchParams: Promise<RawSearchParams> }
 
@@ -24,16 +24,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
  */
 export default async function GiftShopPage({ searchParams }: Props) {
   const lp = parseListParams(await searchParams)
-  const anyFilter = lp.recipient || lp.occasion || lp.maxPrice
-  const result = await listProducts({
-    recipientSlug: lp.recipient,
-    occasionSlug: lp.occasion,
-    maxPrice: lp.maxPrice,
-    // Without a filter, show the gift-ready range (anything tagged with a recipient or occasion is gift-worthy)
-    giftReady: !anyFilter,
-    sort: lp.sort,
-    page: lp.page,
-  })
+  // The gift-ready range: anything tagged with a recipient or occasion. A price-only filter ("Under Rs 5,000") stays within it.
+  const { result, facets, scopeToken } = await getListing({ giftReady: true, tagSlug: lp.tag, categoryOptions: await categoryFacetOptions(null) }, lp)
   const r = recipients.find((x) => x.slug === lp.recipient)
   const o = occasions.find((x) => x.slug === lp.occasion)
   const title = r ? `Gifts ${r.label.toLowerCase()}` : o ? `${o.label} gifts` : 'Gift shop'
@@ -48,7 +40,10 @@ export default async function GiftShopPage({ searchParams }: Props) {
         { label: 'All gifts', href: '/gifts', active: !lp.recipient && !lp.occasion },
         ...recipients.map((x) => ({ label: x.label, href: `/gifts?recipient=${x.slug}`, active: x.slug === lp.recipient })),
       ]}
-      filters={await buildFilterChips('/gifts', lp.keep)}
+      filters={await activeFilterChips('/gifts', lp.keep, facets)}
+      clearHref={clearFiltersHref('/gifts', lp.keep)}
+      facets={facets}
+      scopeToken={scopeToken}
       result={result}
       sort={lp.sort}
       basePath="/gifts"

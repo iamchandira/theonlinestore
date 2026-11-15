@@ -247,10 +247,66 @@ async function upsertTaxonomy(payload: Payload, collection: 'recipients' | 'occa
   return (await payload.create({ collection, data: { name, slug, generateSlug: false }, context: ctx })).id
 }
 
+/**
+ * A few clearly-labelled sample reviews per demo product, so the reviews UI can be designed and tested.
+ * They're flagged `isSample`, shown with a "Sample review" badge, never used in structured data, and
+ * deleted with the demo products. Real products never get sample reviews.
+ */
+const SAMPLE_NAMES = ['Nadeesha K.', 'Ruwan P.', 'Fathima R.', 'Dilini S.', 'Kasun W.', 'Amaya J.', 'Tharindu M.', 'Shenali D.']
+const SAMPLE_TEXT: Record<string, [number, string, string][]> = {
+  fragrance: [
+    [5, 'Compliments all day', 'Lasts from morning until evening on my skin and it doesn’t feel heavy in our heat. The bottle looks lovely on my dresser too.'],
+    [4, 'Lovely, a little soft', 'Beautiful scent, very elegant. I reapply once in the afternoon, but I still reach for it most days.'],
+    [5, 'Perfect gift', 'Bought it for my sister’s birthday and she loved it. Arrived gift-wrapped with a handwritten note.'],
+  ],
+  footwear: [
+    [5, 'So comfortable', 'Wore them all day in Colombo and my feet didn’t hurt once. True to size for me.'],
+    [4, 'Great fit, runs slightly snug', 'Really comfortable and light. If you are between sizes, go half a size up.'],
+    [5, 'My go-to pair', 'Easy to clean, goes with everything, and delivery to Kandy took two days.'],
+  ],
+  gift: [
+    [5, 'Beautifully packed', 'Sent this to my parents for their anniversary. Everything arrived fresh and the packing was gorgeous.'],
+    [5, 'Made her day', 'Ordered on Thursday, delivered on Saturday with a lovely card. Will order again for Avurudu.'],
+    [4, 'Good value', 'Nice selection and well presented. I would love a slightly bigger box option.'],
+  ],
+  chocolate: [
+    [5, 'Rich and not too sweet', 'You can really taste the Sri Lankan cocoa. Arrived in perfect condition even in the heat.'],
+    [4, 'Lovely treat', 'Delicious and nicely wrapped. Keep it in the fridge after opening.'],
+    [5, 'Gift-worthy', 'Gave it to my team at work and everyone asked where it was from.'],
+  ],
+}
+
+async function seedSampleReviews(payload: Payload, productId: number, d: Demo, index: number) {
+  await payload.delete({ collection: 'reviews', where: { and: [{ product: { equals: productId } }, { isSample: { equals: true } }] }, overrideAccess: true, context: ctx })
+  const texts = SAMPLE_TEXT[d.productType] ?? SAMPLE_TEXT.gift
+  const count = 2 + (index % 2) // 2 or 3 per product
+  for (let k = 0; k < count; k++) {
+    const [rating, title, body] = texts[(index + k) % texts.length]
+    await payload.create({
+      collection: 'reviews',
+      data: {
+        product: productId,
+        rating,
+        title,
+        body,
+        authorName: SAMPLE_NAMES[(index * 3 + k) % SAMPLE_NAMES.length],
+        authorEmail: 'sample@example.com',
+        status: 'approved',
+        isSample: true,
+        helpfulCount: (index + k * 3) % 7,
+      },
+      overrideAccess: true,
+      context: ctx,
+    })
+  }
+  return count
+}
+
 async function remove(payload: Payload) {
   const products = await payload.find({ collection: 'products', where: { isDemo: { equals: true } }, limit: 0, pagination: false, depth: 0, draft: true })
   for (const p of products.docs) {
     await payload.delete({ collection: 'stock-movements', where: { product: { equals: p.id } }, overrideAccess: true })
+    await payload.delete({ collection: 'reviews', where: { product: { equals: p.id } }, overrideAccess: true })
     await payload.delete({ collection: 'products', id: p.id, context: ctx })
   }
   const media = await payload.delete({ collection: 'media', where: { filename: { like: 'demo-' } }, context: ctx })
@@ -301,6 +357,7 @@ async function main() {
 
   let created = 0
   let updated = 0
+  let reviewsAdded = 0
   for (const [i, d] of DEMOS.entries()) {
     const artIds = new Map<string, number>()
     const variants = []
@@ -337,21 +394,22 @@ async function main() {
       recipients: d.recipients.map((r) => recipientIds.get(r)).filter(Boolean),
       occasions: d.occasions.map((o) => occasionIds.get(o)).filter(Boolean),
       priceTBC: false,
-      rating: d.rating,
-      reviewCount: d.reviews,
       salesCount: d.badge === 'bestseller' ? d.reviews * 3 : d.reviews,
       _status: 'published' as const,
     }
     if (!data.categories.length) throw new Error(`Category "${d.category}" not found. Run pnpm seed:catalog first.`)
     const found = await payload.find({ collection: 'products', where: { slug: { equals: d.slug } }, limit: 1, depth: 0, draft: true })
+    let productId: number
     if (found.docs[0]) {
-      await payload.update({ collection: 'products', id: found.docs[0].id, data: data as never, context: { ...ctx, skipStockLog: true } })
+      productId = (await payload.update({ collection: 'products', id: found.docs[0].id, data: data as never, context: { ...ctx, skipStockLog: true } })).id
       updated++
     } else {
-      await payload.create({ collection: 'products', data: data as never, context: ctx })
+      productId = (await payload.create({ collection: 'products', data: data as never, context: ctx })).id
       created++
     }
+    reviewsAdded += await seedSampleReviews(payload, productId, d, i)
   }
+  payload.logger.info(`Sample reviews: ${reviewsAdded} (labelled "Sample review", demo products only)`)
   payload.logger.info(`Demo products: ${created} created, ${updated} updated (${DEMOS.length} total)`)
   process.exit(0)
 }

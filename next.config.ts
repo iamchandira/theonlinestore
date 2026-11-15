@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     localPatterns: [
       { pathname: '/api/media/file/**' },
+      // Shopper review photos (served only once the review is approved)
+      { pathname: '/api/review-media/file/**' },
       { pathname: '/brand/**' },
       { pathname: '/catalogue/**' },
     ],

@@ -51,3 +51,5 @@ node_modules/
 
 # Visual QA output
 /screenshots/
+
+/review-media

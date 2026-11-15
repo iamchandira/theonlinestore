@@ -30,6 +30,9 @@
 | Data access | Storefront reads through `src/lib/*` helpers, never directly from Payload in components. |
 | Money | Integer LKR. Format with `formatLKR()`. Totals are calculated on the server. |
 | Copy | Sri Lankan English, friendly tone (see `05-brand-and-design-system.md`) |
+| Raw SQL in hooks | Use the request's transaction (see `db()` in `collections/Reviews.ts`), or the hook won't see the row being saved |
+| Database extras | Extensions and custom indexes go in the Postgres adapter config (`extensions`, `afterSchemaInit`), never ad-hoc SQL, so schema sync and migrations know about them |
+| E2E runs | Run against a production build (`pnpm build && pnpm start`, then `pnpm test:e2e`). The dev server can give false failures after long editing sessions. |
 
 ## Quality gates (commands)
 ```bash

@@ -28,6 +28,9 @@ import {
   IconTruckDelivery,
   IconUsers,
   IconFileText,
+  IconFileImport,
+  IconListSearch,
+  IconMessageStar,
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
@@ -56,6 +59,9 @@ const ICONS: Record<string, ComponentType<{ size?: number; stroke?: number }>> =
   shipping: IconTruckDelivery,
   notifications: IconBell,
   settings: IconAdjustmentsHorizontal,
+  reviews: IconMessageStar,
+  import: IconFileImport,
+  search: IconListSearch,
 }
 
 export type NavItemDef = {
@@ -96,7 +102,8 @@ export function NavClient({
   useEffect(() => {
     let alive = true
     void getPreference<{ open?: boolean } | null>('nav').then((pref) => {
-      if (!alive) return
+      // Ignore a late answer if the user already toggled the sidebar themselves
+      if (!alive || navPref.current !== 'unknown') return
       navPref.current = pref?.open === false ? 'collapsed' : 'open'
       if (isDesktop()) setNavOpen(navPref.current === 'open')
     })

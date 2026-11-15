@@ -3,18 +3,21 @@
 import {
   IconArrowRight,
   IconBox,
+  IconBuildingStore,
+  IconCategory,
   IconExternalLink,
+  IconFileImport,
+  IconHistory,
   IconHome,
   IconLayoutDashboard,
+  IconListSearch,
+  IconMessageStar,
   IconPackages,
   IconPhoto,
   IconPlus,
   IconSearch,
   IconShieldLock,
   IconUsers,
-  IconHistory,
-  IconCategory,
-  IconBuildingStore,
 } from '@tabler/icons-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react'
@@ -31,9 +34,13 @@ const PAGES: Item[] = [
   { id: 'homepage', group: 'Go to', label: 'Home page merchandising', icon: IconLayoutDashboard, href: '/admin/globals/home-page' },
   { id: 'media', group: 'Go to', label: 'Media library', icon: IconPhoto, href: '/admin/collections/media' },
   { id: 'history', group: 'Go to', label: 'Stock history', icon: IconHistory, href: '/admin/collections/stock-movements' },
+  { id: 'reviews', group: 'Go to', label: 'Reviews waiting for approval', icon: IconMessageStar, href: '/admin/collections/reviews' },
+  { id: 'search-insights', group: 'Go to', label: 'Search insights', icon: IconListSearch, href: '/admin/search-insights' },
   { id: 'staff', group: 'Go to', label: 'Staff & roles', icon: IconShieldLock, href: '/admin/collections/users?where[roles][not_in]=customer' },
   { id: 'new-product', group: 'Actions', label: 'Add a product', icon: IconPlus, href: '/admin/collections/products/create' },
   { id: 'adjust', group: 'Actions', label: 'Adjust stock', icon: IconPackages, href: '/admin/inventory' },
+  { id: 'export', group: 'Actions', label: 'Export products to CSV', icon: IconFileImport, href: '/admin/import-export' },
+  { id: 'import', group: 'Actions', label: 'Import prices & stock from CSV', icon: IconFileImport, href: '/admin/import-export' },
   { id: 'low', group: 'Actions', label: 'Show low-stock products', icon: IconPackages, href: '/admin/collections/products?tab=low' },
   { id: 'store', group: 'Actions', label: 'View the store', icon: IconExternalLink, href: '/', external: true },
 ]

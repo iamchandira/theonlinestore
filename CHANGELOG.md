@@ -2,6 +2,37 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.4.0] - 2026-11-15 · Sprint 2: Find it fast
+### Added
+- **Typo-tolerant search** (Postgres trigram + edit distance):
+  - "cerave", "cera ve", "cerav" and misspellings like "sereum" all match.
+  - Zero-result searches are corrected automatically ("Showing results for cerave").
+  - The header dropdown now suggests products, brands and categories, with a result count.
+- **Filters with counts on every listing:**
+  - Category, department, brand, price, concern, recipient, occasion, shoe size, colour, scent family, dietary, rating, in stock, on sale.
+  - Sticky sidebar on desktop; bottom sheet with live counts and "Show n results" on phones.
+  - Kept in the URL, with removable chips and "Clear all".
+- **Wishlist page** (`/wishlist`): works for guests, shareable link, "Save all to my wishlist".
+- **Recently viewed** rail on product pages, the wishlist and empty search results.
+- **Upsells:** "Upgrade your pick" rail on product pages. The bag suggests "Pairs well with" the item just added.
+- **Reviews:**
+  - Moderated reviews with photos, star histogram filter, sort, helpful votes, store replies and a write-a-review drawer.
+  - Admin Reviews moderation queue, with a dashboard card and a sidebar badge.
+  - Clearly-labelled sample reviews on demo products only.
+- **Search insights** (`/admin/search-insights`): searches, unique terms, the found-nothing rate, top searches and zero-result searches.
+- **CSV import/export** (`/admin/import-export`): export every SKU; import price and stock updates with a full preview and per-role permissions.
+- New collections: `reviews`, `review-media`, `search-queries`.
+- **Tests:** 6 integration tests and 5 e2e tests (13 integration and 23 e2e tests in total).
+### Changed
+- Ratings now come only from approved reviews. The placeholder ratings from the catalogue import were removed, and products without reviews show "Be the first to review".
+- Rating structured data (AggregateRating, Review) is published only from genuine reviews.
+- Listings are 3 columns beside the filter sidebar on desktop.
+- The admin "Import / export" button is live, and "Stock movements" is shown as "Stock history".
+### Fixed
+- Recently viewed could lose the first product viewed.
+- The size + colour filter matched sold-out combinations.
+- A collapsed admin sidebar could reopen when its saved preference loaded late.
+
 ## [0.3.1] - 2026-11-15 · Admin polish (before Sprint 2)
 ### Changed
 - **Admin sidebar layout:**

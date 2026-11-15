@@ -20,7 +20,7 @@ pnpm seed:catalog             # import the 88-product seed catalogue into Payloa
 | `pnpm dev` / `pnpm build` / `pnpm start` | Develop, build, serve |
 | `pnpm lint` · `pnpm typecheck` | Code quality |
 | `pnpm check:contrast` | WCAG AA check of the brand colour pairs |
-| `pnpm test:int` · `pnpm test:e2e` | Vitest integration tests · Playwright end-to-end tests |
+| `pnpm test:int` · `pnpm test:e2e` | Vitest integration tests · Playwright end-to-end tests (run e2e against `pnpm build && pnpm start` for reliable results) |
 | `pnpm seed:catalog` | Import / refresh the seed catalogue (products, brands, categories, photos, home rails) |
 | `pnpm seed:demo` | Add 20 clearly-marked demo products for fragrance, footwear, gifts and chocolates (`--remove` deletes them; **remove before launch**) |
 | `pnpm prune:media` | List unused media (`--apply` deletes them) |
@@ -37,4 +37,4 @@ pnpm seed:catalog             # import the 88-product seed catalogue into Payloa
 - **Docs:** [`docs/`](docs/README.md): charter, SRS, backlog, sprint plan, architecture, design system, RBAC, UX
 
 ## Status
-Sprint 0 (foundation), Sprint 1 (catalogue live) and Sprint 1.5 (lifestyle store and custom admin) are complete. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.
+Sprints 0, 1, 1.5 and 2 (find it fast: search, filters, wishlist, reviews, CSV) are complete. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.

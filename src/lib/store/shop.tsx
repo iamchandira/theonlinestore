@@ -52,6 +52,16 @@ type ShopState = {
   wishlist: string[]
   toggleWishlist: (product: Product) => void
   isWishlisted: (slug: string) => boolean
+  /** Adds several products at once (e.g. "Save all" from a shared wishlist) */
+  addManyToWishlist: (slugs: string[]) => void
+  removeFromWishlist: (slug: string) => void
+  /** Most recent first, max 16 (TOS-205) */
+  recentlyViewed: string[]
+  rememberViewed: (slug: string) => void
+  /** Slug of the product added to the bag most recently (drives "Pairs well with" in the bag) */
+  lastAdded: string | null
+  /** False until the saved bag/wishlist have been read from this device */
+  hydrated: boolean
   cartOpen: boolean
   setCartOpen: (open: boolean) => void
   quickAdd: Product | null
@@ -67,6 +77,8 @@ const ShopContext = createContext<ShopState | null>(null)
 
 const CART_KEY = 'tos.cart.v2' // v2 = snapshot lines (v1 Sprint 0 bags are ignored)
 const WISH_KEY = 'tos.wishlist.v1'
+const RECENT_KEY = 'tos.recent.v1'
+const RECENT_MAX = 16
 
 function readJSON<T>(key: string, fallback: T): T {
   try {
@@ -90,6 +102,8 @@ const isLine = (l: unknown): l is CartLine =>
 export function ShopProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([])
   const [wishlist, setWishlist] = useState<string[]>([])
+  const [recentlyViewed, setRecentlyViewed] = useState<string[]>([])
+  const [lastAdded, setLastAdded] = useState<string | null>(null)
   const [hydrated, setHydrated] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
   const [quickAdd, setQuickAdd] = useState<Product | null>(null)
@@ -103,7 +117,10 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     // Hydrate persisted state after mount (avoids SSR mismatch)
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLines(readJSON<unknown[]>(CART_KEY, []).filter(isLine))
-    setWishlist(readJSON<string[]>(WISH_KEY, []))
+    setWishlist(readJSON<string[]>(WISH_KEY, []).filter((s) => typeof s === 'string'))
+    // Merge: a product page may already have recorded a view (child effects run before this one)
+    const storedRecent = readJSON<string[]>(RECENT_KEY, []).filter((s) => typeof s === 'string')
+    setRecentlyViewed((prev) => [...new Set([...prev, ...storedRecent])].slice(0, RECENT_MAX))
     setHydrated(true)
   }, [])
   useEffect(() => {
@@ -112,6 +129,9 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (hydrated) writeJSON(WISH_KEY, wishlist)
   }, [wishlist, hydrated])
+  useEffect(() => {
+    if (hydrated) writeJSON(RECENT_KEY, recentlyViewed)
+  }, [recentlyViewed, hydrated])
 
   const launchFlight = useCallback(
     (src: string, fromEl?: HTMLElement | null) => {
@@ -156,6 +176,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
         ]
       })
       setAddPulse((n) => n + 1)
+      setLastAdded(product.slug)
       launchFlight(variant.image, opts?.fromEl)
       const label = product.variants.length > 1 ? ` (${variant.label})` : ''
       setAnnouncement(`${product.brand} ${product.name}${label} added to your bag`)
@@ -185,6 +206,18 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const addManyToWishlist = useCallback((slugs: string[]) => {
+    setWishlist((prev) => [...prev, ...slugs.filter((s) => !prev.includes(s))])
+    setAnnouncement('Saved to wishlist')
+  }, [])
+  const removeFromWishlist = useCallback((slug: string) => {
+    setWishlist((prev) => prev.filter((s) => s !== slug))
+    setAnnouncement('Removed from wishlist')
+  }, [])
+  const rememberViewed = useCallback((slug: string) => {
+    setRecentlyViewed((prev) => (prev[0] === slug ? prev : [slug, ...prev.filter((s) => s !== slug)].slice(0, RECENT_MAX)))
+  }, [])
+
   const value = useMemo<ShopState>(() => {
     return {
       lines,
@@ -196,6 +229,12 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       wishlist,
       toggleWishlist,
       isWishlisted: (slug) => wishlist.includes(slug),
+      addManyToWishlist,
+      removeFromWishlist,
+      recentlyViewed,
+      rememberViewed,
+      lastAdded,
+      hydrated,
       cartOpen,
       setCartOpen,
       quickAdd,
@@ -204,7 +243,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       addPulse,
       announcement,
     }
-  }, [lines, wishlist, cartOpen, quickAdd, addPulse, announcement, addToCart, setQty, removeLine, toggleWishlist])
+  }, [lines, wishlist, recentlyViewed, lastAdded, hydrated, cartOpen, quickAdd, addPulse, announcement, addToCart, setQty, removeLine, toggleWishlist, addManyToWishlist, removeFromWishlist, rememberViewed])
 
   return (
     <ShopContext.Provider value={value}>

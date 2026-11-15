@@ -152,8 +152,7 @@ async function main() {
       tags: p.tags.map((t) => tagIds.get(t)).filter(Boolean),
       concerns: p.concerns.map((c) => concernIds.get(c)).filter(Boolean),
       priceTBC: true,
-      rating: p.rating,
-      reviewCount: p.reviewCount,
+      // Ratings come only from real, approved reviews (Sprint 2); the catalogue's numbers only seed popularity
       salesCount: p.badge === 'bestseller' ? p.reviewCount * 3 : p.reviewCount,
       _status: 'published' as const,
     }

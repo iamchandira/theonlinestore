@@ -80,7 +80,7 @@ function QuickAddBody({
         <div className="flex min-w-0 flex-col gap-1">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-ink-500">{product.brand}</p>
           <p className="font-semibold leading-snug">{product.name}</p>
-          <Rating value={product.rating} count={product.reviewCount} />
+          {product.reviewCount > 0 && <Rating value={product.rating} count={product.reviewCount} />}
           <Price price={selected.price} compareAt={selected.compareAtPrice} />
         </div>
       </div>

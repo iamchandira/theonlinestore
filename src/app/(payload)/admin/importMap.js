@@ -29,6 +29,7 @@ import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { ProductsList as ProductsList_35d44351a0dfdab7b71afe62aeca468f } from '../../../components/admin/views/ProductsList'
+import { ReviewsList as ReviewsList_068eb4f2e7b1121fba7c0b816aa7ddda } from '../../../components/admin/views/ReviewsList'
 import { Nav as Nav_965175d01b56876a09418037afb35340 } from '../../../components/admin/Nav'
 import { AdminIcon as AdminIcon_80ebcb12978a9db9a1c04af0af89c7ec } from '../../../components/admin/Graphics'
 import { AdminLogo as AdminLogo_80ebcb12978a9db9a1c04af0af89c7ec } from '../../../components/admin/Graphics'
@@ -37,6 +38,8 @@ import { LoginIntro as LoginIntro_7b77c0a8bf5649eadd846d28c5d927eb } from '../..
 import { CommandPaletteProvider as CommandPaletteProvider_73d9bfc042b227ff1b21493f062213db } from '../../../components/admin/CommandPalette'
 import { Dashboard as Dashboard_86ced07c75806cf3261000d7201be5c2 } from '../../../components/admin/views/Dashboard'
 import { Inventory as Inventory_bdcc4029d5f1810af8343409f33e20be } from '../../../components/admin/views/Inventory'
+import { ImportExport as ImportExport_9fd94c829fdf4a91733c388dd655ea7e } from '../../../components/admin/views/ImportExport'
+import { SearchInsights as SearchInsights_0e4f063d99158b79b0480e7df2d82f72 } from '../../../components/admin/views/SearchInsights'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
@@ -72,6 +75,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "/components/admin/views/ProductsList#ProductsList": ProductsList_35d44351a0dfdab7b71afe62aeca468f,
+  "/components/admin/views/ReviewsList#ReviewsList": ReviewsList_068eb4f2e7b1121fba7c0b816aa7ddda,
   "/components/admin/Nav#Nav": Nav_965175d01b56876a09418037afb35340,
   "/components/admin/Graphics#AdminIcon": AdminIcon_80ebcb12978a9db9a1c04af0af89c7ec,
   "/components/admin/Graphics#AdminLogo": AdminLogo_80ebcb12978a9db9a1c04af0af89c7ec,
@@ -80,5 +84,7 @@ export const importMap = {
   "/components/admin/CommandPalette#CommandPaletteProvider": CommandPaletteProvider_73d9bfc042b227ff1b21493f062213db,
   "/components/admin/views/Dashboard#Dashboard": Dashboard_86ced07c75806cf3261000d7201be5c2,
   "/components/admin/views/Inventory#Inventory": Inventory_bdcc4029d5f1810af8343409f33e20be,
+  "/components/admin/views/ImportExport#ImportExport": ImportExport_9fd94c829fdf4a91733c388dd655ea7e,
+  "/components/admin/views/SearchInsights#SearchInsights": SearchInsights_0e4f063d99158b79b0480e7df2d82f72,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

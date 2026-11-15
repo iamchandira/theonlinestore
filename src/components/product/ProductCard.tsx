@@ -178,7 +178,8 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
             {product.name}
           </Link>
         </h3>
-        <Rating value={product.rating} count={product.reviewCount} size={13} />
+        {/* Real reviews only (TOS-206); the empty line keeps cards in a row the same height */}
+        {product.reviewCount > 0 ? <Rating value={product.rating} count={product.reviewCount} size={13} /> : <span className="block h-[18px]" aria-hidden />}
         <div className="mt-auto pt-1.5">
           <Price price={multi ? from : v.price} compareAt={multi ? null : v.compareAtPrice} prefix={multi ? 'From' : undefined} size="sm" showSaving={false} />
           <div className="mt-1 flex items-center justify-between gap-2">

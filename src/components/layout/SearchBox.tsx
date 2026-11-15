@@ -10,8 +10,12 @@ import { useDeferredValue, useEffect, useId, useMemo, useRef, useState } from 'r
 type Suggest = {
   products: { slug: string; name: string; brand: string; price: number | null; image: string | null }[]
   brands: { name: string; slug: string }[]
+  categories?: { name: string; href: string }[]
+  /** Spelling correction used when the query itself matched nothing ("cervae" → "cerave") */
+  corrected?: string | null
+  total?: number
 }
-const EMPTY: Suggest = { products: [], brands: [] }
+const EMPTY: Suggest = { products: [], brands: [], categories: [] }
 
 import { Price } from '@/components/ui/Price'
 import { categories, popularSearches } from '@/config/navigation'
@@ -56,10 +60,13 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
   const loading = term.length >= 2 && data.q !== term
   const results = current.products.slice(0, 5)
   const brandHits = current.brands
-  const catHits = useMemo(() => {
+  // Categories come from the server (typo tolerant); the local menu is a fallback while loading
+  const localCats = useMemo(() => {
     const t = deferred.trim().toLowerCase()
     return t.length < 2 ? [] : categories.flatMap((c) => [c, ...(c.children ?? [])]).filter((c) => c.name.toLowerCase().includes(t)).slice(0, 3)
   }, [deferred])
+  const catHits = current.categories?.length ? current.categories.slice(0, 3) : localCats
+  const corrected = current.corrected
 
   const hasQuery = deferred.trim().length >= 2
   const options = hasQuery ? results.map((p) => `/p/${p.slug}`) : []
@@ -209,6 +216,11 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
                       ))}
                     </div>
                   )}
+                  {corrected && (
+                    <p className="px-3 pt-3 text-sm text-ink-600">
+                      Showing results for <strong className="text-ink-900">{corrected}</strong>
+                    </p>
+                  )}
                   <ul className="py-1">
                     {results.map((p, i) => (
                       <li key={p.slug} id={`${listId}-opt-${i}`} role="option" aria-selected={active === i}>
@@ -231,7 +243,7 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
                     ))}
                   </ul>
                   <button type="button" onClick={() => submit()} className="flex w-full items-center justify-between rounded-md px-3 py-3 text-sm font-semibold text-sunset-700 hover:bg-sunset-50">
-                    See all results for “{deferred}” <IconArrowUpRight size={18} />
+                    See all {current.total ? `${current.total} ` : ''}results for “{corrected ?? deferred}” <IconArrowUpRight size={18} />
                   </button>
                 </>
               )}

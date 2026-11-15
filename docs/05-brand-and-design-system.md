@@ -151,6 +151,19 @@ All fonts load through `next/font` (self-hosted, `display: swap`, no layout shif
 ## 8. Admin theme
 The Payload admin uses the brand orange for its primary actions, Plus Jakarta Sans, the logo on the login screen and the bag icon in navigation (`src/app/(payload)/custom.scss`, `src/components/admin/Graphics.tsx`).
 
+### Discovery components (Sprint 2)
+- **Filter sidebar:**
+  - Collapsible groups with a count badge for active filters.
+  - Custom 20 px checkboxes (ink fill when checked), and a 4-column pill grid for sizes.
+  - Colour swatches, price buckets plus min/max inputs, a star rating radio, and switch-style toggles.
+- **Filter sheet:** the same groups in a bottom sheet, with a sticky footer ("Clear all" and a primary "Show n results").
+- **Active filter chips:** sunset-50 pills with ×. "Clear all" is an underlined text link.
+- **Reviews:**
+  - Display-font average (48 px), star histogram bars in the star colour, and filter pills.
+  - Review cards with a "Verified buyer" (success) or "Sample review" (neutral) badge.
+  - Store reply in a sunset-tinted quote. The write-a-review form uses a 32 px star picker.
+- Products without reviews show no stars on cards: an empty line keeps cards the same height.
+
 ### Custom admin design system (Sprint 1.5)
 The admin is designed as its own product UI, taking ideas from Shopify, Linear, Stripe and WooCommerce: calm, dense and fast.
 - **Surfaces:** a warm grey canvas with white cards (12 px radius, 1 px line, soft shadow). Payload's `--theme-elevation-*` scale is remapped to the brand neutrals, so built-in screens match the custom ones.

@@ -4,6 +4,7 @@ import { IconLock, IconMinus, IconPlus, IconShoppingBag, IconTrash, IconTruckDel
 import { AnimatePresence, motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 import { categoryTint } from '@/components/product/ProductCard'
 import { Button, ButtonLink } from '@/components/ui/Button'
@@ -20,10 +21,15 @@ import { useShop } from '@/lib/store/shop'
  * Free-delivery progress nudges basket size; totals are shown upfront; checkout is one tap away.
  */
 export function CartDrawer({ suggestions: pool = [] }: { suggestions?: Product[] }) {
-  const { lines: items, itemCount, subtotal, cartOpen, setCartOpen, setQty, removeLine, addToCart } = useShop()
+  const { lines: items, itemCount, subtotal, cartOpen, setCartOpen, setQty, removeLine, addToCart, lastAdded } = useShop()
   const remaining = Math.max(0, site.freeDeliveryThreshold - subtotal)
   const inBag = new Set(items.map((i) => i.slug))
-  const suggestions = pool.filter((p) => !inBag.has(p.slug)).slice(0, 3)
+  // "Pairs well with" the product just added (TOS-204), falling back to small add-ons
+  const pairs = usePairs(cartOpen ? lastAdded : null)
+  const pairedWith = items.find((i) => i.slug === lastAdded)
+  const pairList = pairs.filter((p) => !inBag.has(p.slug)).slice(0, 3)
+  const suggestions = pairList.length ? pairList : pool.filter((p) => !inBag.has(p.slug)).slice(0, 3)
+  const suggestionTitle = pairList.length && pairedWith ? `Pairs well with ${pairedWith.name}` : 'Add a little extra'
 
   return (
     <Drawer
@@ -127,7 +133,7 @@ export function CartDrawer({ suggestions: pool = [] }: { suggestions?: Product[]
 
           {suggestions.length > 0 && (
             <div className="border-t border-line bg-canvas px-5 py-4">
-              <p className="mb-3 text-sm font-bold">Add a little extra</p>
+              <p className="mb-3 text-sm font-bold">{suggestionTitle}</p>
               <ul className="flex flex-col gap-2.5">
                 {suggestions.map((p) => {
                   const v = primaryVariant(p)
@@ -153,4 +159,19 @@ export function CartDrawer({ suggestions: pool = [] }: { suggestions?: Product[]
       )}
     </Drawer>
   )
+}
+
+/** Cross-sells for one product, fetched once per slug while the bag is open. */
+function usePairs(slug: string | null) {
+  const [state, setState] = useState<{ slug: string; products: Product[] } | null>(null)
+  useEffect(() => {
+    if (!slug || state?.slug === slug) return
+    const ctrl = new AbortController()
+    fetch(`/api/products/pairs?slug=${encodeURIComponent(slug)}`, { signal: ctrl.signal })
+      .then((r) => (r.ok ? r.json() : { products: [] }))
+      .then((res: { products: Product[] }) => setState({ slug, products: res.products }))
+      .catch(() => {})
+    return () => ctrl.abort()
+  }, [slug, state?.slug])
+  return slug && state?.slug === slug ? state.products : []
 }

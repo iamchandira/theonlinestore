@@ -72,5 +72,16 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 - `POST /api/products/adjust-stock` (Inventory screen): admin, store-manager and inventory-manager only. It runs with the caller's own access (`overrideAccess: false`), so field rules still apply. Each change is logged with the reason and note.
 - The custom admin sidebar and ⌘K palette only show sections the signed-in role can read. Bulk actions in the products list go through the REST API, so collection and field access are enforced on the server.
 
+## Rules implemented in Sprint 2 (discovery)
+- **`reviews`:**
+  - The public reads **approved** reviews only. `authorEmail`, `user` and `moderationNote` are readable by staff only.
+  - Create and update: store-manager, marketing, support. Delete: store-manager, marketing (and admin).
+  - Shoppers submit through `POST /api/reviews/submit`, which is rate-limited (5 per hour per IP), has a honeypot, and always creates the review as *pending*.
+- **`review-media`:** staff read everything; the public reads only photos whose review is approved (`public` flag set by the review hook). Moderators manage them.
+- **`search-queries`:** read by store-manager and marketing (and admin). Written only by the server.
+- **CSV:**
+  - Export: admin, store-manager, inventory-manager, marketing. Cost is included only for price roles.
+  - Import: prices and cost need store-manager; stock and the low-stock threshold need inventory-manager or store-manager. Fields a role can't change are reported as skipped, and the update runs with the caller's access.
+
 ## Testing
 From Sprint 3 (TOS-401), each cell in the table above gets an automated integration test (`tests/int/rbac.int.spec.ts`) that logs in as each role and checks the allowed and denied operations.
