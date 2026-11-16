@@ -13,11 +13,11 @@ Each story uses the format: *As a [role], I want [goal] so that [benefit].* Acce
 | E01 | Catalogue, variants & inventory | 10 | 55 | 1 ✅ (TOS-109 done in Sprint 2) |
 | E13 | Lifestyle catalogue & custom admin | 12 | 47 | 1.5 ✅ |
 | E02 | Discovery: search, filters, wishlist, recommendations | 8 | 42 | 2 ✅ (+TOS-109 carried over, done) |
-| E03 | Customer accounts | 7 | 29 | 3 ✅ (TOS-305 history → Sprint 6, TOS-307 done in Sprint 4) |
+| E03 | Customer accounts | 7 | 29 | 3 ✅ (TOS-305 done in Sprint 6, TOS-307 done in Sprint 4) |
 | E04 | RBAC & admin security | 4 | 18 | 3 ✅ (TOS-403 2FA → Sprint 10) |
 | E05 | Bag & checkout | 9 | 52 | 4 ✅ |
 | E06 | Payments | 7 | 47 | 5 ✅ (Koko/Mintpay live adapters wait for merchant guides; gateway refunds → Sprint 6) |
-| E07 | Orders & delivery | 8 | 44 | 6 |
+| E07 | Orders & delivery | 8 | 44 | 6 ✅ (courier APIs TOS-708 → when couriers share API access) |
 | E08 | Notifications | 6 | 34 | 7 |
 | E09 | Analytics & reporting | 5 | 29 | 8 |
 | E10 | SEO, GEO & AEO + content | 7 | 34 | 9 |
@@ -129,7 +129,7 @@ Added after Sprint 1 at the owner's request: the store is a lifestyle store, not
 | TOS-302 | As a customer, I want to log in and out securely, with a "remember me" option. | M | 3 | ✅ |
 | TOS-303 | As a customer, I want to reset my password by email (and by SMS OTP). | M | 5 | ✅ email; SMS OTP → Sprint 7 |
 | TOS-304 | As a customer, I want an address book with districts and cities. | M | 3 | ✅ |
-| TOS-305 | As a customer, I want to see my order history and reorder in one tap. | M | 5 | 🔄 page ready; history + reorder → Sprint 6 (needs orders) |
+| TOS-305 | As a customer, I want to see my order history and reorder in one tap. | M | 5 | ✅ Sprint 6: order page with tracking, invoice and Buy again |
 | TOS-306 | As a customer, I want to manage my marketing consent and request account deletion (PDPA). | M | 3 | ✅ (+ download my data) |
 | TOS-307 | As a guest, I want to create an account after checkout using my order details. | S | 5 | ✅ Sprint 4 (password on the confirmation page; the order links at first sign-in) |
 
@@ -191,17 +191,17 @@ Added after Sprint 1 at the owner's request: the store is a lifestyle store, not
 - Order status updates only after a verified callback.
 - Refunds can be issued from the admin. *(Moved to Sprint 6 with returns, TOS-706: needs PayHere's refund API.)*
 
-## E07 · Orders & delivery (Sprint 6)
+## E07 · Orders & delivery (Sprint 6) ✅
 | ID | Story | P | Pts | Notes |
 |---|---|---|---|---|
-| TOS-701 | As fulfilment staff, I want an order list with filters, search and bulk status changes. | M | 8 | (list, status tabs and search shipped early in Sprint 4; bulk changes to come) |
-| TOS-702 | As the business, I want a defined order status lifecycle with timestamps and history. | M | 5 |
-| TOS-703 | As fulfilment staff, I want to print packing slips and invoices (PDF). | M | 5 |
-| TOS-704 | As fulfilment staff, I want to assign a courier and tracking number. | M | 5 |
-| TOS-705 | As a shopper, I want to track my order (signed in, or as a guest with order number + phone). | M | 5 |
-| TOS-706 | As support, I want to process returns and refunds with stock restocked automatically. | M | 8 |
-| TOS-707 | As finance, I want a COD reconciliation per courier. | S | 5 | ("Cash collected" per order shipped in Sprint 5; per-courier report to come) |
-| TOS-708 | As fulfilment staff, I want courier API integration (Koombiyo, Domex) to create shipments. | C | 3 |
+| TOS-701 | As fulfilment staff, I want an order list with filters, search and bulk status changes. | M | 8 | ✅ filters (payment, method, delivery, dates), tracking-number search, select + bulk status, bulk print |
+| TOS-702 | As the business, I want a defined order status lifecycle with timestamps and history. | M | 5 | ✅ allowed steps enforced for staff; shipping needs courier + tracking; step dates kept |
+| TOS-703 | As fulfilment staff, I want to print packing slips and invoices (PDF). | M | 5 | ✅ printable A4 invoices and packing slips (print or Save as PDF), one or many at once |
+| TOS-704 | As fulfilment staff, I want to assign a courier and tracking number. | M | 5 | ✅ Couriers with tracking links; courier + tracking number on each order; "on its way" email |
+| TOS-705 | As a shopper, I want to track my order (signed in, or as a guest with order number + phone). | M | 5 | ✅ /track-order (order number + mobile) and the order page with progress and courier link |
+| TOS-706 | As support, I want to process returns and refunds with stock restocked automatically. | M | 8 | ✅ return requests (7 days, no food), approve/reject, receive + restock, refunds (PayHere API, test gateway, manual) |
+| TOS-707 | As finance, I want a COD reconciliation per courier. | S | 5 | ✅ COD reconciliation screen: cash with each courier, record a remittance against orders |
+| TOS-708 | As fulfilment staff, I want courier API integration (Koombiyo, Domex) to create shipments. | C | 3 | ➡️ courier APIs need accounts with Koombiyo/Domex; manual tracking numbers until then |
 
 ## E08 · Notifications (Sprint 7)
 | ID | Story | P | Pts |

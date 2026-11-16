@@ -32,6 +32,7 @@ type OrderLite = {
   paymentStatus: string
   status: string
   totals?: { total?: number }
+  refundedTotal?: number | null
 }
 
 // Slips are private (served with the staff session cookie), so next/image's optimiser can't fetch them
@@ -52,6 +53,7 @@ const PAY: Record<string, string> = {
   'slip-uploaded': 'Slip to verify',
   paid: 'Paid',
   failed: 'Payment failed',
+  'partially-refunded': 'Partly refunded',
   refunded: 'Refunded',
 }
 const TONE: Record<string, string> = {
@@ -71,6 +73,8 @@ const TX: Record<string, string> = {
   chargeback: 'Charged back',
   'slip-uploaded': 'Slip sent',
   rejected: 'Slip rejected',
+  refunded: 'Refunded',
+  'refund-failed': 'Refund failed',
 }
 
 /**
@@ -91,6 +95,8 @@ export function OrderPayment() {
   const [error, setError] = useState<string | null>(null)
   const [rejecting, setRejecting] = useState<number | null>(null)
   const [reason, setReason] = useState('')
+  const [refunding, setRefunding] = useState(false)
+  const [refund, setRefund] = useState({ amount: '', reason: '', reference: '' })
 
   const load = useCallback(async () => {
     if (!id) return
@@ -265,6 +271,81 @@ export function OrderPayment() {
         >
           Cash collected
         </button>
+      )}
+      {['paid', 'partially-refunded'].includes(order.paymentStatus) && has('store-manager') && (
+        <div className="tos-pay-refund">
+          {!refunding ? (
+            <button
+              type="button"
+              className="tos-btn tos-btn--sm tos-btn--block"
+              onClick={() => setRefunding(true)}
+            >
+              Refund…
+            </button>
+          ) : (
+            <>
+              <span className="tos-pay-muted">
+                Up to {lkr((order.totals?.total ?? 0) - (order.refundedTotal ?? 0))}
+                {order.paymentMethod === 'payhere'
+                  ? ', back to the card through PayHere'
+                  : order.paymentMethod === 'cod' || order.paymentMethod === 'bank-transfer'
+                    ? '. Send it by bank transfer first, then record it here.'
+                    : ''}
+              </span>
+              <input
+                className="tos-pay-input"
+                type="number"
+                min={1}
+                placeholder="Amount (Rs)"
+                aria-label="Refund amount"
+                value={refund.amount}
+                onChange={(e) => setRefund({ ...refund, amount: e.target.value })}
+              />
+              <input
+                className="tos-pay-input"
+                placeholder="Reason, e.g. item out of stock"
+                aria-label="Refund reason"
+                value={refund.reason}
+                onChange={(e) => setRefund({ ...refund, reason: e.target.value })}
+              />
+              {order.paymentMethod !== 'payhere' && (
+                <input
+                  className="tos-pay-input"
+                  placeholder="Bank reference of the refund"
+                  aria-label="Refund reference"
+                  value={refund.reference}
+                  onChange={(e) => setRefund({ ...refund, reference: e.target.value })}
+                />
+              )}
+              <div className="tos-pay-actions">
+                <button
+                  type="button"
+                  className="tos-btn tos-btn--sm tos-btn--primary"
+                  disabled={
+                    busy !== null || !Number(refund.amount) || refund.reason.trim().length < 3
+                  }
+                  onClick={() =>
+                    confirm(`Refund ${lkr(Number(refund.amount))}? This can’t be undone.`) &&
+                    void act('refund', {
+                      amount: Number(refund.amount),
+                      reason: refund.reason,
+                      reference: refund.reference,
+                    })
+                  }
+                >
+                  Refund {refund.amount ? lkr(Number(refund.amount)) : ''}
+                </button>
+                <button
+                  type="button"
+                  className="tos-btn tos-btn--sm"
+                  onClick={() => setRefunding(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       )}
       {error && <p className="tos-pay-error">{error}</p>}
 

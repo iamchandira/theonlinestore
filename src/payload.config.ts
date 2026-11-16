@@ -12,7 +12,9 @@ import { fileURLToPath } from 'url'
 import { AuditLogs } from './collections/AuditLogs'
 import { Brands } from './collections/Brands'
 import { Discounts } from './collections/Discounts'
+import { Couriers } from './collections/Couriers'
 import { Orders } from './collections/Orders'
+import { Returns } from './collections/Returns'
 import { PaymentSlips } from './collections/PaymentSlips'
 import { Transactions } from './collections/Transactions'
 import { Categories } from './collections/Categories'
@@ -59,11 +61,12 @@ export default buildConfig({
         inventory: { Component: '/components/admin/views/Inventory#Inventory', path: '/inventory' },
         importExport: { Component: '/components/admin/views/ImportExport#ImportExport', path: '/import-export' },
         searchInsights: { Component: '/components/admin/views/SearchInsights#SearchInsights', path: '/search-insights' },
+        cod: { Component: '/components/admin/views/CodReconciliation#CodReconciliation', path: '/cod' },
       },
     },
     theme: 'light',
   },
-  collections: [Orders, Transactions, PaymentSlips, Discounts, Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, AuditLogs],
+  collections: [Orders, Returns, Transactions, PaymentSlips, Discounts, Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, Couriers, AuditLogs],
   globals: [HomePage, CheckoutSettings, PaymentSettings],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

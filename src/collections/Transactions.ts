@@ -84,6 +84,8 @@ export const Transactions: CollectionConfig = {
             { label: 'Charged back', value: 'chargeback' },
             { label: 'Slip to verify', value: 'slip-uploaded' },
             { label: 'Slip rejected', value: 'rejected' },
+          { label: 'Refunded', value: 'refunded' },
+          { label: 'Refund failed', value: 'refund-failed' },
           ],
           admin: { width: '34%' },
         },

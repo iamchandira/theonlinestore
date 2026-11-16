@@ -16,7 +16,7 @@
 | — | 25 Dec – 1 Jan | Holiday buffer (bug fixes, content entry) | | |
 | **4** ✅ | 15 Nov 2026 (started early) | **Checkout**: server bag, coupons, discount engine, delivery fees, notes, T&C, gift options, confirmation | TOS-501 → 509 | Full COD order with a coupon and district delivery fee |
 | **5** ✅ | 15 Nov 2026 (started early) | **Payments**: payment settings; PayHere, Koko and Mintpay (sandbox); bank slip; COD rules; transactions | TOS-601 → 607 | Pay with PayHere sandbox; verify a bank slip |
-| **6** | 1 – 12 Feb | **Orders & delivery**: lifecycle, fulfilment, invoices, courier tracking, returns and refunds | TOS-701 → 708 | Order goes Processing → Shipped → Delivered; customer tracks it |
+| **6** ✅ | 16 Nov 2026 (started early) | **Orders & delivery**: lifecycle, fulfilment, invoices, courier tracking, returns and refunds | TOS-701 → 708 | Order goes Processing → Shipped → Delivered; customer tracks it |
 | **7** | 15 – 26 Feb | **Notifications**: email, SMS and WhatsApp templates and triggers; staff alerts; back-in-stock | TOS-801 → 806 | Placing an order triggers email + SMS + WhatsApp |
 | **8** | 1 – 12 Mar | **Insights**: dashboard, reports, CSV export, GA4 and Pixel | TOS-901 → 905 | Owner dashboard with real test data |
 | **9** | 15 – 26 Mar | **Be found**: SEO fields, JSON-LD, sitemaps, `llms.txt`, FAQ/AEO, blog, legal pages | TOS-1001 → 1007 | Rich Results Test passes; journal post live |
@@ -55,7 +55,20 @@ Delivered TOS-501 → 509 and TOS-307 (account from a guest order), plus an earl
 ## Sprint 5 (complete): payments
 Delivered TOS-601, 602, 605, 606 and 607; TOS-603/604 (Koko, Mintpay) run end to end on the built-in test gateway, and their live adapters switch on once each provider sends its merchant integration guide. Unpaid orders are released automatically. Gateway refunds move to Sprint 6 with returns. See `sprint-reports/sprint-05.md`.
 
-## Sprint 6 plan (next): orders & delivery
+## Sprint 6 (complete): orders & delivery
+Delivered TOS-701 → 707 and TOS-305 (order page, Buy again). Courier API integration (TOS-708, a Could) waits for courier accounts; tracking numbers are entered by staff. See `sprint-reports/sprint-06.md`.
+
+## Sprint 7 plan (next): notifications
+| # | Task | Story |
+|---|---|---|
+| 1 | Editable email templates (order placed, paid, shipped, delivered, refund, return, slip) with a preview | TOS-801 |
+| 2 | SMS (Notify.lk or Text.lk): order placed, shipped with tracking, out for delivery, COD reminder | TOS-802 |
+| 3 | WhatsApp Cloud API order updates with opt-in | TOS-803 |
+| 4 | Staff alerts: new order, slip to verify, return requested, low stock | TOS-804 |
+| 5 | Back-in-stock alerts for shoppers | TOS-805 |
+| 6 | Per-event switches and a sent-message log | TOS-806 |
+
+## Sprint 6 plan (as planned): orders & delivery
 | # | Task | Story |
 |---|---|---|
 | 1 | Bulk status changes and filters by payment, delivery and date on the Orders list | TOS-701 |

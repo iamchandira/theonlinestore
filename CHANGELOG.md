@@ -2,6 +2,21 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.8.0] · 2026-11-16 · Sprint 6: Orders & delivery
+### Added
+- **Order lifecycle** (TOS-702): staff can only move orders along the allowed steps; packing and shipping need payment (COD excepted); shipping needs a courier and tracking number; each step's date is kept.
+- **Orders list** (TOS-701): filters by payment status, method, delivery and dates; search by tracking number; tick orders to change status in bulk (each order checked, failures listed) or print them.
+- **Invoices and packing slips** (TOS-703): printable A4 pages (print or Save as PDF), many at once; packing slips show COD cash to collect, gift message, and hide prices for gifts.
+- **Couriers** (TOS-704): Settings › Couriers with tracking links; starter list from `pnpm seed:demo` (Koombiyo, Domex, Pronto, own rider). "On its way" email with the tracking link.
+- **Order tracking** (TOS-705): `/track-order` with order number and mobile; **order page** `/orders/…` with progress, courier link, payment, invoice and **Buy again** (TOS-305). Account › Orders opens it.
+- **Returns and refunds** (TOS-706): shoppers request returns within 7 days of delivery (not food); staff approve/reject, mark received (back into stock), refund. Refunds: PayHere Refund API (partial supported), test gateway, or recorded bank refunds. Emails at each step.
+- **COD reconciliation** (TOS-707): cash with each courier, and "Record payment" for the orders a courier remittance covers.
+- Tests: `orders.int.spec.ts` (10), `orders.e2e.spec.ts` (2); e2e teardown releases test orders.
+
+### Fixed
+- The tracking form cleared what the shopper typed after an error.
+- e2e runs gradually sold out the demo product they buy; test orders are now cancelled (stock back) and removed after each run.
+
 ## [0.7.0] · 2026-11-15 · Sprint 5: Payments
 ### Added
 - **Settings › Payments** (TOS-601): each method on or off, its position at checkout, minimum and maximum order, label; Test or Live mode; how long unpaid online orders are held. Gateway credentials are Super Admin only, and environment variables override them.

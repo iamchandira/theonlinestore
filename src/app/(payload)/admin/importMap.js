@@ -1,5 +1,6 @@
 import { OrderPayment as OrderPayment_8f3b9875b38dc957cb3ea31db59ecb17 } from '../../../components/admin/OrderPayment'
 import { OrdersList as OrdersList_50c5ad532643e65e7ab46068cb377ecb } from '../../../components/admin/views/OrdersList'
+import { ReturnPanel as ReturnPanel_ce408278394a5f767f64137a8819d2da } from '../../../components/admin/ReturnPanel'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -42,12 +43,14 @@ import { Dashboard as Dashboard_86ced07c75806cf3261000d7201be5c2 } from '../../.
 import { Inventory as Inventory_bdcc4029d5f1810af8343409f33e20be } from '../../../components/admin/views/Inventory'
 import { ImportExport as ImportExport_9fd94c829fdf4a91733c388dd655ea7e } from '../../../components/admin/views/ImportExport'
 import { SearchInsights as SearchInsights_0e4f063d99158b79b0480e7df2d82f72 } from '../../../components/admin/views/SearchInsights'
+import { CodReconciliation as CodReconciliation_4050771141b76037b6c355672b17ba60 } from '../../../components/admin/views/CodReconciliation'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
   "/components/admin/OrderPayment#OrderPayment": OrderPayment_8f3b9875b38dc957cb3ea31db59ecb17,
   "/components/admin/views/OrdersList#OrdersList": OrdersList_50c5ad532643e65e7ab46068cb377ecb,
+  "/components/admin/ReturnPanel#ReturnPanel": ReturnPanel_ce408278394a5f767f64137a8819d2da,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -90,5 +93,6 @@ export const importMap = {
   "/components/admin/views/Inventory#Inventory": Inventory_bdcc4029d5f1810af8343409f33e20be,
   "/components/admin/views/ImportExport#ImportExport": ImportExport_9fd94c829fdf4a91733c388dd655ea7e,
   "/components/admin/views/SearchInsights#SearchInsights": SearchInsights_0e4f063d99158b79b0480e7df2d82f72,
+  "/components/admin/views/CodReconciliation#CodReconciliation": CodReconciliation_4050771141b76037b6c355672b17ba60,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

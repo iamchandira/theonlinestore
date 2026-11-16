@@ -12,7 +12,7 @@
 | 07 | [Working Agreement](07-working-agreement.md) | Definition of Done, conventions, quality gates |
 | 08 | [UX Guidelines](08-ux-guidelines.md) | Principles, personas, journeys, sitemap, page patterns, campaign calendar |
 | 09 | [Product Catalogue](09-product-catalogue.md) | Seed products extracted from the client PDFs |
-| — | [Sprint 0 report](sprint-reports/sprint-00.md) · [Sprint 1 report](sprint-reports/sprint-01.md) · [Sprint 1.5 report](sprint-reports/sprint-01-5.md) · [Sprint 2 report](sprint-reports/sprint-02.md) · [Sprint 3 report](sprint-reports/sprint-03.md) · [Sprint 4 report](sprint-reports/sprint-04.md) · [Sprint 5 report](sprint-reports/sprint-05.md) | One report per sprint |
+| — | [Sprint 0 report](sprint-reports/sprint-00.md) · [Sprint 1 report](sprint-reports/sprint-01.md) · [Sprint 1.5 report](sprint-reports/sprint-01-5.md) · [Sprint 2 report](sprint-reports/sprint-02.md) · [Sprint 3 report](sprint-reports/sprint-03.md) · [Sprint 4 report](sprint-reports/sprint-04.md) · [Sprint 5 report](sprint-reports/sprint-05.md) · [Sprint 6 report](sprint-reports/sprint-06.md) | One report per sprint |
 | — | [CHANGELOG](../CHANGELOG.md) | Release notes |
 
 Docs are updated at the end of every sprint and mirrored to the shared Claude Docs copy.

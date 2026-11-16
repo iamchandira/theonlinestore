@@ -182,6 +182,27 @@ export const PaymentSettings: GlobalConfig = {
                     } as Field,
                   ],
                 },
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      ...credential(
+                        'appId',
+                        'App ID (for refunds)',
+                        'Super Admin only. PAYHERE_APP_ID overrides this. Create a Business App with the Payment Refund permission in PayHere.',
+                      ),
+                      admin: { width: '50%' },
+                    } as Field,
+                    {
+                      ...credential(
+                        'appSecret',
+                        'App secret (for refunds)',
+                        'Super Admin only. PAYHERE_APP_SECRET overrides this.',
+                      ),
+                      admin: { width: '50%' },
+                    } as Field,
+                  ],
+                },
               ],
             },
           ],

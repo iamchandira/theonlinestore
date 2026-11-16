@@ -6,9 +6,19 @@
 
 const SITE = () => (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '')
 
-const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!)
+const esc = (s: string) =>
+  s.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!,
+  )
 
-type Block = { heading: string; intro: string; cta?: { label: string; url: string }; after?: string; footnote?: string }
+type Block = {
+  heading: string
+  intro: string
+  cta?: { label: string; url: string }
+  after?: string
+  footnote?: string
+}
 
 export function layout({ heading, intro, cta, after, footnote }: Block) {
   const site = SITE()
@@ -39,7 +49,10 @@ export const verifyEmail = (name: string | null | undefined, token: string) =>
   layout({
     heading: 'Confirm your email',
     intro: `Hi ${first(name)}, welcome to The Online Store! Please confirm your email address so you can sign in, track orders and keep your wishlist on every device.`,
-    cta: { label: 'Confirm my email', url: `${SITE()}/account/verify?token=${encodeURIComponent(token)}` },
+    cta: {
+      label: 'Confirm my email',
+      url: `${SITE()}/account/verify?token=${encodeURIComponent(token)}`,
+    },
     footnote: 'If you didn’t create an account, you can ignore this email.',
   })
 
@@ -49,7 +62,9 @@ export const resetPassword = (name: string | null | undefined, token: string, is
     intro: `Hi ${first(name)}, we received a request to reset the password for your account. The link works once and expires in 1 hour.`,
     cta: {
       label: 'Choose a new password',
-      url: isStaff ? `${SITE()}/admin/reset/${encodeURIComponent(token)}` : `${SITE()}/account/reset-password?token=${encodeURIComponent(token)}`,
+      url: isStaff
+        ? `${SITE()}/admin/reset/${encodeURIComponent(token)}`
+        : `${SITE()}/account/reset-password?token=${encodeURIComponent(token)}`,
     },
     footnote: 'If you didn’t ask for this, you can ignore this email; your password won’t change.',
   })
@@ -58,7 +73,8 @@ export const deletionRequested = (name: string | null | undefined) =>
   layout({
     heading: 'We’ve received your account deletion request',
     intro: `Hi ${first(name)}, our team will delete your account and personal data within 14 days, as required by Sri Lanka’s Personal Data Protection Act. Order records we must keep for tax purposes are anonymised.`,
-    after: 'Changed your mind? Sign in and cancel the request from <strong>Account › Privacy</strong> before then.',
+    after:
+      'Changed your mind? Sign in and cancel the request from <strong>Account › Privacy</strong> before then.',
     footnote: 'If you didn’t make this request, sign in and change your password straight away.',
   })
 
@@ -67,10 +83,29 @@ export const deletionRequested = (name: string | null | undefined) =>
 type OrderEmail = {
   orderNumber: string
   fullName: string
-  items: { name: string; brand?: string | null; variant?: string | null; quantity: number; lineTotal: number }[]
-  totals: { subtotal: number; discountTotal: number; delivery: number; giftWrap: number; total: number }
+  items: {
+    name: string
+    brand?: string | null
+    variant?: string | null
+    quantity: number
+    lineTotal: number
+  }[]
+  totals: {
+    subtotal: number
+    discountTotal: number
+    delivery: number
+    giftWrap: number
+    total: number
+  }
   discounts: { label: string; amount: number }[]
-  address: { recipientName: string; phone: string; line1: string; line2?: string | null; city: string; district: string }
+  address: {
+    recipientName: string
+    phone: string
+    line1: string
+    line2?: string | null
+    city: string
+    district: string
+  }
   delivery: { method: string; eta?: string | null }
   paymentMethod: 'cod' | 'bank-transfer' | 'payhere' | 'koko' | 'mintpay'
   bankInstructions?: string
@@ -88,7 +123,11 @@ export function orderConfirmation(o: OrderEmail) {
         `<tr><td style="padding:10px 0;border-bottom:1px solid #ece7e2;font-size:14px;color:#0e1a33"><strong>${esc(i.name)}</strong>${i.brand ? `<br><span style="color:#5b6b85;font-size:12px">${esc(i.brand)}${i.variant ? ` · ${esc(i.variant)}` : ''}</span>` : ''}<br><span style="color:#5b6b85;font-size:12px">Qty ${i.quantity}</span></td><td align="right" style="padding:10px 0;border-bottom:1px solid #ece7e2;font-size:14px;white-space:nowrap">${rs(i.lineTotal)}</td></tr>`,
     )
     .join('')
-  const paidOnline: Record<string, string> = { payhere: 'by card (PayHere)', koko: 'with Koko', mintpay: 'with Mintpay' }
+  const paidOnline: Record<string, string> = {
+    payhere: 'by card (PayHere)',
+    koko: 'with Koko',
+    mintpay: 'with Mintpay',
+  }
   const payment =
     o.paymentMethod === 'cod'
       ? '<strong>Cash on delivery.</strong> Please keep the exact amount ready; most couriers also take cards.'
@@ -111,12 +150,18 @@ ${row('Total', rs(o.totals.total), true)}
     heading: 'Order confirmed',
     intro,
     cta: { label: 'View your order', url: o.viewUrl },
-    footnote: 'Questions about your order? Reply to this email or message us on WhatsApp with your order number.',
+    footnote:
+      'Questions about your order? Reply to this email or message us on WhatsApp with your order number.',
   })
 }
 
 /** Bank transfer confirmed by staff (Sprint 5). */
-export const paymentReceived = (o: { orderNumber: string; fullName: string; amount: number; viewUrl: string }) =>
+export const paymentReceived = (o: {
+  orderNumber: string
+  fullName: string
+  amount: number
+  viewUrl: string
+}) =>
   layout({
     heading: 'Payment received',
     intro: `Hi ${first(o.fullName)}, we’ve confirmed your bank transfer of <strong>${rs(o.amount)}</strong> for order <strong>${esc(o.orderNumber)}</strong>. We’re getting it ready to ship.`,
@@ -124,10 +169,68 @@ export const paymentReceived = (o: { orderNumber: string; fullName: string; amou
   })
 
 /** A bank slip we couldn't match (Sprint 5). */
-export const slipRejected = (o: { orderNumber: string; fullName: string; reason: string; viewUrl: string }) =>
+export const slipRejected = (o: {
+  orderNumber: string
+  fullName: string
+  reason: string
+  viewUrl: string
+}) =>
   layout({
     heading: 'We couldn’t confirm your payment',
     intro: `Hi ${first(o.fullName)}, we couldn’t match the slip you sent for order <strong>${esc(o.orderNumber)}</strong>: ${esc(o.reason)}`,
     cta: { label: 'Upload a new slip', url: o.viewUrl },
     after: 'Reply to this email or message us on WhatsApp if you need help.',
+  })
+
+/** Order shipped (Sprint 6): courier, tracking number and link. */
+export const orderShipped = (o: {
+  orderNumber: string
+  fullName: string
+  courier: string
+  trackingNumber?: string | null
+  trackingUrl?: string | null
+  orderUrl: string
+  eta?: string | null
+}) =>
+  layout({
+    heading: 'Your order is on its way',
+    intro: `Hi ${first(o.fullName)}, order <strong>${esc(o.orderNumber)}</strong> has left our store with <strong>${esc(o.courier)}</strong>${o.trackingNumber ? ` (tracking <strong>${esc(o.trackingNumber)}</strong>)` : ''}.${o.eta ? ` Expected: ${esc(o.eta)}.` : ''} The courier will call you before delivery.`,
+    cta: o.trackingUrl
+      ? { label: 'Track with the courier', url: o.trackingUrl }
+      : { label: 'See your order', url: o.orderUrl },
+    after: o.trackingUrl
+      ? `You can also follow it on <a href="${o.orderUrl}">your order page</a>.`
+      : undefined,
+  })
+
+/** Refund issued (Sprint 6). */
+export const refundIssued = (o: {
+  orderNumber: string
+  fullName: string
+  amount: number
+  method: string
+  orderUrl: string
+}) =>
+  layout({
+    heading: 'Your refund is on its way',
+    intro: `Hi ${first(o.fullName)}, we’ve refunded <strong>${rs(o.amount)}</strong> for order <strong>${esc(o.orderNumber)}</strong> ${esc(o.method)}. Card refunds usually reach your account in 5 to 10 working days; bank transfers in 1 to 2.`,
+    cta: { label: 'See your order', url: o.orderUrl },
+  })
+
+/** Return request decision (Sprint 6). */
+export const returnUpdate = (o: {
+  orderNumber: string
+  fullName: string
+  returnNumber: string
+  approved: boolean
+  note?: string | null
+  orderUrl: string
+}) =>
+  layout({
+    heading: o.approved ? 'Your return is approved' : 'About your return request',
+    intro: o.approved
+      ? `Hi ${first(o.fullName)}, return <strong>${esc(o.returnNumber)}</strong> for order <strong>${esc(o.orderNumber)}</strong> is approved. Please pack the items in their original packaging; we’ll arrange a pickup or you can drop them at our store. We refund as soon as they arrive.${o.note ? `<br><br>${esc(o.note)}` : ''}`
+      : `Hi ${first(o.fullName)}, we can’t accept return <strong>${esc(o.returnNumber)}</strong> for order <strong>${esc(o.orderNumber)}</strong>${o.note ? `: ${esc(o.note)}` : '.'}`,
+    cta: { label: 'See your order', url: o.orderUrl },
+    after: 'Questions? Reply to this email or message us on WhatsApp.',
   })

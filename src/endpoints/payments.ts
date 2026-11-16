@@ -222,12 +222,13 @@ export const slipUploadEndpoint: Endpoint = {
 
 /* ------------------------------------------------------------------ staff actions */
 
-type Action = 'verify-slip' | 'reject-slip' | 'mark-paid' | 'cash-collected'
+type Action = 'verify-slip' | 'reject-slip' | 'mark-paid' | 'cash-collected' | 'refund'
 const ACTION_ROLES: Record<Action, Parameters<typeof hasRole>[1][]> = {
   'verify-slip': ['admin', 'store-manager', 'support'],
   'reject-slip': ['admin', 'store-manager', 'support'],
   'mark-paid': ['admin', 'store-manager'],
   'cash-collected': ['admin', 'store-manager', 'order-fulfillment'],
+  refund: ['admin', 'store-manager'],
 }
 
 export const orderPaymentEndpoint: Endpoint = {
@@ -354,6 +355,26 @@ export const orderPaymentEndpoint: Endpoint = {
         order,
         action === 'verify-slip' ? { ok: true } : { ok: false, reason },
       )
+      return Response.json({ ok: true })
+    }
+
+    if (action === 'refund') {
+      const b = body as { amount?: number; reference?: string }
+      const { refundOrder } = await import('../lib/payments/refunds')
+      const r = await refundOrder(payload, {
+        order,
+        amount: Number(b.amount),
+        reason: str(body.reason, 200),
+        reference: str(b.reference, 80) || undefined,
+        user: req.user as never,
+      })
+      if (!r.ok) return Response.json({ error: r.error }, { status: 400 })
+      await audit(req, {
+        action: 'payment',
+        collection: 'orders',
+        docId: order.id,
+        summary: `${order.orderNumber}: refunded Rs ${r.refunded} ${r.via}`,
+      })
       return Response.json({ ok: true })
     }
 

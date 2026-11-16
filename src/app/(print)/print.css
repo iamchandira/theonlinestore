@@ -1,0 +1,205 @@
+/* Printable invoices and packing slips (Sprint 6). A4, black on white, browser "Save as PDF" friendly. */
+:root {
+  --ink: #0e1a33;
+  --muted: #5b6b85;
+  --line: #e4ded8;
+  --brand: #d9390a;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: #f3f1ee;
+  color: var(--ink);
+  font:
+    400 13px/1.5 var(--font-jakarta),
+    'Segoe UI',
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--ink);
+  color: #fff;
+}
+.toolbar button {
+  height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font:
+    600 14px var(--font-jakarta),
+    sans-serif;
+  cursor: pointer;
+}
+.sheet {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 16px auto;
+  padding: 16mm 15mm;
+  background: #fff;
+  box-shadow: 0 4px 24px rgb(14 26 51 / 0.08);
+  page-break-after: always;
+  break-after: page;
+}
+.sheet:last-child {
+  page-break-after: auto;
+  break-after: auto;
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--ink);
+}
+.head img {
+  height: 40px;
+  width: auto;
+}
+.doc-title {
+  margin: 0;
+  font:
+    800 26px var(--font-outfit),
+    sans-serif;
+  text-align: right;
+}
+.muted {
+  color: var(--muted);
+}
+.meta {
+  text-align: right;
+}
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 18px 0;
+}
+h3 {
+  margin: 0 0 4px;
+  font:
+    700 11px var(--font-jakarta),
+    sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th {
+  padding: 8px 6px;
+  border-bottom: 1.5px solid var(--ink);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+td {
+  padding: 9px 6px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.totals {
+  width: 300px;
+  margin: 14px 0 0 auto;
+}
+.totals td {
+  border: 0;
+  padding: 4px 6px;
+}
+.totals tr.grand td {
+  border-top: 1.5px solid var(--ink);
+  padding-top: 8px;
+  font:
+    800 16px var(--font-outfit),
+    sans-serif;
+}
+.stamp {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 12px;
+  border: 2px solid currentColor;
+  border-radius: 6px;
+  font:
+    800 14px var(--font-outfit),
+    sans-serif;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.stamp.paid {
+  color: #15803d;
+}
+.stamp.unpaid {
+  color: var(--brand);
+}
+.ship-to {
+  padding: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.ship-to strong {
+  font-size: 18px;
+}
+.check {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+}
+.gift {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1.5px dashed var(--brand);
+  border-radius: 8px;
+}
+.foot {
+  margin-top: 28px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+.empty {
+  margin: 60px auto;
+  max-width: 420px;
+  text-align: center;
+}
+@page {
+  size: A4;
+  margin: 0;
+}
+@media print {
+  html,
+  body {
+    background: #fff;
+  }
+  .toolbar {
+    display: none;
+  }
+  .sheet {
+    margin: 0;
+    box-shadow: none;
+  }
+}

@@ -11,13 +11,16 @@ import { formatLKR } from '@/lib/format'
 const TONE: Record<string, string> = {
   'pending-payment': 'bg-warning-50 text-warning-600',
   processing: 'bg-info-50 text-info-600',
+  packed: 'bg-info-50 text-info-600',
+  shipped: 'bg-sunset-50 text-sunset-700',
+  'out-for-delivery': 'bg-sunset-50 text-sunset-700',
   delivered: 'bg-success-50 text-success-600',
   completed: 'bg-success-50 text-success-600',
   cancelled: 'bg-ink-100 text-ink-600',
 }
 const dateFmt = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Colombo' })
 
-/** Order history (TOS-305): newest first. Tracking timeline and one-tap reorder arrive with Sprint 6. */
+/** Order history (TOS-305): newest first; each opens the order page (tracking, invoice, Buy again, returns). */
 export default async function OrdersPage() {
   const user = await requireUser('/account/orders')
   const payload = await getPayloadClient()
@@ -32,7 +35,7 @@ export default async function OrdersPage() {
           {orders.docs.map((o) => (
             <li key={o.id}>
               <Link
-                href={`/checkout/success/${o.orderNumber}`}
+                href={`/orders/${o.orderNumber}`}
                 className="group flex flex-wrap items-center gap-4 rounded-2xl border border-line bg-surface p-4 transition-shadow hover:shadow-card sm:p-5"
               >
                 <span className="flex -space-x-3">

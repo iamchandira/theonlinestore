@@ -26,7 +26,7 @@ export type PaymentConfig = {
   /** The built-in test gateway may stand in for a gateway without credentials */
   simulatorAllowed: boolean
   methods: Record<PaymentMethod, MethodConfig>
-  payhere: { merchantId: string; merchantSecret: string }
+  payhere: { merchantId: string; merchantSecret: string; appId: string; appSecret: string }
   koko: { merchantId: string; apiKey: string; privateKey: string; publicKey: string }
   mintpay: { merchantId: string; merchantSecret: string }
   cod: { fee: number; excludedDistricts: string[] }
@@ -122,6 +122,8 @@ export async function loadPaymentConfig(
     payhere: {
       merchantId: pick('PAYHERE_MERCHANT_ID', s.payhere?.merchantId),
       merchantSecret: pick('PAYHERE_MERCHANT_SECRET', s.payhere?.merchantSecret),
+      appId: pick('PAYHERE_APP_ID', s.payhere?.appId),
+      appSecret: pick('PAYHERE_APP_SECRET', s.payhere?.appSecret),
     },
     koko: {
       merchantId: pick('KOKO_MERCHANT_ID', s.koko?.merchantId),

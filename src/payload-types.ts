@@ -68,6 +68,7 @@ export interface Config {
   blocks: {};
   collections: {
     orders: Order;
+    returns: Return;
     transactions: Transaction;
     'payment-slips': PaymentSlip;
     discounts: Discount;
@@ -84,6 +85,7 @@ export interface Config {
     'search-queries': SearchQuery;
     media: Media;
     users: User;
+    couriers: Courier;
     'audit-logs': AuditLog;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -94,6 +96,7 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    returns: ReturnsSelect<false> | ReturnsSelect<true>;
     transactions: TransactionsSelect<false> | TransactionsSelect<true>;
     'payment-slips': PaymentSlipsSelect<false> | PaymentSlipsSelect<true>;
     discounts: DiscountsSelect<false> | DiscountsSelect<true>;
@@ -110,6 +113,7 @@ export interface Config {
     'search-queries': SearchQueriesSelect<false> | SearchQueriesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    couriers: CouriersSelect<false> | CouriersSelect<true>;
     'audit-logs': AuditLogsSelect<false> | AuditLogsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -258,6 +262,14 @@ export interface Order {
     message?: string | null;
   };
   customerNote?: string | null;
+  /**
+   * Needed before the order can be marked Shipped. Shoppers see the tracking link.
+   */
+  shipment?: {
+    courier?: (number | null) | Courier;
+    trackingNumber?: string | null;
+    deliveryNote?: string | null;
+  };
   timeline?:
     | {
         at?: string | null;
@@ -284,12 +296,28 @@ export interface Order {
     | 'returned'
     | 'failed-delivery';
   paymentMethod: 'payhere' | 'koko' | 'mintpay' | 'cod' | 'bank-transfer';
-  paymentStatus: 'unpaid' | 'pending' | 'slip-uploaded' | 'paid' | 'failed' | 'refunded';
+  paymentStatus: 'unpaid' | 'pending' | 'slip-uploaded' | 'paid' | 'failed' | 'partially-refunded' | 'refunded';
   /**
    * Unpaid card, instalment and bank transfer orders are cancelled after this.
    */
   paymentDueAt?: string | null;
   paidAt?: string | null;
+  refundedTotal?: number | null;
+  /**
+   * Set automatically as the order moves along.
+   */
+  statusDates?: {
+    packedAt?: string | null;
+    shippedAt?: string | null;
+    deliveredAt?: string | null;
+    completedAt?: string | null;
+    cancelledAt?: string | null;
+    returnedAt?: string | null;
+  };
+  codRemittance?: {
+    remittedAt?: string | null;
+    reference?: string | null;
+  };
   customer?: (number | null) | User;
   coupon?: (number | null) | Discount;
   termsAcceptedAt?: string | null;
@@ -783,6 +811,36 @@ export interface Discount {
   createdAt: string;
 }
 /**
+ * Delivery partners. The tracking link is shown to shoppers once an order ships.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "couriers".
+ */
+export interface Courier {
+  id: number;
+  name: string;
+  /**
+   * Use {tracking} where the tracking number goes, e.g. https://courier.lk/track?no={tracking}. Leave empty if the courier has no tracking page.
+   */
+  trackingUrl?: string | null;
+  active?: boolean | null;
+  /**
+   * Untick for your own riders.
+   */
+  requiresTracking?: boolean | null;
+  /**
+   * Shown on the COD reconciliation screen.
+   */
+  collectsCod?: boolean | null;
+  phone?: string | null;
+  /**
+   * Pickup times, account number, contact person.
+   */
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Customers and staff accounts. Roles control what each staff member can see and do.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -906,6 +964,43 @@ export interface User {
   collection: 'users';
 }
 /**
+ * Return requests from shoppers. Use the Return panel to approve, receive and refund.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "returns".
+ */
+export interface Return {
+  id: number;
+  returnNumber: string;
+  order: number | Order;
+  items: {
+    sku: string;
+    name: string;
+    quantity: number;
+    /**
+     * Price paid after discounts
+     */
+    unitRefund?: number | null;
+    restocked?: boolean | null;
+    id?: string | null;
+  }[];
+  reason: 'damaged' | 'wrong-item' | 'size' | 'changed-mind' | 'other';
+  status: 'requested' | 'approved' | 'rejected' | 'received' | 'refunded' | 'closed';
+  details?: string | null;
+  refundAmount?: number | null;
+  decisionNote?: string | null;
+  timeline?:
+    | {
+        at?: string | null;
+        event?: string | null;
+        by?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Every payment attempt and gateway callback. Read-only: written by checkout, gateways and payment actions on an order.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -920,7 +1015,17 @@ export interface Transaction {
   order: number | Order;
   method: 'payhere' | 'koko' | 'mintpay' | 'cod' | 'bank-transfer';
   kind: 'payment' | 'refund';
-  status: 'initiated' | 'pending' | 'paid' | 'failed' | 'cancelled' | 'chargeback' | 'slip-uploaded' | 'rejected';
+  status:
+    | 'initiated'
+    | 'pending'
+    | 'paid'
+    | 'failed'
+    | 'cancelled'
+    | 'chargeback'
+    | 'slip-uploaded'
+    | 'rejected'
+    | 'refunded'
+    | 'refund-failed';
   amount: number;
   currency?: string | null;
   providerRef?: string | null;
@@ -1300,6 +1405,10 @@ export interface PayloadLockedDocument {
         value: number | Order;
       } | null)
     | ({
+        relationTo: 'returns';
+        value: number | Return;
+      } | null)
+    | ({
         relationTo: 'transactions';
         value: number | Transaction;
       } | null)
@@ -1362,6 +1471,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'couriers';
+        value: number | Courier;
       } | null)
     | ({
         relationTo: 'audit-logs';
@@ -1483,6 +1596,13 @@ export interface OrdersSelect<T extends boolean = true> {
         message?: T;
       };
   customerNote?: T;
+  shipment?:
+    | T
+    | {
+        courier?: T;
+        trackingNumber?: T;
+        deliveryNote?: T;
+      };
   timeline?:
     | T
     | {
@@ -1497,6 +1617,23 @@ export interface OrdersSelect<T extends boolean = true> {
   paymentStatus?: T;
   paymentDueAt?: T;
   paidAt?: T;
+  refundedTotal?: T;
+  statusDates?:
+    | T
+    | {
+        packedAt?: T;
+        shippedAt?: T;
+        deliveredAt?: T;
+        completedAt?: T;
+        cancelledAt?: T;
+        returnedAt?: T;
+      };
+  codRemittance?:
+    | T
+    | {
+        remittedAt?: T;
+        reference?: T;
+      };
   customer?: T;
   coupon?: T;
   termsAcceptedAt?: T;
@@ -1504,6 +1641,39 @@ export interface OrdersSelect<T extends boolean = true> {
   stockReturned?: T;
   accessToken?: T;
   clientIp?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "returns_select".
+ */
+export interface ReturnsSelect<T extends boolean = true> {
+  returnNumber?: T;
+  order?: T;
+  items?:
+    | T
+    | {
+        sku?: T;
+        name?: T;
+        quantity?: T;
+        unitRefund?: T;
+        restocked?: T;
+        id?: T;
+      };
+  reason?: T;
+  status?: T;
+  details?: T;
+  refundAmount?: T;
+  decisionNote?: T;
+  timeline?:
+    | T
+    | {
+        at?: T;
+        event?: T;
+        by?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2004,6 +2174,21 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "couriers_select".
+ */
+export interface CouriersSelect<T extends boolean = true> {
+  name?: T;
+  trackingUrl?: T;
+  active?: T;
+  requiresTracking?: T;
+  collectsCod?: T;
+  phone?: T;
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "audit-logs_select".
  */
 export interface AuditLogsSelect<T extends boolean = true> {
@@ -2266,6 +2451,8 @@ export interface PaymentSetting {
     label?: string | null;
     merchantId?: string | null;
     merchantSecret?: string | null;
+    appId?: string | null;
+    appSecret?: string | null;
   };
   koko?: {
     enabled?: boolean | null;
@@ -2466,6 +2653,8 @@ export interface PaymentSettingsSelect<T extends boolean = true> {
         label?: T;
         merchantId?: T;
         merchantSecret?: T;
+        appId?: T;
+        appSecret?: T;
       };
   koko?:
     | T

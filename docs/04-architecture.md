@@ -224,6 +224,17 @@ The integration test races two shoppers for the last units: exactly one order su
 
 **Secrets:** `PAYHERE_MERCHANT_ID/SECRET`, `KOKO_*`, `MINTPAY_*` env vars override stored values. Gateway notify URLs must be public HTTPS, so a live sandbox run needs a deployed staging site or a tunnel.
 
+### Added in Sprint 6 (orders & delivery)
+**Collections:** `couriers` (name, tracking link with `{tracking}`, needs tracking, collects COD). `returns` (RET-number, order, items with refund per unit, reason, status requested → approved → received → refunded / rejected / closed, timeline). Orders gain `shipment` (courier, tracking number, note), `statusDates` (packedAt … returnedAt), `refundedTotal`, `codRemittance`; payment status adds *partly refunded*; transactions add *refunded* / *refund failed*.
+
+**Lifecycle:** `lib/orders/lifecycle.ts` holds the allowed steps (`NEXT`), `checkTransition()` and the shopper progress. The orders `beforeChange` hook enforces it for staff and stamps `statusDates`; the `afterChange` hook restocks on cancellation (or a failed delivery returned to us) and sends the "on its way" email on shipping.
+
+**Endpoints:** `POST /api/orders/bulk-status`, `POST /api/orders/cod-remittance`, `POST /api/orders/:id/payment` (+ `refund`), `POST /api/returns/request`, `POST /api/returns/:id/action`. Refunds live in `lib/payments/refunds.ts` (PayHere Refund API: OAuth token with App ID/secret, then `/payment/refund` with `payment_id`, `description` and an optional partial `amount`).
+
+**Pages:** `/print/orders` (own root layout `app/(print)`, A4 print CSS, many orders at once), `/track-order` (server action → `/orders/[orderNumber]?t=…`), `/orders/[orderNumber]` (progress, courier link, payment, invoice, Buy again, returns). Admin: Orders list filters and bulk bar (`OrdersTable`), Payment panel refunds, Return panel, `/admin/cod` (COD reconciliation).
+
+**Testing note:** e2e test orders reserve real stock, so `tests/helpers/cleanupOrders.ts` runs as Playwright's global teardown and cancels them (stock back) before deleting them. Rate limits are per server process; run the suite against a freshly started server.
+
 ### Target (Sprints 2–7)
 ```mermaid
 erDiagram

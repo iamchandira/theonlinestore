@@ -33,7 +33,9 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 | Stock movements | CRUD | CRUD | CR | CR | R | — | R | — |
 | Media | CRUD | CRUD | CRUD | CRU | R | CRU | R | R |
 | Orders | RUD | RUD | RU | R | RU (status, shipment) | R | RU (notes) | Own R |
-| Refunds / returns | CRUD | CRUD | CRU | R | R | — | CR (request) | Own C (request) |
+| Refunds / returns | All steps | All steps | All steps (refund: store manager only) | — | R, receive | — | R, approve/reject, receive | Own request (7 days after delivery) |
+| Couriers | CRUD | CRUD | CRUD | R | R | R | R | — |
+| COD reconciliation | R, record | R, record | R, record | — | R | — | R | — |
 | Transactions (payment log) | R | R | R | — | — | — | R | — |
 | Bank slips: view, verify / reject | R, verify | R, verify | R, verify | — | R | — | R, verify | Own upload (private link) |
 | Coupons & promotions (`discounts`) | CRUD | CRUD | CRUD | — | — | CRUD | R | — |
@@ -116,6 +118,15 @@ Implementation: `src/access/roles.ts`. The roles field on `users` is saved to th
 - **Payment actions** (`POST /api/orders/:id/payment`): verify or reject a slip: store manager and support; mark a bank transfer received: store manager; cash collected: store manager and fulfilment (admins can do all). Each is audited (`payment`) and logged as a transaction.
 - **Order payment status** can no longer be edited by hand: only gateways, slip decisions and the actions above change it, so the transactions log always explains it.
 - **Gateway notifications** are accepted only with a valid signature and the exact order amount; anything else is recorded and changes nothing.
+
+## Rules implemented in Sprint 6 (orders & delivery)
+- **Order status:** staff (store manager, fulfilment, support) can only move an order along the allowed steps (`lib/orders/lifecycle.ts`): e.g. it can't be packed or shipped before it's paid (COD excepted), can't be shipped without a courier and tracking number (unless the courier needs none), and can't be cancelled once shipped. Gateways and scheduled jobs (no user) are trusted. Bulk changes run each order through the same rules and report failures.
+- **Returns:** shoppers request with the private link or signed in, within 7 days of delivery; food can't be returned. Approve or reject: store manager and support. Mark received (and restock): store manager, support, fulfilment. Refund and close: store manager. Each step is audited and emailed.
+- **Refunds** (order Payment panel or a return): store manager (and admins) only, never more than was paid. PayHere refunds use the Refund API with a separate App ID/secret (Super Admin only); bank and cash refunds need the bank reference.
+- **COD remittance:** recorded by store managers (and admins) for delivered COD orders only, never twice; read by support and fulfilment.
+- **Couriers:** read by staff; managed by store managers.
+- **Invoices and packing slips** (`/print/orders`): staff for any order; a shopper only their own invoice (private link or signed in).
+- **Order tracking:** order number + the mobile used at checkout (10 lookups per 10 minutes per IP; the same answer for a wrong number or an unknown order).
 
 ## Testing
 `tests/int/rbac.int.spec.ts` (TOS-401) signs in as every role and checks the allowed and denied operations above through the same access rules the API uses (20 checks, including orders, discounts and checkout settings). `tests/int/checkout.int.spec.ts` covers order privacy (customers see only their own, the token is never exposed). Any access change must update this matrix and that test together.

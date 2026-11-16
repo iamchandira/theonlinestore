@@ -20,7 +20,7 @@ pnpm seed:catalog             # import the 88-product seed catalogue into Payloa
 | `pnpm dev` / `pnpm build` / `pnpm start` | Develop, build, serve |
 | `pnpm lint` · `pnpm typecheck` | Code quality |
 | `pnpm check:contrast` | WCAG AA check of the brand colour pairs |
-| `pnpm test:int` · `pnpm test:e2e` | Vitest integration tests · Playwright end-to-end tests (run e2e against `pnpm build && pnpm start` for reliable results) |
+| `pnpm test:int` · `pnpm test:e2e` | Vitest integration tests · Playwright end-to-end tests (run e2e against a freshly started `pnpm build && pnpm start`; test orders are cleaned up afterwards) |
 | `pnpm seed:catalog` | Import / refresh the seed catalogue (products, brands, categories, photos, home rails) |
 | `pnpm seed:demo` | Add 20 clearly-marked demo products for fragrance, footwear, gifts and chocolates, sample reviews and the demo codes WELCOME10, FREEDEL and CHOC3FOR2 (`--remove` deletes them; **remove before launch**) |
 | `pnpm prune:media` | List unused media (`--apply` deletes them) |
@@ -39,4 +39,4 @@ pnpm seed:catalog             # import the 88-product seed catalogue into Payloa
 - **Docs:** [`docs/`](docs/README.md): charter, SRS, backlog, sprint plan, architecture, design system, RBAC, UX
 
 ## Status
-Sprints 0 to 5 are complete (v0.7.0, payments). Shoppers pay by card (PayHere), Koko, Mintpay, cash on delivery or bank transfer with a slip upload. Locally, card and instalment payments go through a built-in test gateway (Approve / Decline) until gateway credentials are added in Admin › Settings › Payments or in `.env`. Orders, slips and transactions are in Admin › Sales; emails appear in Mailpit. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.
+Sprints 0 to 6 are complete (v0.8.0, orders & delivery: lifecycle, bulk actions, invoices, couriers, tracking, returns, refunds, COD reconciliation). Before that, v0.7.0 added payments. Shoppers pay by card (PayHere), Koko, Mintpay, cash on delivery or bank transfer with a slip upload. Locally, card and instalment payments go through a built-in test gateway (Approve / Decline) until gateway credentials are added in Admin › Settings › Payments or in `.env`. Orders, slips and transactions are in Admin › Sales; emails appear in Mailpit. The admin dashboard is at `/admin`, and bulk stock is at `/admin/inventory`. See [`docs/03-sprint-plan.md`](docs/03-sprint-plan.md) for the roadmap to go-live on 9 Apr 2027.
