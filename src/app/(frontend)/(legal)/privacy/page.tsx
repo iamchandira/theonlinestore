@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { PolicyPage } from '@/components/layout/PolicyPage'
+import { PolicyPage, policyMetadata } from '@/components/layout/PolicyPage'
 
-export const metadata: Metadata = { title: 'Privacy', robots: { index: false } }
+export const generateMetadata = (): Promise<Metadata> => policyMetadata('privacy', 'Privacy policy')
 
 export default function PrivacyPage() {
   return (
-    <PolicyPage title="Privacy" intro="We collect only what we need to deliver your orders, and you stay in control of it.">
+    <PolicyPage kind="privacy" title="Privacy" intro="We collect only what we need to deliver your orders, and you stay in control of it.">
       <section>
         <h2>What we keep</h2>
         <ul>

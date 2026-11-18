@@ -3,7 +3,7 @@ import { IconChevronDown } from '@tabler/icons-react'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
-import { site } from '@/config/site'
+import { getStoreSettings } from '@/lib/store/settings'
 import type { ProductDetail } from '@/lib/catalog'
 import { formatLKR } from '@/lib/format'
 
@@ -21,7 +21,8 @@ function Row({ title, children, open }: { title: string; children: ReactNode; op
 }
 
 /** Product information accordions. Rows without content are hidden (no empty "Ingredients" panels). */
-export function ProductDetails({ product }: { product: ProductDetail }) {
+export async function ProductDetails({ product }: { product: ProductDetail }) {
+  const store = await getStoreSettings()
   const hasDescription = Boolean(product.description && typeof product.description === 'object')
   return (
     <div className="border-t border-line">
@@ -132,8 +133,11 @@ export function ProductDetails({ product }: { product: ProductDetail }) {
       )}
       <Row title="Delivery & returns">
         <ul className="flex flex-col gap-1.5">
-          <li>Island-wide delivery in {site.deliveryEstimate}. Free on orders over {formatLKR(site.freeDeliveryThreshold)}.</li>
-          <li>Pay by card, bank transfer, Koko, Mintpay or cash on delivery.</li>
+          <li>
+            Island-wide delivery in {store.deliveryEstimate}.
+            {store.freeDeliveryThreshold != null ? ` Free on orders over ${formatLKR(store.freeDeliveryThreshold)}.` : ''}
+          </li>
+          {store.paymentMethods.length > 0 && <li>Pay by {store.paymentMethods.join(', ').toLowerCase()}.</li>}
           <li>
             {product.productType === 'footwear'
               ? 'Wrong size? Exchange unworn shoes within 7 days.'

@@ -22,13 +22,13 @@ test.describe('Custom admin', () => {
   test('dashboard shows KPIs, launch checklist and the custom sidebar', async () => {
     await page.goto(`${BASE}/admin`)
     await expect(page.locator('.tos-hello h1')).toContainText(/Good (morning|afternoon|evening)/)
-    await expect(page.locator('.tos-kpi')).toHaveCount(7) // incl. "Reviews waiting" (Sprint 2)
+    await expect(page.locator('.tos-kpi')).toHaveCount(6) // incl. "Reviews waiting" (Sprint 2); no demo KPI since launch prep
     await expect(page.getByRole('heading', { name: 'Launch checklist' })).toBeVisible()
     await expect(page.locator('nav[aria-label="Admin"]')).toContainText('Inventory')
   })
 
   test('products list filters by tab and type', async () => {
-    await page.goto(`${BASE}/admin/collections/products?tab=demo&type=footwear`)
+    await page.goto(`${BASE}/admin/collections/products?type=footwear`)
     await expect(page.locator('.tos-page__title')).toHaveText('Products')
     const rows = page.locator('.tos-table tbody tr')
     await expect(rows).toHaveCount(5)

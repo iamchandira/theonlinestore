@@ -7,14 +7,16 @@ import { useRef } from 'react'
 
 import { ButtonLink } from '@/components/ui/Button'
 import { minPrice, productHref, type Product } from '@/lib/catalog'
-import { formatLKR, instalment } from '@/lib/format'
+import { formatLKR } from '@/lib/format'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 import { gsap, prefersReducedMotion, ScrollTrigger, useGSAP } from '@/lib/motion/gsap'
 
 /**
  * Hero: GSAP intro timeline (headline lines rise, products pop, floating cards settle),
  * then gentle idle float + scroll parallax. Content is fully visible without JS / with reduced motion.
  */
-export function Hero({ picks }: { picks: Product[] }) {
+export function Hero({ picks, badge }: { picks: Product[]; badge?: string | null }) {
+  const { instalments, freeDeliveryThreshold } = useStoreSettings()
   const root = useRef<HTMLElement>(null)
   const [a, b, c, d] = picks
 
@@ -70,10 +72,12 @@ export function Hero({ picks }: { picks: Product[] }) {
       <div className="container-site relative grid items-center gap-6 pb-8 pt-6 md:grid-cols-[1.05fr_1fr] md:gap-6 md:pb-16 md:pt-14 lg:min-h-[560px]">
         {/* Copy */}
         <div className="relative z-10 flex flex-col items-start gap-5">
-          <p data-hero-eyebrow className="inline-flex items-center gap-2 rounded-full bg-white/80 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-ink-800 shadow-soft backdrop-blur">
-            <span className="rounded-full bg-sunset-gradient px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-wide text-white">New</span>
-            Fragrances, footwear & gift hampers just landed
-          </p>
+          {badge ? (
+            <p data-hero-eyebrow className="inline-flex items-center gap-2 rounded-full bg-white/80 py-1.5 pl-1.5 pr-3.5 text-xs font-semibold text-ink-800 shadow-soft backdrop-blur">
+              <span className="rounded-full bg-sunset-gradient px-2 py-0.5 text-[0.6875rem] font-bold uppercase tracking-wide text-white">New</span>
+              {badge}
+            </p>
+          ) : null}
           <h1 id="hero-title" className="text-[2.35rem] font-extrabold leading-[1.02] tracking-[-0.035em] sm:text-5xl lg:text-[4.1rem]">
             <span className="block overflow-hidden pb-1">
               <span data-hero-line className="block">Beauty, gifts</span>
@@ -156,17 +160,22 @@ export function Hero({ picks }: { picks: Product[] }) {
               </span>
             </Link>
           )}
-          <div data-hero-card className="absolute right-0 top-[8%] rounded-2xl bg-ink-900 px-3.5 py-2.5 text-white shadow-lift sm:-right-2">
-            <p className="text-[0.6875rem] font-medium text-ink-300">Pay in 3 with Koko</p>
-            <p className="font-display text-base font-bold">{formatLKR(instalment(a ? minPrice(a) : 6850))}<span className="text-xs font-medium text-ink-300"> /mo</span></p>
-          </div>
+          {instalments && a && (
+            <div data-hero-card className="absolute right-0 top-[8%] rounded-2xl bg-ink-900 px-3.5 py-2.5 text-white shadow-lift sm:-right-2">
+              <p className="text-[0.6875rem] font-medium text-ink-300">Pay in 3 with {instalments.providers[0]}</p>
+              <p className="font-display text-base font-bold">
+                {formatLKR(Math.ceil((minPrice(a) * (1 + instalments.feePercent / 100)) / 3))}
+                <span className="text-xs font-medium text-ink-300"> /mo</span>
+              </p>
+            </div>
+          )}
           <div data-hero-card className="absolute bottom-[12%] right-[2%] flex items-center gap-2 rounded-full bg-white py-2 pl-2 pr-4 shadow-lift">
             <span className="grid size-8 place-items-center rounded-full bg-success-50 text-success-600">
               <IconTruckDelivery size={18} />
             </span>
             <span className="text-xs font-semibold leading-tight">
-              Free delivery
-              <span className="block font-medium text-ink-500">over Rs 10,000</span>
+              {freeDeliveryThreshold != null ? 'Free delivery' : 'Island-wide delivery'}
+              <span className="block font-medium text-ink-500">{freeDeliveryThreshold != null ? `over ${formatLKR(freeDeliveryThreshold)}` : 'to every district'}</span>
             </span>
           </div>
         </div>

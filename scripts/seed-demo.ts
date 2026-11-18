@@ -1,6 +1,6 @@
 /**
  * DEMO lifestyle products for Fragrances, Footwear, Gifts and Chocolates (Sprint 1.5).
- * Clearly flagged (`isDemo`), with fictional brands and generated illustrations instead of photos,
+ * Identified by their SKUs (`DEMO-…`), with fictional brands and generated illustrations instead of photos,
  * so layouts, filters and the admin can be designed before the real catalogues arrive.
  *
  *   pnpm seed:demo            add / refresh demo products (idempotent)
@@ -11,6 +11,9 @@ import { getPayload, type Payload } from 'payload'
 import sharp from 'sharp'
 
 import config from '../src/payload.config'
+import { assertLocalDatabase } from './devOnly'
+
+assertLocalDatabase('seed:demo')
 import { occasions as navOccasions, recipients as navRecipients } from '../src/config/navigation'
 import * as art from './demo/art'
 
@@ -693,9 +696,10 @@ async function upsertTaxonomy(
 
 /**
  * A few clearly-labelled sample reviews per demo product, so the reviews UI can be designed and tested.
- * They're flagged `isSample`, shown with a "Sample review" badge, never used in structured data, and
- * deleted with the demo products. Real products never get sample reviews.
+ * They use the reviewer address below so they can be found again, and are deleted with the demo products. Real products never get sample reviews.
  */
+/** Marks the local sample reviews (development only; the live store never gets them) */
+const SAMPLE_EMAIL = 'sample-review@demo.theonlinestore.test'
 const SAMPLE_NAMES = [
   'Nadeesha K.',
   'Ruwan P.',
@@ -772,7 +776,7 @@ const SAMPLE_TEXT: Record<string, [number, string, string][]> = {
 async function seedSampleReviews(payload: Payload, productId: number, d: Demo, index: number) {
   await payload.delete({
     collection: 'reviews',
-    where: { and: [{ product: { equals: productId } }, { isSample: { equals: true } }] },
+    where: { and: [{ product: { equals: productId } }, { authorEmail: { equals: SAMPLE_EMAIL } }] },
     overrideAccess: true,
     context: ctx,
   })
@@ -788,9 +792,8 @@ async function seedSampleReviews(payload: Payload, productId: number, d: Demo, i
         title,
         body,
         authorName: SAMPLE_NAMES[(index * 3 + k) % SAMPLE_NAMES.length],
-        authorEmail: 'sample@example.com',
+        authorEmail: SAMPLE_EMAIL,
         status: 'approved',
-        isSample: true,
         helpfulCount: (index + k * 3) % 7,
       },
       overrideAccess: true,
@@ -803,7 +806,7 @@ async function seedSampleReviews(payload: Payload, productId: number, d: Demo, i
 async function remove(payload: Payload) {
   const products = await payload.find({
     collection: 'products',
-    where: { isDemo: { equals: true } },
+    where: { 'variants.sku': { like: 'DEMO-' } },
     limit: 0,
     pagination: false,
     depth: 0,
@@ -945,7 +948,6 @@ async function main() {
       slug: d.slug,
       generateSlug: false,
       productType: d.productType,
-      isDemo: true,
       brand: brandIds.get(d.brand),
       categories: [catIds.get(d.category)].filter(Boolean),
       shortDescription: d.short,
@@ -1085,6 +1087,17 @@ async function main() {
       })
   }
   payload.logger.info(`Couriers: ${couriers.map((c) => c.name).join(', ')}`)
+
+  // A clearly fake bank account so bank transfer appears at checkout locally (it's hidden with no account)
+  const pay = await payload.findGlobal({ slug: 'payment-settings', depth: 0, overrideAccess: true })
+  if (!pay.bankTransfer?.accounts?.length) {
+    await payload.updateGlobal({
+      slug: 'payment-settings',
+      overrideAccess: true,
+      data: { bankTransfer: { ...pay.bankTransfer, accounts: [{ bankName: 'Demo Bank (seed:demo)', accountName: 'The Online Store (Pvt) Ltd', accountNumber: '0000 0000 0000', branch: 'Colombo' }] } } as never,
+    })
+    payload.logger.info('Demo bank account added (Settings › Payments › Bank transfer)')
+  }
   payload.logger.info(
     `Demo products: ${created} created, ${updated} updated (${DEMOS.length} total)`,
   )

@@ -10,6 +10,9 @@ import path from 'path'
 import { getPayload, type Payload } from 'payload'
 
 import config from '../src/payload.config'
+import { assertLocalDatabase } from './devOnly'
+
+assertLocalDatabase('seed:catalog')
 import { categories as navCategories, concerns as navConcerns, occasions as navOccasions, recipients as navRecipients } from '../src/config/navigation'
 
 type SeedVariant = { sku: string; option: string; label: string; price: number; compareAtPrice: number | null; stock: number; image: string }

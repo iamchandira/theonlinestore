@@ -46,3 +46,10 @@ pnpm test:int
 pnpm test:e2e
 node scripts/screenshots.mjs screenshots / /styleguide   # visual QA at desktop + mobile
 ```
+
+## Branches and releases (from launch preparation)
+- `main` is development; work happens on short-lived branches merged into `main`.
+- `production` is what the server runs, rebuilt from `main` with `scripts/make-production.sh` (no tests, seed/demo scripts, test gateway or styleguide). See `10-go-live.md`.
+- Any change to collections or fields ships with a migration (`pnpm payload migrate:create <name>`).
+- Never run the dev server against the production database.
+

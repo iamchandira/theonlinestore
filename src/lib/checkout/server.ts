@@ -48,10 +48,13 @@ export type CheckoutConfig = {
 }
 
 export async function loadCheckoutConfig(payload: Payload, req?: Partial<PayloadRequest>): Promise<CheckoutConfig> {
-  const s = (await payload.findGlobal({ slug: 'checkout-settings', depth: 0, overrideAccess: true, req })) as CheckoutSetting
+  const [s, policies] = await Promise.all([
+    payload.findGlobal({ slug: 'checkout-settings', depth: 0, overrideAccess: true, req }) as Promise<CheckoutSetting>,
+    payload.findGlobal({ slug: 'policies', depth: 0, overrideAccess: true, req }) as Promise<{ termsVersion?: string | null }>,
+  ])
   return {
     delivery: {
-      freeThreshold: s.freeThreshold ?? 10000,
+      freeThreshold: s.freeDeliveryEnabled === false ? null : (s.freeThreshold ?? 10000),
       zones: (s.zones ?? []).map((z) => ({ name: z.name, districts: (z.districts ?? []) as string[], fee: z.fee, eta: z.eta })),
       fallback: { name: 'Island-wide', fee: s.fallbackFee ?? 450, eta: s.fallbackEta ?? '2–4 working days' },
       includedKg: s.includedKg ?? 1,
@@ -65,7 +68,7 @@ export async function loadCheckoutConfig(payload: Payload, req?: Partial<Payload
     },
     cutoffHour: s.sameDay?.cutoffHour ?? 12,
     giftWrapFee: s.giftWrapFee ?? 250,
-    termsVersion: s.termsVersion ?? '2026-11',
+    termsVersion: policies.termsVersion || '2026-11',
   }
 }
 
@@ -280,7 +283,9 @@ export type CheckoutQuote = {
   couponDoc: Discount | null
   payments: PaymentOption[]
   /** Cash-on-delivery fee included in quote.total (0 unless COD is chosen and has a fee) */
-  codFee: number
+  /** Fee for the chosen payment method (cash on delivery or instalments), included in quote.total */
+  paymentFee: number
+  paymentFeeLabel: string
   config: CheckoutConfig
   payConfig: PaymentConfig
 }
@@ -314,9 +319,11 @@ export async function quoteCheckout(payload: Payload, input: CheckoutQuoteInput,
   if (couponRule && q.coupon && !q.coupon.applied) couponError = q.coupon.message ?? 'This code can’t be used on this order.'
 
   const payments = paymentOptions(payConfig, q.total, input.district ?? null)
-  const appliedCodFee = input.payment === 'cod' && payments.find((p) => p.id === 'cod')?.available ? payConfig.cod.fee : 0
-  q.total += appliedCodFee
-  return { quote: q, views, issues, couponError, couponDoc, payments, codFee: appliedCodFee, config, payConfig }
+  const chosen = payments.find((p) => p.id === input.payment && p.available)
+  const paymentFee = chosen?.fee ?? 0
+  q.total += paymentFee
+  const paymentFeeLabel = chosen?.id === 'cod' ? 'Cash on delivery fee' : chosen ? `${chosen.label.split(':')[0]} fee` : ''
+  return { quote: q, views, issues, couponError, couponDoc, payments, paymentFee, paymentFeeLabel, config, payConfig }
 }
 
 /* ---------------------------------------------------------------- payment options */
@@ -341,7 +348,9 @@ export function paymentOptions(cfg: PaymentConfig, total: number, district: stri
     const online = isOnline(m.id)
     const route = online ? gatewayRoute(cfg, m.id as never) : null
     if (online && !route) continue
-    const fee = m.id === 'cod' ? cfg.cod.fee : 0
+    if (m.id === 'bank-transfer' && !cfg.bankTransfer.accounts.length) continue // no account to pay into yet
+    const bnpl = m.id === 'koko' || m.id === 'mintpay' ? cfg.instalmentDisplay[m.id] : null
+    const fee = m.id === 'cod' ? cfg.cod.fee : bnpl ? Math.round((total * bnpl.feePercent) / 100) : 0
     const due = total + fee
     let note = NOTES[m.id]
     let available = true
@@ -362,7 +371,7 @@ export function paymentOptions(cfg: PaymentConfig, total: number, district: stri
       note,
       fee,
       online,
-      instalment: m.id === 'koko' || m.id === 'mintpay' ? Math.ceil(total / 3) : undefined,
+      instalment: bnpl ? Math.ceil(due / 3) : undefined,
       test: route === 'simulator' || undefined,
     })
   }

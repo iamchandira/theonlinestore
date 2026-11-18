@@ -13,6 +13,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 import { GuestAccountOffer } from '@/components/checkout/GuestAccountOffer'
+import { BankAccounts } from '@/components/checkout/BankAccounts'
 import { OrderPlacedEffect } from '@/components/checkout/OrderPlacedEffect'
 import { PaymentPoller, SlipUpload } from '@/components/checkout/PaymentWidgets'
 import { isOnline } from '@/collections/Transactions'
@@ -182,11 +183,7 @@ export default async function OrderSuccessPage({ params, searchParams }: Props) 
                       confirmed.
                     </p>
                   )}
-                  {pay.bankTransfer.instructions && (
-                    <p className="whitespace-pre-line rounded-lg bg-white/70 px-3 py-2 text-sm">
-                      {pay.bankTransfer.instructions}
-                    </p>
-                  )}
+                  <BankAccounts accounts={pay.bankTransfer.accounts} note={pay.bankTransfer.instructions} />
                   <SlipUpload orderNumber={order.orderNumber} token={token} />
                 </>
               ) : awaitingGateway ? (

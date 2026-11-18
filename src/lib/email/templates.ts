@@ -96,6 +96,7 @@ type OrderEmail = {
     delivery: number
     giftWrap: number
     total: number
+    paymentFee?: number
   }
   discounts: { label: string; amount: number }[]
   address: {
@@ -109,6 +110,7 @@ type OrderEmail = {
   delivery: { method: string; eta?: string | null }
   paymentMethod: 'cod' | 'bank-transfer' | 'payhere' | 'koko' | 'mintpay'
   bankInstructions?: string
+  bankAccounts?: { bankName: string; accountName: string; accountNumber: string; branch?: string | null; branchCode?: string | null; swift?: string | null }[]
   viewUrl: string
 }
 
@@ -132,7 +134,7 @@ export function orderConfirmation(o: OrderEmail) {
     o.paymentMethod === 'cod'
       ? '<strong>Cash on delivery.</strong> Please keep the exact amount ready; most couriers also take cards.'
       : o.paymentMethod === 'bank-transfer'
-        ? `<strong>Bank transfer.</strong> Please transfer <strong>${rs(o.totals.total)}</strong> using <strong>${esc(o.orderNumber)}</strong> as the reference, then upload the slip from your order page. We ship as soon as it’s confirmed.${o.bankInstructions ? `<br><span style="color:#5b6b85">${esc(o.bankInstructions)}</span>` : ''}`
+        ? `<strong>Bank transfer.</strong> Please transfer <strong>${rs(o.totals.total)}</strong> using <strong>${esc(o.orderNumber)}</strong> as the reference, then upload the slip from your order page. We ship as soon as it’s confirmed.${(o.bankAccounts ?? []).map((b) => `<br><br><span style="display:inline-block;padding:10px 12px;border:1px solid #ece7e2;border-radius:10px"><strong>${esc(b.bankName)}</strong>${b.branch ? ` · ${esc(b.branch)}` : ''}<br>Account name: <strong>${esc(b.accountName)}</strong><br>Account no: <strong>${esc(b.accountNumber)}</strong>${b.branchCode ? `<br>Branch code: ${esc(b.branchCode)}` : ''}${b.swift ? `<br>SWIFT: ${esc(b.swift)}` : ''}</span>`).join('')}${o.bankInstructions ? `<br><span style="color:#5b6b85">${esc(o.bankInstructions)}</span>` : ''}`
         : `<strong>Paid ${paidOnline[o.paymentMethod]}.</strong> We’ve received ${rs(o.totals.total)}. Thank you!`
   const a = o.address
   const intro = `Hi ${first(o.fullName)}, thank you for your order <strong>${esc(o.orderNumber)}</strong>. Here’s your summary.
@@ -142,6 +144,7 @@ ${row('Subtotal', rs(o.totals.subtotal))}
 ${o.discounts.map((d) => row(esc(d.label), `− ${rs(d.amount)}`)).join('')}
 ${row(`Delivery (${o.delivery.method === 'same-day' ? 'same-day' : 'standard'})`, o.totals.delivery ? rs(o.totals.delivery) : 'Free')}
 ${o.totals.giftWrap ? row('Gift wrap', rs(o.totals.giftWrap)) : ''}
+${o.totals.paymentFee ? row(o.paymentMethod === 'cod' ? 'Cash on delivery fee' : 'Instalment fee', rs(o.totals.paymentFee)) : ''}
 ${row('Total', rs(o.totals.total), true)}
 </table>
 <p style="margin:18px 0 0;font-size:14px;line-height:1.6;color:#344157">${payment}</p>

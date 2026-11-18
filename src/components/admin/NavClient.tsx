@@ -65,6 +65,8 @@ const ICONS: Record<string, ComponentType<{ size?: number; stroke?: number }>> =
   returns: IconArrowBackUp,
   cod: IconCoins,
   couriers: IconTruck,
+  store: IconBuildingStore,
+  policies: IconFileText,
   shipping: IconTruckDelivery,
   notifications: IconBell,
   settings: IconAdjustmentsHorizontal,

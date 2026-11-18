@@ -18,9 +18,10 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 import { Badge, badgeLabel } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { InstalmentLine, Price } from '@/components/ui/Price'
+import { InstalmentLine } from '@/components/ui/InstalmentLine'
+import { Price } from '@/components/ui/Price'
 import { Rating } from '@/components/ui/Rating'
-import { site } from '@/config/site'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 import { brandHref, type ProductDetail } from '@/lib/catalog'
 import { formatLKR } from '@/lib/format'
 import { useShop } from '@/lib/store/shop'
@@ -37,6 +38,8 @@ type Props = { product: ProductDetail; details?: ReactNode }
  * The variant is kept in the URL (?variant=SKU) so a shared link opens the same shade or size.
  */
 export function ProductView({ product, details }: Props) {
+  const store = useStoreSettings()
+  const otherPayments = store.paymentMethods.filter((m) => m !== 'Cash on delivery')
   const { addToCart, toggleWishlist, isWishlisted, rememberViewed } = useShop()
   // Recently viewed (TOS-205)
   useEffect(() => rememberViewed(product.slug), [product.slug, rememberViewed])
@@ -128,11 +131,6 @@ export function ProductView({ product, details }: Props) {
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">
-              {product.isDemo && (
-                <Badge tone="outline" title="Sample product for design and testing">
-                  Sample product
-                </Badge>
-              )}
               {badge && <Badge tone={badge.tone}>{badge.label}</Badge>}
               {saving > 0 && <Badge tone="sale">Save {formatLKR(saving)}</Badge>}
             </div>
@@ -227,14 +225,17 @@ export function ProductView({ product, details }: Props) {
               <IconTruckDelivery size={20} className="mt-0.5 shrink-0 text-sunset-600" />
               <span>
                 <strong className="font-semibold">Island-wide delivery</strong>
-                <span className="block text-ink-500">{site.deliveryEstimate}, free over {formatLKR(site.freeDeliveryThreshold)}</span>
+                <span className="block text-ink-500">
+                  {store.deliveryEstimate}
+                  {store.freeDeliveryThreshold != null ? `, free over ${formatLKR(store.freeDeliveryThreshold)}` : ''}
+                </span>
               </span>
             </li>
             <li className="flex items-start gap-2.5">
               <IconCash size={20} className="mt-0.5 shrink-0 text-sunset-600" />
               <span>
-                <strong className="font-semibold">Cash on delivery</strong>
-                <span className="block text-ink-500">Or cards, bank transfer, Koko, Mintpay</span>
+                <strong className="font-semibold">{store.paymentMethods.includes('Cash on delivery') ? 'Cash on delivery' : 'Easy payment'}</strong>
+                {otherPayments.length > 0 && <span className="block text-ink-500">{store.paymentMethods.includes('Cash on delivery') ? 'Or ' : ''}{otherPayments.join(', ').toLowerCase().replace(/^\w/, (x) => x.toUpperCase())}</span>}
               </span>
             </li>
             <li className="flex items-start gap-2.5">

@@ -3,6 +3,7 @@ import type { Payload, PayloadRequest } from 'payload'
 import type { PaymentSetting } from '@/payload-types'
 
 import type { OnlineMethod, PaymentMethod } from '../../collections/Transactions'
+import { simulatorPermitted } from './simulator'
 
 /**
  * Resolved payment configuration (Sprint 5). Credentials come from environment variables first, then the
@@ -10,6 +11,15 @@ import type { OnlineMethod, PaymentMethod } from '../../collections/Transactions
  */
 
 export type GatewayMode = 'test' | 'live'
+
+export type BankAccount = {
+  bankName: string
+  accountName: string
+  accountNumber: string
+  branch?: string | null
+  branchCode?: string | null
+  swift?: string | null
+}
 
 export type MethodConfig = {
   id: PaymentMethod
@@ -30,20 +40,13 @@ export type PaymentConfig = {
   koko: { merchantId: string; apiKey: string; privateKey: string; publicKey: string }
   mintpay: { merchantId: string; merchantSecret: string }
   cod: { fee: number; excludedDistricts: string[] }
-  bankTransfer: { instructions: string; holdHours: number }
+  bankTransfer: { instructions: string; holdHours: number; accounts: BankAccount[] }
+  /** "3 × Rs X" on products and the instalment fee, per provider */
+  instalmentDisplay: Record<'koko' | 'mintpay', { show: boolean; feePercent: number }>
 }
 
 const env = (k: string) => (process.env[k] ?? '').trim()
 const pick = (envKey: string, stored?: string | null) => env(envKey) || (stored ?? '').trim()
-
-/**
- * The test gateway never runs on the live site: it needs Test mode and either a non-production build or
- * ALLOW_TEST_GATEWAY=true (set in local .env so production builds can be tested end to end).
- */
-export function simulatorPermitted(mode: GatewayMode, setting: boolean) {
-  if (!setting || mode !== 'test') return false
-  return process.env.NODE_ENV !== 'production' || env('ALLOW_TEST_GATEWAY') === 'true'
-}
 
 export async function loadPaymentConfig(
   payload: Payload,
@@ -139,6 +142,18 @@ export async function loadPaymentConfig(
     bankTransfer: {
       instructions: s.bankTransfer?.instructions ?? '',
       holdHours: s.bankTransfer?.holdHours ?? 48,
+      accounts: (s.bankTransfer?.accounts ?? []).map((a) => ({
+        bankName: a.bankName,
+        accountName: a.accountName,
+        accountNumber: a.accountNumber,
+        branch: a.branch,
+        branchCode: a.branchCode,
+        swift: a.swift,
+      })),
+    },
+    instalmentDisplay: {
+      koko: { show: Boolean(s.koko?.showOnProducts), feePercent: s.koko?.feePercent ?? 0 },
+      mintpay: { show: Boolean(s.mintpay?.showOnProducts), feePercent: s.mintpay?.feePercent ?? 0 },
     },
   }
 }

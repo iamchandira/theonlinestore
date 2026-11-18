@@ -1,4 +1,4 @@
-import { formatLKR, instalment, percentOff } from '@/lib/format'
+import { formatLKR, percentOff } from '@/lib/format'
 import { cn } from '@/lib/utils/cn'
 
 type PriceProps = {
@@ -38,22 +38,5 @@ export function Price({ price, compareAt, prefix, size = 'md', showSaving = true
         </>
       ) : null}
     </div>
-  )
-}
-
-/** "or 3 × Rs 1,317 with Koko / Mintpay" */
-export function InstalmentLine({ price, compact, className }: { price: number; compact?: boolean; className?: string }) {
-  if (compact)
-    return (
-      <p className={cn('text-xs text-ink-500', className)} title="Pay in 3 with Koko or Mintpay">
-        or 3 × <span className="font-semibold text-ink-700">{formatLKR(instalment(price))}</span>
-        <span className="hidden sm:inline"> interest-free</span>
-      </p>
-    )
-  return (
-    <p className={cn('text-xs text-ink-500', className)}>
-      or 3 × <span className="font-semibold text-ink-700">{formatLKR(instalment(price))}</span> with{' '}
-      <span className="font-semibold text-ink-700">Koko</span> / <span className="font-semibold text-ink-700">Mintpay</span>
-    </p>
   )
 }

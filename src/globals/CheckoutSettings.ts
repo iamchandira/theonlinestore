@@ -12,11 +12,13 @@ import { audit } from '../lib/payload/audit'
 export const CheckoutSettings: GlobalConfig = {
   slug: 'checkout-settings',
   label: 'Checkout settings',
-  admin: { group: 'Settings', description: 'Delivery fees, same-day, gift wrap and terms version. Payment methods are under Settings › Payments.' },
+  admin: { group: 'Settings', description: 'Delivery fees, free delivery, same-day and gift wrap. Payment methods: Settings › Payments. Terms: Settings › Policies.' },
   access: { read: anyone, update: allowRoles('store-manager') },
   hooks: {
     afterChange: [
       async ({ req }) => {
+        const { refreshStoreSettings } = await import('../lib/store/refresh')
+        refreshStoreSettings()
         if (req.user) await audit(req, { action: 'content-change', collection: 'checkout-settings', summary: 'Checkout settings updated (delivery, gift wrap or terms)' })
       },
     ],
@@ -31,7 +33,13 @@ export const CheckoutSettings: GlobalConfig = {
             {
               type: 'row',
               fields: [
-                { name: 'freeThreshold', label: 'Free delivery from (Rs)', type: 'number', min: 0, defaultValue: 10000, admin: { width: '34%', description: 'After discounts. Standard delivery only.' } },
+                { name: 'freeDeliveryEnabled', label: 'Offer free delivery', type: 'checkbox', defaultValue: true, admin: { width: '100%', description: 'Untick to charge delivery on every order (the free-delivery bar and messages disappear).' } },
+              ],
+            },
+            {
+              type: 'row',
+              fields: [
+                { name: 'freeThreshold', label: 'Free delivery from (Rs)', type: 'number', min: 0, defaultValue: 10000, admin: { width: '34%', description: 'After discounts. Standard delivery only.', condition: (d) => d?.freeDeliveryEnabled !== false } },
                 { name: 'includedKg', label: 'Weight included (kg)', type: 'number', min: 0, defaultValue: 1, admin: { width: '33%' } },
                 { name: 'perKgFee', label: 'Each extra kg (Rs)', type: 'number', min: 0, defaultValue: 100, admin: { width: '33%' } },
               ],
@@ -84,10 +92,9 @@ export const CheckoutSettings: GlobalConfig = {
           ],
         },
         {
-          label: 'Gifts & terms',
+          label: 'Gift wrap',
           fields: [
             { name: 'giftWrapFee', label: 'Gift wrap fee (Rs)', type: 'number', min: 0, defaultValue: 250 },
-            { name: 'termsVersion', label: 'Terms & conditions version', type: 'text', defaultValue: '2026-11', admin: { description: 'Recorded on every order with the time the shopper accepted it. Change it when the terms change.' } },
           ],
         },
       ],

@@ -49,18 +49,18 @@ export default async function HomePage() {
   const [data, brands] = await Promise.all([getHomeData(), getBrands()])
   return (
     <>
-      <Hero picks={data.heroPicks} />
+      <Hero picks={data.heroPicks} badge={data.sections.heroBadge ?? null} />
       <CategoryTiles tileImages={data.tileImages} />
       <UspStrip />
       <Rails rails={data.railsTop} />
-      <GiftFinder />
+      <GiftFinder text={data.sections.giftFinderText ?? undefined} />
       <OccasionChips />
-      <PromoBanners sale={data.saleFeature} gift={data.giftFeature} />
+      <PromoBanners sale={data.saleFeature} gift={data.giftFeature} sections={data.sections} />
       <BestSellers products={data.bestsellers} />
       <Rails rails={data.railsBottom} />
       <DermSpotlight products={data.derm} />
       <BrandMarquee brands={brands.map((b) => ({ name: b.name, slug: b.slug }))} />
-      <Newsletter />
+      {data.sections.newsletter?.show !== false && <Newsletter title={data.sections.newsletter?.title ?? undefined} text={data.sections.newsletter?.text ?? undefined} />}
     </>
   )
 }

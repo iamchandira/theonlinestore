@@ -6,11 +6,14 @@ import { Toaster } from 'sonner'
 
 import { AuthProvider } from '@/lib/auth/AuthProvider'
 import { SmoothScroll } from '@/lib/motion/SmoothScroll'
+import type { StorePublic } from '@/lib/store/settings'
+import { StoreSettingsProvider } from '@/lib/store/StoreSettingsProvider'
 import { ShopProvider } from '@/lib/store/shop'
 
-export function Providers({ children }: { children: ReactNode }) {
+export function Providers({ children, store }: { children: ReactNode; store: StorePublic }) {
   return (
     // reducedMotion="user": Framer skips transform/layout animations when the OS asks for less motion
+    <StoreSettingsProvider value={store}>
     <MotionConfig reducedMotion="user">
       <SmoothScroll />
       <AuthProvider>
@@ -32,5 +35,6 @@ export function Providers({ children }: { children: ReactNode }) {
       </ShopProvider>
       </AuthProvider>
     </MotionConfig>
+    </StoreSettingsProvider>
   )
 }

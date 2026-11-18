@@ -10,7 +10,7 @@ import { formatLKR } from '@/lib/format'
 import { loadPaymentConfig } from '@/lib/payments/config'
 import { getShopperOrder } from '@/lib/payments/shopperOrder'
 
-import { simulateGatewayAction } from '../actions'
+import { simulateGatewayAction } from './actions'
 
 export const metadata: Metadata = { title: 'Test gateway', robots: { index: false, follow: false } }
 

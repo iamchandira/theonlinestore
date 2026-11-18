@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 
-import { PolicyPage } from '@/components/layout/PolicyPage'
+import { PolicyPage, policyMetadata } from '@/components/layout/PolicyPage'
 
-export const metadata: Metadata = { title: 'Terms & conditions', robots: { index: false } }
+export const generateMetadata = (): Promise<Metadata> => policyMetadata('terms', 'Terms & conditions')
 
 export default function TermsPage() {
   return (
-    <PolicyPage title="Terms & conditions" intro="The essentials of buying from The Online Store.">
+    <PolicyPage kind="terms" title="Terms & conditions" intro="The essentials of buying from The Online Store.">
       <section>
         <h2>Orders and prices</h2>
         <ul>

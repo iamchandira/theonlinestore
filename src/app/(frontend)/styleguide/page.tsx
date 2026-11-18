@@ -1,5 +1,6 @@
 import { IconArrowRight, IconGift, IconHeart, IconSearch, IconShoppingBag, IconShoppingBagPlus, IconTruckDelivery } from '@tabler/icons-react'
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 
 import { BrandLoader } from '@/components/brand/BrandLoader'
 import { ProductCard, ProductCardSkeleton } from '@/components/product/ProductCard'
@@ -9,7 +10,8 @@ import { Chip, VariantPill } from '@/components/ui/Chip'
 import { Countdown } from '@/components/ui/Countdown'
 import { IconButton } from '@/components/ui/IconButton'
 import { Input } from '@/components/ui/Input'
-import { InstalmentLine, Price } from '@/components/ui/Price'
+import { InstalmentLine } from '@/components/ui/InstalmentLine'
+import { Price } from '@/components/ui/Price'
 import { Rating } from '@/components/ui/Rating'
 import { SectionHeader } from '@/components/ui/SectionHeader'
 import { listProducts } from '@/lib/catalog/server'
@@ -53,6 +55,8 @@ function Block({ id, title, children, note }: { id: string; title: string; note?
 
 /** Living design system: every token and component rendered from the real source. */
 export default async function StyleguidePage() {
+  // Design reference for the team only: not part of the live store
+  if (process.env.NODE_ENV === 'production') notFound()
   const { products: sample } = await listProducts({
     slugs: ['skin1004-madagascar-centella-ampoule', 'cerave-hydrating-facial-cleanser', 'vaseline-emily-in-paris-tinted-lip-oil', 'lrp-pure-vitamin-c12-serum'],
     limit: 4,

@@ -235,6 +235,15 @@ The integration test races two shoppers for the last units: exactly one order su
 
 **Testing note:** e2e test orders reserve real stock, so `tests/helpers/cleanupOrders.ts` runs as Playwright's global teardown and cancels them (stock back) before deleting them. Rate limits are per server process; run the suite against a freshly started server.
 
+### Added in launch preparation (v0.9.0)
+**Admin-managed settings:** `store-settings` (name, description, contact, social, announcements, delivery estimate), `policies` (terms/returns/privacy rich text, terms version, return window, non-returnable product types), free delivery on/off in `checkout-settings`, bank accounts and instalment display/fee in `payment-settings`, banners & messages in `home-page`. `lib/store/settings.ts` (`getStoreSettings`) turns them into one public object per request; `StoreSettingsProvider` passes it to client components. Saving any of these globals revalidates the whole storefront (`lib/store/refresh.ts`). `config/site.ts` now only holds fixed identity (URL, domain, currency).
+
+**Empty-store behaviour:** menus, tiles, search suggestions, the 404 page and the footer only link to categories that exist; home sections with no products or switched off disappear.
+
+**Production:** `output: 'standalone'`; `pnpm build` copies public and static assets next to `server.js`. Upload folders resolve from `UPLOADS_DIR` (outside the build). Migrations live in `src/migrations` and run via `pnpm payload migrate` in `deploy/deploy.sh` (never at start-up). Caddy terminates HTTPS and sets `X-Real-IP`; Postgres runs in Docker on 127.0.0.1 only; the app runs under systemd. Security headers come from `next.config.ts`; `robots.ts` and `sitemap.ts` at the app root.
+
+**Test gateway isolation:** all of it lives in `lib/payments/simulator.ts` and `app/(frontend)/checkout/pay/test-gateway/`; the production branch deletes the folder and stubs the module.
+
 ### Target (Sprints 2–7)
 ```mermaid
 erDiagram

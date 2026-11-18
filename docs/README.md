@@ -18,3 +18,5 @@
 Docs are updated at the end of every sprint and mirrored to the shared Claude Docs copy.
 
 Shared copy (Claude Docs): https://claude.ai/artifact/E2ESJAfkpcmq7gTG2cSQ3X
+
+**Going live:** [10 · Go-live runbook (VPS)](10-go-live.md): branches, server setup, domain, deploys, backups and configuring the store in the admin.

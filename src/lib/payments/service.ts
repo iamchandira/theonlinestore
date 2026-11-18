@@ -1,5 +1,3 @@
-import { createHmac, timingSafeEqual } from 'node:crypto'
-
 import { sql } from '@payloadcms/db-postgres'
 import type { Payload, PayloadRequest } from 'payload'
 
@@ -31,33 +29,6 @@ export const orderUrl = (o: Pick<Order, 'orderNumber'>, token: string, extra = '
   `${SITE()}/checkout/success/${o.orderNumber}?t=${token}${extra}`
 export const payUrl = (o: Pick<Order, 'orderNumber'>, token: string, extra = '') =>
   `${SITE()}/checkout/pay/${o.orderNumber}?t=${token}${extra}`
-
-/* ------------------------------------------------------------------ test gateway signing */
-
-/** Secret for the built-in test gateway, derived from PAYLOAD_SECRET so it is never stored or sent anywhere. */
-export const simulatorSecret = () =>
-  createHmac('sha256', process.env.PAYLOAD_SECRET || 'dev')
-    .update('tos-test-gateway')
-    .digest('hex')
-export const SIMULATOR_MERCHANT = 'TOS-TEST-GATEWAY'
-
-export function signSimulated(fields: {
-  reference: string
-  result: GatewayResult
-  amount: string
-}) {
-  return createHmac('sha256', simulatorSecret())
-    .update(`${fields.reference}|${fields.result}|${fields.amount}|LKR`)
-    .digest('hex')
-}
-export function verifySimulated(
-  fields: { reference: string; result: GatewayResult; amount: string },
-  sig: string,
-) {
-  const a = Buffer.from(signSimulated(fields))
-  const b = Buffer.from(String(sig))
-  return a.length === b.length && timingSafeEqual(a, b)
-}
 
 /* ------------------------------------------------------------------ attempts */
 

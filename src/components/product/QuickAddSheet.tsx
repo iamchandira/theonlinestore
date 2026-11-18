@@ -8,9 +8,10 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/Button'
 import { Drawer } from '@/components/ui/Drawer'
-import { InstalmentLine, Price } from '@/components/ui/Price'
+import { InstalmentLine } from '@/components/ui/InstalmentLine'
+import { Price } from '@/components/ui/Price'
 import { Rating } from '@/components/ui/Rating'
-import { site } from '@/config/site'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 import { productHref, type Product } from '@/lib/catalog'
 import { useShop } from '@/lib/store/shop'
 import { cn } from '@/lib/utils/cn'
@@ -63,6 +64,7 @@ function QuickAddBody({
   product: Product
   onAdd: (v: Product['variants'][number], qty: number, el: HTMLElement | null) => void
 }) {
+  const { deliveryEstimate } = useStoreSettings()
   const [selected, setSelected] = useState(product.variants.find((v) => v.stock > 0) ?? product.variants[0])
   const [qty, setQty] = useState(1)
   const imgRef = useRef<HTMLDivElement>(null)
@@ -105,7 +107,7 @@ function QuickAddBody({
       </div>
       <InstalmentLine price={selected.price * qty} />
       <p className="flex items-center gap-2 rounded-md bg-success-50 px-3 py-2.5 text-sm text-success-600">
-        <IconTruckDelivery size={18} /> Island-wide delivery in {site.deliveryEstimate}
+        <IconTruckDelivery size={18} /> Island-wide delivery in {deliveryEstimate}
       </p>
       <Link href={productHref(product)} className="text-center text-sm font-semibold text-ink-700 underline underline-offset-4 hover:text-sunset-600">
         View full product details

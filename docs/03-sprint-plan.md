@@ -58,6 +58,9 @@ Delivered TOS-601, 602, 605, 606 and 607; TOS-603/604 (Koko, Mintpay) run end to
 ## Sprint 6 (complete): orders & delivery
 Delivered TOS-701 → 707 and TOS-305 (order page, Buy again). Courier API integration (TOS-708, a Could) waits for courier accounts; tracking numbers are entered by staff. See `sprint-reports/sprint-06.md`.
 
+## Launch preparation (complete, 18 Nov 2026, v0.9.0)
+Inserted before Sprint 7 so the store can soft-launch with cash on delivery and bank transfer: everything the owner changes is now in the admin (store details, free delivery, policies, bank accounts, home page messages, instalment display), the production deployment kit and runbook (`10-go-live.md`), database migrations, and the `production` branch without tests, demo data or the test gateway. Sprints 7–10 continue after launch.
+
 ## Sprint 7 plan (next): notifications
 | # | Task | Story |
 |---|---|---|

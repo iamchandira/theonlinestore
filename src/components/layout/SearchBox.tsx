@@ -18,7 +18,8 @@ type Suggest = {
 const EMPTY: Suggest = { products: [], brands: [], categories: [] }
 
 import { Price } from '@/components/ui/Price'
-import { categories, popularSearches } from '@/config/navigation'
+import { categories as allCategories, liveCategories, popularSearches } from '@/config/navigation'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 import { dropdown } from '@/lib/motion/variants'
 import { cn } from '@/lib/utils/cn'
 
@@ -61,10 +62,12 @@ export function SearchBox({ className, autoFocus, onNavigate }: { className?: st
   const results = current.products.slice(0, 5)
   const brandHits = current.brands
   // Categories come from the server (typo tolerant); the local menu is a fallback while loading
+  const storeCats = useStoreSettings().categories
+  const categories = useMemo(() => liveCategories(allCategories, new Set(storeCats)), [storeCats])
   const localCats = useMemo(() => {
     const t = deferred.trim().toLowerCase()
     return t.length < 2 ? [] : categories.flatMap((c) => [c, ...(c.children ?? [])]).filter((c) => c.name.toLowerCase().includes(t)).slice(0, 3)
-  }, [deferred])
+  }, [deferred, categories])
   const catHits = current.categories?.length ? current.categories.slice(0, 3) : localCats
   const corrected = current.corrected
 

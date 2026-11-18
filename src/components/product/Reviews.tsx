@@ -116,7 +116,6 @@ export function Reviews({ productId, productName, summary, initial, totalPages: 
             <IconPencil size={18} /> Write a review
           </Button>
           <p className="mt-3 text-xs text-ink-500">Every review is checked by our team before it appears. We never show your email.</p>
-          {summary.samplesOnly && <p className="mt-3 rounded-md bg-ink-50 px-3 py-2 text-xs text-ink-600">This is a demo product, so the reviews shown are samples.</p>}
         </div>
 
         {/* List */}
@@ -243,7 +242,6 @@ function ReviewItem({ review: r }: { review: PublicReview }) {
             <IconRosetteDiscountCheck size={14} aria-hidden /> Verified buyer
           </span>
         )}
-        {r.isSample && <span className="rounded-full bg-ink-100 px-2 py-0.5 text-xs font-semibold text-ink-600">Sample review</span>}
         <span aria-hidden>·</span>
         <time dateTime={r.createdAt}>{dateFmt.format(new Date(r.createdAt))}</time>
       </p>

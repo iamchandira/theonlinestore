@@ -45,7 +45,8 @@ type SavedAddress = {
 type Props = {
   user: { fullName: string; email: string; phone: string; addresses: SavedAddress[] } | null
   giftWrapFee: number
-  freeThreshold: number
+  /** null when free delivery is switched off */
+  freeThreshold: number | null
   sameDayDistricts: string[]
 }
 type QuoteResponse = {
@@ -54,7 +55,8 @@ type QuoteResponse = {
   issues: Issue[]
   couponError: string | null
   payments: PaymentOption[]
-  codFee: number
+  paymentFee: number
+  paymentFeeLabel: string
 }
 type Errors = Partial<
   Record<
@@ -331,6 +333,7 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
       }}
       onEditBag={() => setCartOpen(true)}
       freeThreshold={freeThreshold}
+      feeLabel={data?.paymentFeeLabel}
     />
   )
 
@@ -630,10 +633,10 @@ export function Checkout({ user, giftWrapFee, freeThreshold, sameDayDistricts }:
                 </span>
               </RadioCard>
             </fieldset>
-            {q && !q.delivery.free && q.freeDeliveryRemaining > 0 && method === 'standard' && (
+            {q && freeThreshold != null && !q.delivery.free && q.freeDeliveryRemaining > 0 && method === 'standard' && (
               <p className="mt-3 text-sm text-ink-600">
                 Add <strong className="text-ink-900">{formatLKR(q.freeDeliveryRemaining)}</strong>{' '}
-                more for free delivery (over {formatLKR(freeThreshold)}).
+                more for free delivery (over {formatLKR(freeThreshold ?? 0)}).
               </p>
             )}
           </Section>
@@ -864,6 +867,7 @@ function OrderSummary({
   removeCoupon,
   onEditBag,
   freeThreshold,
+  feeLabel,
 }: {
   lines: CartLine[]
   quote?: Quote
@@ -875,7 +879,8 @@ function OrderSummary({
   applyCoupon: () => void
   removeCoupon: () => void
   onEditBag: () => void
-  freeThreshold: number
+  freeThreshold: number | null
+  feeLabel?: string
 }) {
   const bySku = new Map(q?.lines.map((l) => [l.sku, l]))
   const couponApplied = q?.coupon?.applied
@@ -1019,7 +1024,7 @@ function OrderSummary({
         {q && q.giftWrapFee > 0 && <Row label="Gift wrap" value={formatLKR(q.giftWrapFee)} />}
         {q && q.total > q.subtotal - q.discountTotal + q.delivery.fee + q.giftWrapFee && (
           <Row
-            label="Cash on delivery fee"
+            label={feeLabel || 'Payment fee'}
             value={formatLKR(
               q.total - (q.subtotal - q.discountTotal + q.delivery.fee + q.giftWrapFee),
             )}
@@ -1037,10 +1042,10 @@ function OrderSummary({
           </p>
         )}
       </dl>
-      {q && q.freeDeliveryRemaining > 0 && q.delivery.method === 'standard' && (
+      {q && freeThreshold != null && q.freeDeliveryRemaining > 0 && q.delivery.method === 'standard' && (
         <p className="mt-3 rounded-lg bg-sunset-50 px-3 py-2 text-xs text-sunset-800">
           {formatLKR(q.freeDeliveryRemaining)} away from free delivery (over{' '}
-          {formatLKR(freeThreshold)})
+          {formatLKR(freeThreshold ?? 0)})
         </p>
       )}
     </section>

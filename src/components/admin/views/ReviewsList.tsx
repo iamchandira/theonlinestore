@@ -50,7 +50,6 @@ export async function ReviewsList(props: ListViewServerProps) {
       authorEmail: r.authorEmail ?? null,
       status: r.status,
       verifiedBuyer: Boolean(r.verifiedBuyer),
-      isSample: Boolean(r.isSample),
       photos: ((r.photos as unknown[]) ?? [])
         .map((p) => (p && typeof p === 'object' ? (p as { sizes?: { thumb?: { url?: string } }; url?: string }) : null))
         .map((p) => p?.sizes?.thumb?.url || p?.url || '')

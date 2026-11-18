@@ -1,0 +1,23 @@
+# /etc/systemd/system/theonlinestore.service
+[Unit]
+Description=The Online Store (Next.js + Payload)
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=store
+WorkingDirectory=/srv/theonlinestore/app
+EnvironmentFile=/srv/theonlinestore/.env
+ExecStart=/usr/bin/node .next/standalone/server.js
+Restart=always
+RestartSec=5
+# Give the app a moment to finish requests on restart
+TimeoutStopSec=20
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

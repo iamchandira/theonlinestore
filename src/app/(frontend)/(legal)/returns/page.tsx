@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 
-import { PolicyPage } from '@/components/layout/PolicyPage'
+import { PolicyPage, policyMetadata } from '@/components/layout/PolicyPage'
 
-export const metadata: Metadata = { title: 'Returns & refunds', robots: { index: false } }
+export const generateMetadata = (): Promise<Metadata> => policyMetadata('returns', 'Returns & refunds')
 
 export default function ReturnsPage() {
   return (
-    <PolicyPage title="Returns & refunds" intro="If something isn’t right, tell us and we’ll make it right.">
+    <PolicyPage kind="returns" title="Returns & refunds" intro="If something isn’t right, tell us and we’ll make it right.">
       <section>
         <h2>Damaged, wrong or missing items</h2>
         <p>Message us on WhatsApp or email within 48 hours of delivery with your order number and a photo. We’ll replace the item or refund you.</p>

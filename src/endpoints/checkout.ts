@@ -45,7 +45,8 @@ export const quoteEndpoint: Endpoint = {
       issues: res.issues,
       couponError: res.couponError,
       payments: res.payments,
-      codFee: res.codFee,
+      paymentFee: res.paymentFee,
+      paymentFeeLabel: res.paymentFeeLabel,
       giftWrapFee: res.config.giftWrapFee,
     })
   },
@@ -201,7 +202,8 @@ export const placeEndpoint: Endpoint = {
           totals: {
             subtotal: q.quote.subtotal,
             discountTotal: q.quote.discountTotal,
-            delivery: q.quote.delivery.fee + q.codFee, // includes any cash-on-delivery fee
+            delivery: q.quote.delivery.fee,
+            paymentFee: q.paymentFee,
             giftWrap: q.quote.giftWrapFee,
             total: q.quote.total,
           },
@@ -250,12 +252,13 @@ export const placeEndpoint: Endpoint = {
           orderNumber: number,
           fullName: contact.fullName,
           items: q.quote.lines.map((l) => ({ name: l.name, brand: q.views.find((v) => v.sku === l.sku)?.brand, variant: q.views.find((v) => v.sku === l.sku)?.label, quantity: l.qty, lineTotal: l.lineTotal })),
-          totals: { subtotal: q.quote.subtotal, discountTotal: q.quote.discountTotal, delivery: q.quote.delivery.fee + q.codFee, giftWrap: q.quote.giftWrapFee, total: q.quote.total },
+          totals: { subtotal: q.quote.subtotal, discountTotal: q.quote.discountTotal, delivery: q.quote.delivery.fee, paymentFee: q.paymentFee, giftWrap: q.quote.giftWrapFee, total: q.quote.total },
           discounts: q.quote.discounts.map((d) => ({ label: d.label, amount: d.amount })),
           address: address as never,
           delivery: { method: q.quote.delivery.method, eta: q.quote.delivery.eta },
           paymentMethod: payment!,
           bankInstructions: q.payConfig.bankTransfer.instructions,
+          bankAccounts: q.payConfig.bankTransfer.accounts,
           viewUrl,
         }),
       })

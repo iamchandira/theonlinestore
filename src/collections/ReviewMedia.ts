@@ -1,6 +1,7 @@
 import type { Access, CollectionConfig } from 'payload'
 
 import { allowRoles, isStaff } from '../access/roles'
+import { uploadDir } from '../lib/payload/uploads'
 
 /** Staff see every photo; the public only sees photos attached to an approved review. */
 const publicOrStaff: Access = ({ req }) => (isStaff(req.user) ? true : { public: { equals: true } })
@@ -30,6 +31,7 @@ export const ReviewMedia: CollectionConfig = {
     },
   ],
   upload: {
+    staticDir: uploadDir('review-media'),
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
     imageSizes: [
       { name: 'thumb', width: 200, height: 200, fit: 'cover' },

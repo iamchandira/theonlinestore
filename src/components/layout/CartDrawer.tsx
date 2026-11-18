@@ -9,9 +9,9 @@ import { useEffect, useState } from 'react'
 import { categoryTint } from '@/components/product/ProductCard'
 import { Button, ButtonLink } from '@/components/ui/Button'
 import { Drawer } from '@/components/ui/Drawer'
-import { InstalmentLine } from '@/components/ui/Price'
+import { InstalmentLine } from '@/components/ui/InstalmentLine'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { site } from '@/config/site'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 import { primaryVariant, productHref, type Product } from '@/lib/catalog'
 import { formatLKR } from '@/lib/format'
 import { useShop } from '@/lib/store/shop'
@@ -22,7 +22,8 @@ import { useShop } from '@/lib/store/shop'
  */
 export function CartDrawer({ suggestions: pool = [] }: { suggestions?: Product[] }) {
   const { lines: items, itemCount, subtotal, cartOpen, setCartOpen, setQty, removeLine, addToCart, lastAdded } = useShop()
-  const remaining = Math.max(0, site.freeDeliveryThreshold - subtotal)
+  const { freeDeliveryThreshold: threshold } = useStoreSettings()
+  const remaining = threshold == null ? 0 : Math.max(0, threshold - subtotal)
   const inBag = new Set(items.map((i) => i.slug))
   // "Pairs well with" the product just added (TOS-204), falling back to small add-ons
   const pairs = usePairs(cartOpen ? lastAdded : null)
@@ -77,6 +78,7 @@ export function CartDrawer({ suggestions: pool = [] }: { suggestions?: Product[]
         </div>
       ) : (
         <div className="flex flex-col">
+          {threshold != null && (
           <div className="border-b border-line bg-canvas px-5 py-4">
             <p className="mb-2 flex items-center gap-2 text-sm font-medium">
               <IconTruckDelivery size={19} className="shrink-0 text-sunset-600" />
@@ -88,8 +90,9 @@ export function CartDrawer({ suggestions: pool = [] }: { suggestions?: Product[]
                 <span className="font-semibold text-success-600">You’ve unlocked free island-wide delivery 🎉</span>
               )}
             </p>
-            <ProgressBar value={subtotal} max={site.freeDeliveryThreshold} label="Progress to free delivery" />
+            <ProgressBar value={subtotal} max={threshold} label="Progress to free delivery" />
           </div>
+          )}
 
           <ul className="divide-y divide-line px-5">
             <AnimatePresence initial={false}>

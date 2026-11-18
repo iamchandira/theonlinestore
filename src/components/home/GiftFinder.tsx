@@ -12,13 +12,13 @@ const finders = [
 ]
 
 /** Gift finder: answers the gift buyer's first question ("who is it for?") in one tap. */
-export function GiftFinder() {
+export function GiftFinder({ text }: { text?: string }) {
   return (
     <section aria-labelledby="gift-title" className="container-site py-10 md:py-14">
       <SectionHeader
         eyebrow="Gifting made easy"
         title={<span id="gift-title">Find the perfect gift</span>}
-        description="Free gift wrapping and a handwritten note on request. We deliver island-wide."
+        description={text ?? 'Gift wrapping and a handwritten note on request. We deliver island-wide.'}
       />
       <Reveal staggerChildren={0.07} className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-4">
         {finders.map(({ title, text, href, icon: Icon, tone }) => (

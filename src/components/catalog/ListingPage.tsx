@@ -6,7 +6,7 @@ import { ProductCard } from '@/components/product/ProductCard'
 import type { FacetGroup } from '@/lib/catalog/facets'
 import { ButtonLink } from '@/components/ui/Button'
 import { SmileUnderline } from '@/components/ui/SectionHeader'
-import { site } from '@/config/site'
+import { getStoreSettings } from '@/lib/store/settings'
 import type { Crumb, ListResult, SortKey } from '@/lib/catalog'
 import { cn } from '@/lib/utils/cn'
 
@@ -162,7 +162,8 @@ export function ListingPage({ title, eyebrow, description, breadcrumbs, tint = '
   )
 }
 
-export function EmptyListing({ title = 'We’re curating this range', text }: { title?: string; text?: string }) {
+export async function EmptyListing({ title = 'We’re curating this range', text }: { title?: string; text?: string }) {
+  const { contact } = await getStoreSettings()
   return (
     <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed border-line-strong bg-surface px-6 py-14 text-center">
       <span className="grid size-16 place-items-center rounded-full bg-sunset-50 text-sunset-600">
@@ -176,9 +177,11 @@ export function EmptyListing({ title = 'We’re curating this range', text }: { 
         <ButtonLink href="/c/beauty?sort=bestsellers" variant="dark">
           Shop bestsellers
         </ButtonLink>
-        <ButtonLink href={`https://wa.me/${site.contact.whatsapp}?text=${encodeURIComponent('Hi! I’m looking for…')}`} variant="outline">
-          <IconBrandWhatsapp size={18} /> Request a product
-        </ButtonLink>
+        {contact.whatsapp && (
+          <ButtonLink href={`https://wa.me/${contact.whatsapp}?text=${encodeURIComponent('Hi! I’m looking for…')}`} variant="outline">
+            <IconBrandWhatsapp size={18} /> Request a product
+          </ButtonLink>
+        )}
       </div>
     </div>
   )

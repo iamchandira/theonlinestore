@@ -54,7 +54,8 @@ export type DiscountRule = {
 
 export type DeliveryZone = { name: string; districts: string[]; fee: number; eta: string }
 export type DeliverySettings = {
-  freeThreshold: number
+  /** null = no free delivery */
+  freeThreshold: number | null
   zones: DeliveryZone[]
   /** Used when a district isn't in any zone */
   fallback: { name: string; fee: number; eta: string }
@@ -249,7 +250,7 @@ export function quote(input: QuoteInput): Quote {
   const standardFee = lines.length ? zoneFee + extraKg * d.perKgFee : 0
   const sameDayAvailable = Boolean(d.sameDay.enabled && input.sameDayOpen && input.district && d.sameDay.districts.includes(input.district))
   const method = input.method === 'same-day' && sameDayAvailable ? 'same-day' : 'standard'
-  const freeStandard = freeDelivery || afterDiscounts >= d.freeThreshold
+  const freeStandard = freeDelivery || (d.freeThreshold != null && afterDiscounts >= d.freeThreshold)
   const fee = !lines.length ? 0 : method === 'same-day' ? d.sameDay.fee : freeStandard ? 0 : standardFee
   const giftWrapFee = input.giftWrap && lines.length ? (input.giftWrapFee ?? 0) : 0
 
@@ -269,7 +270,7 @@ export function quote(input: QuoteInput): Quote {
       sameDayFee: d.sameDay.fee,
       weightKg,
     },
-    freeDeliveryRemaining: freeDelivery ? 0 : Math.max(0, d.freeThreshold - afterDiscounts),
+    freeDeliveryRemaining: freeDelivery || d.freeThreshold == null ? 0 : Math.max(0, d.freeThreshold - afterDiscounts),
     giftWrapFee,
     total: afterDiscounts + fee + giftWrapFee,
     coupon: couponState,

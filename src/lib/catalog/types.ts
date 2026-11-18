@@ -38,7 +38,6 @@ export type Product = {
   badge: Badge
   productType: ProductType
   /** Sample content for design/testing (shown with a "Sample" tag; removed before launch) */
-  isDemo: boolean
   recipients: string[]
   occasions: string[]
   rating: number

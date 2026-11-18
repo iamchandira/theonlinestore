@@ -519,14 +519,6 @@ export const Products: CollectionConfig = {
     },
     slugField({ useAsSlug: 'name', overrides: (f) => ({ ...f, admin: { ...f.admin, position: 'sidebar' } }) }),
     {
-      name: 'isDemo',
-      label: 'Demo product',
-      type: 'checkbox',
-      defaultValue: false,
-      index: true,
-      admin: { position: 'sidebar', description: 'Sample content for design and testing. Remove all with `pnpm seed:demo --remove` before launch.' },
-    },
-    {
       name: 'priceTBC',
       label: 'Price to be confirmed',
       type: 'checkbox',

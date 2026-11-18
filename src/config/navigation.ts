@@ -147,6 +147,16 @@ export const beautyCategories = categories.filter((c) => BEAUTY_SLUGS.includes(c
 export const lifestyleDepartments = categories.filter((c) => !BEAUTY_SLUGS.includes(c.slug))
 
 /** Primary nav (desktop). "Beauty" and "Brands" open mega-menus. */
+/**
+ * Only categories that exist in the admin appear in menus, tiles and the footer, so a new store never
+ * links to an empty page. `available` = category slugs present in the database.
+ */
+export function liveCategories(list: CategoryDef[], available: ReadonlySet<string>): CategoryDef[] {
+  return list.filter((c) => available.has(c.slug)).map((c) => ({ ...c, children: c.children?.filter((s) => available.has(s.slug)) }))
+}
+/** True for links that don't point at a category, or at one that exists. */
+export const linkIsLive = (href: string, available: ReadonlySet<string>) => !href.startsWith('/c/') || available.has(href.split('/').filter(Boolean).at(-1) ?? '')
+
 export type MegaKey = 'beauty' | 'brands' | 'fragrances' | 'footwear' | 'gifts' | 'chocolates'
 
 export const primaryNav: { label: string; href: string; mega?: MegaKey; highlight?: boolean }[] = [
@@ -204,18 +214,13 @@ export const footerNav = {
     { label: 'Chocolates', href: '/c/chocolates' },
     { label: 'All Brands', href: '/brands' },
   ],
+  // Only pages that exist. Delivery, FAQ, contact and about pages come with the content pages (Sprint 9).
   help: [
     { label: 'Track your order', href: '/track-order' },
-    { label: 'Delivery information', href: '/delivery' },
     { label: 'Returns & refunds', href: '/returns' },
-    { label: 'Payment options', href: '/payments' },
-    { label: 'FAQs', href: '/faq' },
-    { label: 'Contact us', href: '/contact' },
+    { label: 'My account', href: '/account' },
   ],
   company: [
-    { label: 'About us', href: '/about' },
-    { label: 'Beauty journal', href: '/blog' },
-    { label: 'Genuine product promise', href: '/authenticity' },
     { label: 'Terms & conditions', href: '/terms' },
     { label: 'Privacy policy', href: '/privacy' },
   ],

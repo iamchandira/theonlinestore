@@ -18,7 +18,6 @@ export type ReviewRow = {
   authorEmail: string | null
   status: 'pending' | 'approved' | 'rejected'
   verifiedBuyer: boolean
-  isSample: boolean
   photos: string[]
   createdAt: string
 }
@@ -113,7 +112,6 @@ export function ReviewsTable({ rows, tab }: { rows: ReviewRow[]; tab: string }) 
                       {r.authorName}
                       {r.authorEmail ? ` · ${r.authorEmail}` : ''} · {dateFmt.format(new Date(r.createdAt))}
                       {r.verifiedBuyer && <span className="tos-pill tos-pill--success tos-pill--plain">Verified buyer</span>}
-                      {r.isSample && <span className="tos-pill tos-pill--info tos-pill--plain">Sample</span>}
                       {r.photos.length > 0 && (
                         <span className="tos-pill tos-pill--muted tos-pill--plain">
                           <IconPhoto size={12} /> {r.photos.length}

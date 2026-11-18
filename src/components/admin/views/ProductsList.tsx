@@ -12,7 +12,6 @@ const TABS = [
   { key: 'low', label: 'Low stock' },
   { key: 'out', label: 'Sold out' },
   { key: 'price-tbc', label: 'Price to confirm' },
-  { key: 'demo', label: 'Demo' },
 ] as const
 type TabKey = (typeof TABS)[number]['key']
 
@@ -28,8 +27,6 @@ const tabWhere = (tab: TabKey): Where | null => {
       return { totalStock: { less_than_equal: 0 } }
     case 'price-tbc':
       return { priceTBC: { equals: true } }
-    case 'demo':
-      return { isDemo: { equals: true } }
     default:
       return null
   }
@@ -92,7 +89,6 @@ export async function ProductsList(props: ListViewServerProps) {
       maxPrice: p.maxPrice ?? null,
       onSale: Boolean(p.onSale),
       priceTBC: Boolean(p.priceTBC),
-      isDemo: Boolean(p.isDemo),
       updatedAt: p.updatedAt,
     }
   })

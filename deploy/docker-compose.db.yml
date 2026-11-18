@@ -1,0 +1,19 @@
+# Production database for The Online Store (PostgreSQL 16), reachable only from the server itself.
+# Usage (on the server): docker compose -f deploy/docker-compose.db.yml --env-file /srv/theonlinestore/.env up -d
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: theonlinestore
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in /srv/theonlinestore/.env}
+      POSTGRES_DB: theonlinestore
+    ports:
+      - '127.0.0.1:5432:5432' # never exposed to the internet
+    volumes:
+      - /srv/theonlinestore/pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U theonlinestore']
+      interval: 10s
+      timeout: 5s
+      retries: 10

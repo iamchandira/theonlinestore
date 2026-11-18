@@ -5,15 +5,17 @@ import { motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { beautyCategories, categories, concerns, occasions, recipients } from '@/config/navigation'
+import { beautyCategories, categories, concerns, liveCategories, occasions, recipients } from '@/config/navigation'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 import { productHref, type Product } from '@/lib/catalog'
 import { dropdown } from '@/lib/motion/variants'
 
 export function BeautyMega({ onNavigate, feature }: { onNavigate: () => void; feature: Product | null }) {
+  const live = liveCategories(beautyCategories, new Set(useStoreSettings().categories))
   return (
     <motion.div variants={dropdown} initial="hidden" animate="show" exit="exit" className="container-site">
       <div className="grid grid-cols-[repeat(4,minmax(0,1fr))_minmax(0,1.3fr)] gap-8 rounded-b-2xl border border-t-0 border-line bg-surface p-8 shadow-lift">
-        {beautyCategories.map((c) => (
+        {live.map((c) => (
           <div key={c.slug}>
             <Link href={c.href} onClick={onNavigate} className="mb-3 inline-flex items-center gap-1 font-display text-base font-bold hover:text-sunset-600">
               {c.name} <IconArrowRight size={16} />
@@ -114,7 +116,8 @@ const deptShortcuts: Record<string, { title: string; links: { label: string; hre
 
 /** Mega-menu for a lifestyle department: sub-categories, shopping shortcuts and a featured product. */
 export function DepartmentMega({ slug, feature, onNavigate }: { slug: string; feature: Product | null; onNavigate: () => void }) {
-  const dept = categories.find((c) => c.slug === slug)
+  const available = new Set(useStoreSettings().categories)
+  const dept = liveCategories(categories, available).find((c) => c.slug === slug)
   if (!dept) return null
   const shortcuts = deptShortcuts[slug]
   return (

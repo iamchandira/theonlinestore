@@ -2,7 +2,7 @@ import type { Payload } from 'payload'
 
 import type { Order } from '@/payload-types'
 
-import { loadPaymentConfig } from './config'
+import { loadPaymentConfig, type BankAccount } from './config'
 import { orderUrl } from './service'
 
 /**
@@ -11,7 +11,10 @@ import { orderUrl } from './service'
  * Email failures are logged and never undo a payment.
  */
 
-export function confirmationEmailFor(order: Order, bankInstructions: string) {
+export function confirmationEmailFor(
+  order: Order,
+  bank: { instructions: string; accounts: BankAccount[] },
+) {
   return import('../email/templates').then(({ orderConfirmation }) =>
     orderConfirmation({
       orderNumber: order.orderNumber,
@@ -27,6 +30,7 @@ export function confirmationEmailFor(order: Order, bankInstructions: string) {
         subtotal: order.totals?.subtotal ?? 0,
         discountTotal: order.totals?.discountTotal ?? 0,
         delivery: order.totals?.delivery ?? 0,
+        paymentFee: order.totals?.paymentFee ?? 0,
         giftWrap: order.totals?.giftWrap ?? 0,
         total: order.totals?.total ?? 0,
       },
@@ -37,7 +41,8 @@ export function confirmationEmailFor(order: Order, bankInstructions: string) {
       address: order.shippingAddress,
       delivery: { method: order.delivery?.method ?? 'standard', eta: order.delivery?.eta },
       paymentMethod: order.paymentMethod,
-      bankInstructions,
+      bankInstructions: bank.instructions,
+      bankAccounts: bank.accounts,
       viewUrl: orderUrl(order, order.accessToken ?? ''),
     }),
   )
@@ -56,7 +61,7 @@ export async function sendPaidConfirmation(payload: Payload, orderId: number) {
     await payload.sendEmail({
       to: order.contact.email,
       subject: `Order ${order.orderNumber} confirmed · The Online Store`,
-      html: await confirmationEmailFor(order, cfg.bankTransfer.instructions),
+      html: await confirmationEmailFor(order, cfg.bankTransfer),
     })
   } catch (err) {
     payload.logger.error({ err, orderId }, 'Paid confirmation email failed')

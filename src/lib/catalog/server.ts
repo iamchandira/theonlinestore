@@ -71,7 +71,6 @@ export function toProduct(doc: PProduct): Product {
     tags: (doc.tags ?? []).map((t) => asObj<Tag>(t)?.slug).filter(Boolean) as string[],
     badge: (doc.badge ?? null) as Product['badge'],
     productType: (doc.productType ?? 'beauty') as Product['productType'],
-    isDemo: Boolean(doc.isDemo),
     recipients: (doc.recipients ?? []).map((r) => asObj<Recipient>(r)?.slug).filter(Boolean) as string[],
     occasions: (doc.occasions ?? []).map((o) => asObj<Occasion>(o)?.slug).filter(Boolean) as string[],
     rating: doc.rating ?? 0,
@@ -486,6 +485,7 @@ export const getHomeData = cache(async () => {
     tileImages: Object.fromEntries(tiles) as Record<string, string[]>,
     saleFeature: saleFeature.products[0] ?? null,
     giftFeature: giftFeature.products[0] ?? null,
+    sections: home.sections ?? {},
   }
 })
 
@@ -622,13 +622,12 @@ export type PublicReview = {
   body: string
   authorName: string
   verifiedBuyer: boolean
-  isSample: boolean
   helpfulCount: number
   reply: string | null
   createdAt: string
   photos: { thumb: string; large: string }[]
 }
-export type ReviewSummary = { count: number; average: number; histogram: Record<1 | 2 | 3 | 4 | 5, number>; withPhotos: number; samplesOnly: boolean }
+export type ReviewSummary = { count: number; average: number; histogram: Record<1 | 2 | 3 | 4 | 5, number>; withPhotos: number }
 
 const REVIEW_SORTS: Record<ReviewSort, string> = { recent: '-createdAt', helpful: '-helpfulCount', highest: '-rating', lowest: 'rating' }
 
@@ -645,7 +644,6 @@ export function toPublicReview(r: Record<string, unknown>): PublicReview {
     body: String(r.body ?? ''),
     authorName: String(r.authorName ?? 'Customer'),
     verifiedBuyer: Boolean(r.verifiedBuyer),
-    isSample: Boolean(r.isSample),
     helpfulCount: Number(r.helpfulCount ?? 0),
     reply: (r.reply as string) || null,
     createdAt: String(r.createdAt),
@@ -658,7 +656,7 @@ export const getProductReviews = cache(async (productId: number, limit = 6) => {
   const payload = await getPayloadClient()
   const where: Where = { and: [{ product: { equals: productId } }, { status: { equals: 'approved' } }] }
   const [all, first] = await Promise.all([
-    payload.find({ collection: 'reviews', where, limit: 0, pagination: false, depth: 0, select: { rating: true, photos: true, isSample: true } }),
+    payload.find({ collection: 'reviews', where, limit: 0, pagination: false, depth: 0, select: { rating: true, photos: true } }),
     payload.find({ collection: 'reviews', where, sort: REVIEW_SORTS.recent, limit, depth: 1 }),
   ])
   const histogram = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } as ReviewSummary['histogram']
@@ -669,7 +667,6 @@ export const getProductReviews = cache(async (productId: number, limit = 6) => {
     average: count ? Math.round((all.docs.reduce((n, r) => n + r.rating, 0) / count) * 10) / 10 : 0,
     histogram,
     withPhotos: all.docs.filter((r) => (r.photos as unknown[] | null)?.length).length,
-    samplesOnly: count > 0 && all.docs.every((r) => r.isSample),
   }
   return { summary, reviews: first.docs.map((d) => toPublicReview(d as unknown as Record<string, unknown>)), totalPages: first.totalPages }
 })

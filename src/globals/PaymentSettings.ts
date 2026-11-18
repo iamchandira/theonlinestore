@@ -81,6 +81,9 @@ export const PaymentSettings: GlobalConfig = {
   hooks: {
     afterChange: [
       async ({ req, doc, previousDoc }) => {
+        // Payment names and "3 × Rs X" lines appear across the store
+        const { refreshStoreSettings } = await import('../lib/store/refresh')
+        refreshStoreSettings()
         if (!req.user) return
         const methods = ['payhere', 'koko', 'mintpay', 'cod', 'bankTransfer'] as const
         const changes = methods
@@ -140,7 +143,9 @@ export const PaymentSettings: GlobalConfig = {
       defaultValue: true,
       admin: {
         description:
-          'Lets you try card, Koko and Mintpay checkout locally with Approve / Decline buttons. Ignored on the live site.',
+          'Lets you try card, Koko and Mintpay checkout locally with Approve / Decline buttons. Not available on the live site.',
+        // Production builds never show it, and the server ignores it there (lib/payments/config.ts)
+        condition: () => process.env.NODE_ENV !== 'production',
       },
     },
     {
@@ -223,6 +228,27 @@ export const PaymentSettings: GlobalConfig = {
                   type: 'row',
                   fields: [
                     {
+                      name: 'showOnProducts',
+                      label: 'Show “3 × Rs X” on products',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      admin: { width: '50%', description: 'Only shown while this method is switched on and connected. Leave off until you go live with it.' },
+                    },
+                    {
+                      name: 'feePercent',
+                      label: 'Instalment fee (%)',
+                      type: 'number',
+                      min: 0,
+                      max: 30,
+                      defaultValue: 0,
+                      admin: { width: '50%', description: 'Added to the order total when paying this way (shown at checkout) and to the “3 × Rs X” on products. 0 = same price.' },
+                    },
+                  ],
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    {
                       ...credential(
                         'merchantId',
                         'Merchant ID',
@@ -271,6 +297,27 @@ export const PaymentSettings: GlobalConfig = {
                   name: 'label',
                   type: 'text',
                   defaultValue: 'Mintpay: 3 interest-free instalments',
+                },
+                {
+                  type: 'row',
+                  fields: [
+                    {
+                      name: 'showOnProducts',
+                      label: 'Show “3 × Rs X” on products',
+                      type: 'checkbox',
+                      defaultValue: false,
+                      admin: { width: '50%', description: 'Only shown while this method is switched on and connected. Leave off until you go live with it.' },
+                    },
+                    {
+                      name: 'feePercent',
+                      label: 'Instalment fee (%)',
+                      type: 'number',
+                      min: 0,
+                      max: 30,
+                      defaultValue: 0,
+                      admin: { width: '50%', description: 'Added to the order total when paying this way (shown at checkout) and to the “3 × Rs X” on products. 0 = same price.' },
+                    },
+                  ],
                 },
                 {
                   type: 'row',
@@ -329,13 +376,42 @@ export const PaymentSettings: GlobalConfig = {
               fields: [
                 ...methodBasics({ enabled: true, sortOrder: 50 }, { limits: false }),
                 {
+                  name: 'accounts',
+                  label: 'Bank accounts',
+                  type: 'array',
+                  labels: { singular: 'Account', plural: 'Accounts' },
+                  admin: { description: 'Shown to shoppers after ordering, on their order page and in the email. Bank transfer is hidden at checkout until at least one account is added.' },
+                  fields: [
+                    {
+                      type: 'row',
+                      fields: [
+                        { name: 'bankName', label: 'Bank', type: 'text', required: true, admin: { width: '50%', placeholder: 'e.g. Commercial Bank' } },
+                        { name: 'branch', type: 'text', admin: { width: '50%' } },
+                      ],
+                    },
+                    {
+                      type: 'row',
+                      fields: [
+                        { name: 'accountName', label: 'Account name', type: 'text', required: true, admin: { width: '50%' } },
+                        { name: 'accountNumber', label: 'Account number', type: 'text', required: true, admin: { width: '50%' } },
+                      ],
+                    },
+                    {
+                      type: 'row',
+                      fields: [
+                        { name: 'branchCode', label: 'Branch code', type: 'text', admin: { width: '50%' } },
+                        { name: 'swift', label: 'SWIFT code', type: 'text', admin: { width: '50%', description: 'Only for transfers from abroad.' } },
+                      ],
+                    },
+                  ],
+                },
+                {
                   name: 'instructions',
+                  label: 'Extra instructions (optional)',
                   type: 'textarea',
-                  defaultValue:
-                    'Bank: [Bank name] · Account name: The Online Store (Pvt) Ltd · Account no: [to be added] · Branch: [branch]',
                   admin: {
                     description:
-                      'Shown after ordering and in the confirmation email. Shoppers use their order number as the reference.',
+                      'Shown under the accounts, e.g. “Use your order number as the reference. Upload the slip on your order page.”',
                   },
                 },
                 {

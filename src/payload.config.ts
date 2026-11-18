@@ -28,6 +28,8 @@ import { Concerns, Occasions, Recipients, Tags } from './collections/Taxonomies'
 import { Users } from './collections/Users'
 import { CheckoutSettings } from './globals/CheckoutSettings'
 import { PaymentSettings } from './globals/PaymentSettings'
+import { Policies } from './globals/Policies'
+import { StoreSettings } from './globals/StoreSettings'
 import { HomePage } from './globals/HomePage'
 
 const filename = fileURLToPath(import.meta.url)
@@ -67,7 +69,7 @@ export default buildConfig({
     theme: 'light',
   },
   collections: [Orders, Returns, Transactions, PaymentSlips, Discounts, Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, Couriers, AuditLogs],
-  globals: [HomePage, CheckoutSettings, PaymentSettings],
+  globals: [StoreSettings, HomePage, CheckoutSettings, PaymentSettings, Policies],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -77,6 +79,10 @@ export default buildConfig({
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
+    // Development syncs the schema automatically ("push"). Production applies these migrations with
+    // `pnpm payload migrate`, run by deploy/deploy.sh before every build (one runner, never at start-up).
+    // After changing collections or fields: `pnpm payload migrate:create <name>` and commit the file.
+    migrationDir: path.resolve(dirname, 'migrations'),
     // Typo-tolerant search (TOS-201): trigram matching + edit distance, created before the schema syncs
     extensions: ['pg_trgm', 'fuzzystrmatch'],
     afterSchemaInit: [

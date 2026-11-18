@@ -11,6 +11,7 @@ import { notFound } from 'next/navigation'
 
 import type { Courier } from '@/payload-types'
 
+import { BankAccounts } from '@/components/checkout/BankAccounts'
 import { SlipUpload } from '@/components/checkout/PaymentWidgets'
 import { ReorderButton, ReturnRequest } from '@/components/orders/OrderActions'
 import { ButtonLink } from '@/components/ui/Button'
@@ -21,6 +22,7 @@ import { isOnline } from '@/collections/Transactions'
 import { returnableItems } from '@/endpoints/returns'
 import { formatLKR } from '@/lib/format'
 import { progress, type Status } from '@/lib/orders/lifecycle'
+import { loadPaymentConfig } from '@/lib/payments/config'
 import { getShopperOrder } from '@/lib/payments/shopperOrder'
 
 export const metadata: Metadata = { title: 'Your order', robots: { index: false, follow: false } }
@@ -79,6 +81,7 @@ export default async function OrderPage({ params, searchParams }: Props) {
     : null
   const track = trackingLink(courier, o.shipment?.trackingNumber)
   const { step, stopped } = progress(o.status as Status)
+  const pay = await loadPaymentConfig(payload)
   const r = await returnableItems(payload, o)
   const d = o.statusDates ?? {}
   const steps = [
@@ -206,7 +209,10 @@ export default async function OrderPage({ params, searchParams }: Props) {
             {o.paymentMethod === 'bank-transfer' &&
               o.status === 'pending-payment' &&
               ['unpaid', 'slip-uploaded'].includes(o.paymentStatus) && (
-                <SlipUpload orderNumber={o.orderNumber} token={token} />
+                <>
+                  <BankAccounts accounts={pay.bankTransfer.accounts} note={pay.bankTransfer.instructions} />
+                  <SlipUpload orderNumber={o.orderNumber} token={token} />
+                </>
               )}
           </div>
         </section>

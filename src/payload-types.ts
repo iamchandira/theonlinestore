@@ -126,15 +126,19 @@ export interface Config {
   };
   fallbackLocale: null;
   globals: {
+    'store-settings': StoreSetting;
     'home-page': HomePage;
     'checkout-settings': CheckoutSetting;
     'payment-settings': PaymentSetting;
+    policies: Policy;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
+    'store-settings': StoreSettingsSelect<false> | StoreSettingsSelect<true>;
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
     'checkout-settings': CheckoutSettingsSelect<false> | CheckoutSettingsSelect<true>;
     'payment-settings': PaymentSettingsSelect<false> | PaymentSettingsSelect<true>;
+    policies: PoliciesSelect<false> | PoliciesSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: null;
@@ -209,6 +213,10 @@ export interface Order {
     discountTotal?: number | null;
     delivery?: number | null;
     giftWrap?: number | null;
+    /**
+     * Cash on delivery or instalment fee
+     */
+    paymentFee?: number | null;
     total?: number | null;
   };
   contact: {
@@ -486,10 +494,6 @@ export interface Product {
    */
   generateSlug?: boolean | null;
   slug: string;
-  /**
-   * Sample content for design and testing. Remove all with `pnpm seed:demo --remove` before launch.
-   */
-  isDemo?: boolean | null;
   /**
    * Imported with placeholder prices. Untick once prices are checked.
    */
@@ -1137,10 +1141,6 @@ export interface Review {
   helpfulCount?: number | null;
   user?: (number | null) | User;
   /**
-   * Illustrative review on a demo product. Removed with the demo products.
-   */
-  isSample?: boolean | null;
-  /**
    * Internal note (why it was rejected, etc.).
    */
   moderationNote?: string | null;
@@ -1560,6 +1560,7 @@ export interface OrdersSelect<T extends boolean = true> {
         discountTotal?: T;
         delivery?: T;
         giftWrap?: T;
+        paymentFee?: T;
         total?: T;
       };
   contact?:
@@ -1846,7 +1847,6 @@ export interface ProductsSelect<T extends boolean = true> {
   productType?: T;
   generateSlug?: T;
   slug?: T;
-  isDemo?: T;
   priceTBC?: T;
   minPrice?: T;
   maxPrice?: T;
@@ -1885,7 +1885,6 @@ export interface ReviewsSelect<T extends boolean = true> {
   verifiedBuyer?: T;
   helpfulCount?: T;
   user?: T;
-  isSample?: T;
   moderationNote?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2276,7 +2275,68 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
- * Hero products and product rails on the home page.
+ * Contact details, social links and the announcement bar shown across the store, emails and invoices.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "store-settings".
+ */
+export interface StoreSetting {
+  id: number;
+  storeName: string;
+  /**
+   * Used by search engines and link previews when a page has no description of its own.
+   */
+  description?: string | null;
+  /**
+   * Shown on product pages, e.g. "2–4 working days".
+   */
+  deliveryEstimate?: string | null;
+  contact?: {
+    /**
+     * As shoppers should see it, e.g. +94 77 123 4567
+     */
+    phone?: string | null;
+    /**
+     * Digits only with country code, e.g. 94771234567. Leave empty to hide the WhatsApp button.
+     */
+    whatsapp?: string | null;
+    email?: string | null;
+    /**
+     * e.g. Mon–Sat, 9.00am – 6.00pm
+     */
+    hours?: string | null;
+    /**
+     * Shown in the footer and on invoices.
+     */
+    address?: string | null;
+    /**
+     * Optional. Printed on invoices.
+     */
+    businessRegistration?: string | null;
+  };
+  /**
+   * Full links to your pages. Leave empty to hide an icon.
+   */
+  social?: {
+    facebook?: string | null;
+    instagram?: string | null;
+    tiktok?: string | null;
+    youtube?: string | null;
+  };
+  /**
+   * Short messages that scroll across the top of every page. Leave empty to hide the bar. Only promise what is switched on (e.g. instalments).
+   */
+  announcements?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Hero products, product rails, banners and messages on the home page.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home-page".
@@ -2314,17 +2374,59 @@ export interface HomePage {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Promotional text on the home page. Only promise what the store actually offers.
+   */
+  sections?: {
+    /**
+     * Small “New” pill above the headline, e.g. “Avurudu gift hampers are here”. Leave empty to hide.
+     */
+    heroBadge?: string | null;
+    sale?: {
+      /**
+       * Off by default. Turn on while a real sale runs.
+       */
+      show?: boolean | null;
+      label?: string | null;
+      title?: string | null;
+      buttonLabel?: string | null;
+      link?: string | null;
+      /**
+       * Optional. The banner hides itself after this.
+       */
+      endsAt?: string | null;
+    };
+    gift?: {
+      show?: boolean | null;
+      title?: string | null;
+      text?: string | null;
+      link?: string | null;
+    };
+    giftFinderText?: string | null;
+    newsletter?: {
+      show?: boolean | null;
+      /**
+       * Only offer a discount here if a matching welcome code exists in Sales › Discounts.
+       */
+      title?: string | null;
+      text?: string | null;
+    };
+  };
   updatedAt?: string | null;
   createdAt?: string | null;
 }
 /**
- * Delivery fees, same-day, gift wrap and terms version. Payment methods are under Settings › Payments.
+ * Delivery fees, free delivery, same-day and gift wrap. Payment methods: Settings › Payments. Terms: Settings › Policies.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "checkout-settings".
  */
 export interface CheckoutSetting {
   id: number;
+  /**
+   * Untick to charge delivery on every order (the free-delivery bar and messages disappear).
+   */
+  freeDeliveryEnabled?: boolean | null;
   /**
    * After discounts. Standard delivery only.
    */
@@ -2407,10 +2509,6 @@ export interface CheckoutSetting {
       | null;
   };
   giftWrapFee?: number | null;
-  /**
-   * Recorded on every order with the time the shopper accepted it. Change it when the terms change.
-   */
-  termsVersion?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2431,7 +2529,7 @@ export interface PaymentSetting {
    */
   onlineHoldMinutes?: number | null;
   /**
-   * Lets you try card, Koko and Mintpay checkout locally with Approve / Decline buttons. Ignored on the live site.
+   * Lets you try card, Koko and Mintpay checkout locally with Approve / Decline buttons. Not available on the live site.
    */
   simulateGateways?: boolean | null;
   payhere?: {
@@ -2466,6 +2564,14 @@ export interface PaymentSetting {
      */
     maxOrder?: number | null;
     label?: string | null;
+    /**
+     * Only shown while this method is switched on and connected. Leave off until you go live with it.
+     */
+    showOnProducts?: boolean | null;
+    /**
+     * Added to the order total when paying this way (shown at checkout) and to the “3 × Rs X” on products. 0 = same price.
+     */
+    feePercent?: number | null;
     merchantId?: string | null;
     apiKey?: string | null;
     /**
@@ -2489,6 +2595,14 @@ export interface PaymentSetting {
      */
     maxOrder?: number | null;
     label?: string | null;
+    /**
+     * Only shown while this method is switched on and connected. Leave off until you go live with it.
+     */
+    showOnProducts?: boolean | null;
+    /**
+     * Added to the order total when paying this way (shown at checkout) and to the “3 × Rs X” on products. 0 = same price.
+     */
+    feePercent?: number | null;
     merchantId?: string | null;
     merchantSecret?: string | null;
   };
@@ -2544,7 +2658,24 @@ export interface PaymentSetting {
      */
     sortOrder?: number | null;
     /**
-     * Shown after ordering and in the confirmation email. Shoppers use their order number as the reference.
+     * Shown to shoppers after ordering, on their order page and in the email. Bank transfer is hidden at checkout until at least one account is added.
+     */
+    accounts?:
+      | {
+          bankName: string;
+          branch?: string | null;
+          accountName: string;
+          accountNumber: string;
+          branchCode?: string | null;
+          /**
+           * Only for transfers from abroad.
+           */
+          swift?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Shown under the accounts, e.g. “Use your order number as the reference. Upload the slip on your order page.”
      */
     instructions?: string | null;
     /**
@@ -2552,6 +2683,86 @@ export interface PaymentSetting {
      */
     holdHours?: number | null;
   };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Terms & conditions, returns & refunds, and privacy pages.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "policies".
+ */
+export interface Policy {
+  id: number;
+  termsTitle?: string | null;
+  /**
+   * Until this is written, the store shows a short placeholder summary.
+   */
+  termsBody?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Saved on every order with the time the shopper accepted the terms. Change it whenever the terms change, e.g. 2027-01.
+   */
+  termsVersion: string;
+  returnsTitle?: string | null;
+  /**
+   * Until this is written, the store shows a short placeholder summary.
+   */
+  returnsBody?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * 0 turns online return requests off.
+   */
+  returnWindowDays?: number | null;
+  /**
+   * Product types shoppers can’t request a return for (e.g. food).
+   */
+  nonReturnableTypes?: ('beauty' | 'fragrance' | 'footwear' | 'gift' | 'chocolate' | 'accessory' | 'home')[] | null;
+  privacyTitle?: string | null;
+  /**
+   * Until this is written, the store shows a short placeholder summary.
+   */
+  privacyBody?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2572,6 +2783,42 @@ export interface PayloadJobsStat {
     | null;
   updatedAt?: string | null;
   createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "store-settings_select".
+ */
+export interface StoreSettingsSelect<T extends boolean = true> {
+  storeName?: T;
+  description?: T;
+  deliveryEstimate?: T;
+  contact?:
+    | T
+    | {
+        phone?: T;
+        whatsapp?: T;
+        email?: T;
+        hours?: T;
+        address?: T;
+        businessRegistration?: T;
+      };
+  social?:
+    | T
+    | {
+        facebook?: T;
+        instagram?: T;
+        tiktok?: T;
+        youtube?: T;
+      };
+  announcements?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2597,6 +2844,37 @@ export interface HomePageSelect<T extends boolean = true> {
         maxPrice?: T;
         id?: T;
       };
+  sections?:
+    | T
+    | {
+        heroBadge?: T;
+        sale?:
+          | T
+          | {
+              show?: T;
+              label?: T;
+              title?: T;
+              buttonLabel?: T;
+              link?: T;
+              endsAt?: T;
+            };
+        gift?:
+          | T
+          | {
+              show?: T;
+              title?: T;
+              text?: T;
+              link?: T;
+            };
+        giftFinderText?: T;
+        newsletter?:
+          | T
+          | {
+              show?: T;
+              title?: T;
+              text?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -2606,6 +2884,7 @@ export interface HomePageSelect<T extends boolean = true> {
  * via the `definition` "checkout-settings_select".
  */
 export interface CheckoutSettingsSelect<T extends boolean = true> {
+  freeDeliveryEnabled?: T;
   freeThreshold?: T;
   includedKg?: T;
   perKgFee?: T;
@@ -2630,7 +2909,6 @@ export interface CheckoutSettingsSelect<T extends boolean = true> {
         districts?: T;
       };
   giftWrapFee?: T;
-  termsVersion?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
@@ -2664,6 +2942,8 @@ export interface PaymentSettingsSelect<T extends boolean = true> {
         minOrder?: T;
         maxOrder?: T;
         label?: T;
+        showOnProducts?: T;
+        feePercent?: T;
         merchantId?: T;
         apiKey?: T;
         privateKey?: T;
@@ -2677,6 +2957,8 @@ export interface PaymentSettingsSelect<T extends boolean = true> {
         minOrder?: T;
         maxOrder?: T;
         label?: T;
+        showOnProducts?: T;
+        feePercent?: T;
         merchantId?: T;
         merchantSecret?: T;
       };
@@ -2695,9 +2977,38 @@ export interface PaymentSettingsSelect<T extends boolean = true> {
     | {
         enabled?: T;
         sortOrder?: T;
+        accounts?:
+          | T
+          | {
+              bankName?: T;
+              branch?: T;
+              accountName?: T;
+              accountNumber?: T;
+              branchCode?: T;
+              swift?: T;
+              id?: T;
+            };
         instructions?: T;
         holdHours?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "policies_select".
+ */
+export interface PoliciesSelect<T extends boolean = true> {
+  termsTitle?: T;
+  termsBody?: T;
+  termsVersion?: T;
+  returnsTitle?: T;
+  returnsBody?: T;
+  returnWindowDays?: T;
+  nonReturnableTypes?: T;
+  privacyTitle?: T;
+  privacyBody?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

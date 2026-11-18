@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { allowRoles } from '../access/roles'
+import { uploadDir } from '../lib/payload/uploads'
 
 /**
  * Bank transfer slips (Sprint 5, TOS-605). Uploaded by the shopper from their order page (private link
@@ -64,7 +65,7 @@ export const PaymentSlips: CollectionConfig = {
     },
   ],
   upload: {
-    staticDir: 'private/payment-slips',
+    staticDir: uploadDir('private/payment-slips'),
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'application/pdf'],
     // Shoppers' phone photos can be large; keep a readable copy for staff
     imageSizes: [{ name: 'preview', width: 1400, withoutEnlargement: true }],

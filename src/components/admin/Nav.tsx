@@ -81,9 +81,11 @@ export async function Nav(props: ServerProps) {
       items: [
         ...(can('users') ? [{ label: 'Staff & roles', href: '/admin/collections/users?where[roles][not_in]=customer', icon: 'staff', match: 'not_in' }] : []),
         ...(can('audit-logs') ? [{ label: 'Audit log', href: '/admin/collections/audit-logs', icon: 'audit' }] : []),
+        ...(canGlobal('store-settings') ? [{ label: 'Store details', href: '/admin/globals/store-settings', icon: 'store' }] : []),
         ...(canGlobal('payment-settings') ? [{ label: 'Payments', href: '/admin/globals/payment-settings', icon: 'payments' }] : []),
         ...(canGlobal('checkout-settings') ? [{ label: 'Checkout & delivery', href: '/admin/globals/checkout-settings', icon: 'shipping' }] : []),
         ...(can('couriers') ? [{ label: 'Couriers', href: '/admin/collections/couriers', icon: 'couriers' }] : []),
+        ...(canGlobal('policies') ? [{ label: 'Policies', href: '/admin/globals/policies', icon: 'policies' }] : []),
         { label: 'Notifications', icon: 'notifications', soon: 'Sprint 7' },
       ],
     },

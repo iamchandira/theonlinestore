@@ -16,7 +16,6 @@ export type InvRow = {
   threshold: number
   price: number
   image: string | null
-  isDemo: boolean
 }
 
 const REASONS = [
@@ -157,7 +156,6 @@ export function InventoryTable({
                         <Link href={`/admin/collections/products/${r.productId}`}>{r.product}</Link>
                         <small>
                           {r.brand}
-                          {r.isDemo ? ' · Demo' : ''}
                         </small>
                       </div>
                     </div>

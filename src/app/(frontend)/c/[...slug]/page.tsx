@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!cat) return { title: 'Category not found' }
   return {
     title: `${cat.node.name} in Sri Lanka`,
-    description: cat.node.description ?? `Shop genuine ${cat.node.name.toLowerCase()} online at ${site.name}. Island-wide delivery, cash on delivery and Koko / Mintpay instalments.`,
+    description: cat.node.description ?? `Shop genuine ${cat.node.name.toLowerCase()} online at ${site.name}. Island-wide delivery and easy payment options.`,
     alternates: { canonical: cat.node.href },
   }
 }

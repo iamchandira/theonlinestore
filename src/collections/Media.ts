@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { allowRoles, anyone } from '../access/roles'
+import { uploadDir } from '../lib/payload/uploads'
 
 /** Product photos, banners and editorial images. Sizes match storefront usage (4:5 product cards). */
 export const Media: CollectionConfig = {
@@ -22,6 +23,7 @@ export const Media: CollectionConfig = {
     { name: 'credit', type: 'text' },
   ],
   upload: {
+    staticDir: uploadDir('media'),
     mimeTypes: ['image/*'],
     focalPoint: true,
     imageSizes: [

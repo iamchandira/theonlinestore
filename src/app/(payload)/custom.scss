@@ -2151,7 +2151,9 @@ $tos-sections: (
   }
 }
 .template-default__wrap:has(.global-edit--checkout-settings) .doc-header__header::before,
-.template-default__wrap:has(.global-edit--payment-settings) .doc-header__header::before {
+.template-default__wrap:has(.global-edit--payment-settings) .doc-header__header::before,
+.template-default__wrap:has(.global-edit--store-settings) .doc-header__header::before,
+.template-default__wrap:has(.global-edit--policies) .doc-header__header::before {
   content: 'Settings';
 }
 

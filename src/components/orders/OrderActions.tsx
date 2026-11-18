@@ -117,7 +117,7 @@ export function ReturnRequest({
       <div>
         <h3 className="text-lg font-bold">Return items</h3>
         <p className="text-sm text-ink-600">
-          Until {until}. Unopened items, or anything damaged or wrong. Food can’t be returned.
+          Until {until}. Unopened items, or anything damaged or wrong. Some items can’t be returned (see our returns policy).
         </p>
       </div>
       <fieldset className="flex flex-col gap-2">
@@ -131,7 +131,7 @@ export function ReturnRequest({
               <span className="font-semibold">{i.name}</span>
               {i.variant ? <span className="text-ink-500"> · {i.variant}</span> : null}
               {i.food ? (
-                <span className="block text-xs text-ink-500">Food: can’t be returned</span>
+                <span className="block text-xs text-ink-500">Can’t be returned</span>
               ) : !i.left ? (
                 <span className="block text-xs text-ink-500">Already requested</span>
               ) : null}

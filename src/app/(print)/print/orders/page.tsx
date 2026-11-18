@@ -7,6 +7,7 @@ import { isStaff } from '@/access/roles'
 import { PrintButton } from '@/components/admin/PrintButton'
 import { site } from '@/config/site'
 import { getPayloadClient } from '@/lib/catalog/server'
+import { getStoreSettings, type StorePublic } from '@/lib/store/settings'
 
 export const metadata = { title: 'Print orders' }
 
@@ -69,6 +70,7 @@ export default async function PrintOrders({ searchParams }: Props) {
     if (o && (staff || owner || (sp.t && sp.t === o.accessToken))) orders = [o]
   }
   if (!orders.length) notFound()
+  const store = await getStoreSettings()
 
   return (
     <>
@@ -80,20 +82,22 @@ export default async function PrintOrders({ searchParams }: Props) {
         <PrintButton />
       </div>
       {orders.map((o) =>
-        doc === 'slip' ? <PackingSlip key={o.id} o={o} /> : <Invoice key={o.id} o={o} />,
+        doc === 'slip' ? <PackingSlip key={o.id} o={o} store={store} /> : <Invoice key={o.id} o={o} store={store} />,
       )}
     </>
   )
 }
 
-function Head({ title, o }: { title: string; o: Order }) {
+function Head({ title, o, store }: { title: string; o: Order; store: StorePublic }) {
+  const c = store.contact
   return (
     <div className="head">
       <div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/brand/logo-header.png" alt={site.name} />
+        <img src="/brand/logo-header.png" alt={store.name} />
         <p className="muted" style={{ margin: '8px 0 0' }}>
-          {site.contact.address} · {site.contact.phone} · {site.contact.email}
+          {[c.address.replace(/\n/g, ', '), c.phone, c.email].filter(Boolean).join(' · ')}
+          {c.businessRegistration ? ` · Reg. ${c.businessRegistration}` : ''}
           <br />
           {site.domain}
         </p>
@@ -132,12 +136,12 @@ function Address({ o }: { o: Order }) {
   )
 }
 
-function Invoice({ o }: { o: Order }) {
+function Invoice({ o, store }: { o: Order; store: StorePublic }) {
   const t = o.totals ?? {}
   const paid = o.paymentStatus === 'paid' || o.paymentStatus === 'partially-refunded'
   return (
     <section className="sheet">
-      <Head title="Invoice" o={o} />
+      <Head title="Invoice" o={o} store={store} />
       <div className="cols">
         <div>
           <h3>Billed to</h3>
@@ -200,6 +204,12 @@ function Invoice({ o }: { o: Order }) {
               <td className="num">{lkr(t.giftWrap)}</td>
             </tr>
           ) : null}
+          {t.paymentFee ? (
+            <tr>
+              <td>{o.paymentMethod === 'cod' ? 'Cash on delivery fee' : 'Instalment fee'}</td>
+              <td className="num">{lkr(t.paymentFee)}</td>
+            </tr>
+          ) : null}
           <tr className="grand">
             <td>Total</td>
             <td className="num">{lkr(t.total ?? 0)}</td>
@@ -226,19 +236,20 @@ function Invoice({ o }: { o: Order }) {
         </span>
       </p>
       <p className="foot">
-        Thank you for shopping with {site.name}. Returns: unopened items within 7 days of delivery;
-        food can’t be returned. Questions? {site.contact.email} · WhatsApp {site.contact.phone}
+        Thank you for shopping with {store.name}.
+        {store.returns.windowDays > 0 ? ` Returns within ${store.returns.windowDays} days of delivery (see our returns policy).` : ''}
+        {store.contact.email || store.contact.phone ? ` Questions? ${[store.contact.email, store.contact.phone].filter(Boolean).join(' · ')}` : ''}
       </p>
     </section>
   )
 }
 
-function PackingSlip({ o }: { o: Order }) {
+function PackingSlip({ o, store }: { o: Order; store: StorePublic }) {
   const courier = typeof o.shipment?.courier === 'object' ? (o.shipment.courier as Courier) : null
   const hide = Boolean(o.gift?.hidePrices)
   return (
     <section className="sheet">
-      <Head title="Packing slip" o={o} />
+      <Head title="Packing slip" o={o} store={store} />
       <div className="cols">
         <div className="ship-to">
           <h3>Ship to</h3>
@@ -311,7 +322,7 @@ function PackingSlip({ o }: { o: Order }) {
           {o.customerNote}
         </div>
       ) : null}
-      <p className="foot">Packed by: ____________ · Checked by: ____________ · {site.name}</p>
+      <p className="foot">Packed by: ____________ · Checked by: ____________ · {store.name}</p>
     </section>
   )
 }

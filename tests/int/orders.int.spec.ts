@@ -367,7 +367,7 @@ describe('returns', () => {
     ])
     expect(
       (await ask(o, { items: [{ sku: CHOC, qty: 1 }], reason: 'changed-mind' })).body.error,
-    ).toMatch(/food/)
+    ).toMatch(/can’t be returned/)
     expect((await ask(o, { items: [{ sku: SKU, qty: 3 }], reason: 'changed-mind' })).status).toBe(
       400,
     )

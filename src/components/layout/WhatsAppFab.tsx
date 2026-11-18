@@ -4,7 +4,7 @@ import { IconBrandWhatsapp } from '@tabler/icons-react'
 import { motion } from 'motion/react'
 import { usePathname } from 'next/navigation'
 
-import { site } from '@/config/site'
+import { useStoreSettings, whatsappLink } from '@/lib/store/StoreSettingsProvider'
 
 /**
  * Floating WhatsApp chat (the dominant support channel in Sri Lanka). Sits above the mobile bottom nav.
@@ -13,12 +13,13 @@ import { site } from '@/config/site'
  */
 export function WhatsAppFab() {
   const pathname = usePathname()
+  const store = useStoreSettings()
   // Hidden on the checkout form so it never covers the order total or the Place order button.
-  if (pathname === '/checkout') return null
-  const text = encodeURIComponent('Hi The Online Store! I have a question about a product.')
+  const href = whatsappLink(store, `Hi ${store.name}! I have a question about a product.`)
+  if (pathname === '/checkout' || !href) return null
   return (
     <motion.a
-      href={`https://wa.me/${site.contact.whatsapp}?text=${text}`}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp (opens in a new tab)"

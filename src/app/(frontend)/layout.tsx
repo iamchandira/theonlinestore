@@ -11,26 +11,31 @@ import { WhatsAppFab } from '@/components/layout/WhatsAppFab'
 import { QuickAddSheet } from '@/components/product/QuickAddSheet'
 import { site } from '@/config/site'
 import { getBagSuggestions, getNavData } from '@/lib/catalog/server'
+import { getStoreSettings } from '@/lib/store/settings'
 
 import { fontVariables } from './fonts'
 import './globals.css'
 
-export const metadata: Metadata = {
-  metadataBase: new URL(site.url),
-  title: {
-    default: `${site.name}: Beauty, Fragrances, Gifts & More in Sri Lanka`,
-    template: `%s | ${site.name}`,
-  },
-  description: site.description,
-  applicationName: site.name,
-  openGraph: {
-    type: 'website',
-    siteName: site.name,
-    locale: 'en_LK',
-    images: [{ url: '/brand/og-default.jpg', width: 1200, height: 480, alt: site.name }],
-  },
-  twitter: { card: 'summary_large_image' },
-  alternates: { canonical: '/' },
+/** Name and default description come from Admin › Settings › Store details. */
+export async function generateMetadata(): Promise<Metadata> {
+  const store = await getStoreSettings()
+  return {
+    metadataBase: new URL(site.url),
+    title: {
+      default: `${store.name}: Beauty, Fragrances, Gifts & More in Sri Lanka`,
+      template: `%s | ${store.name}`,
+    },
+    description: store.description,
+    applicationName: store.name,
+    openGraph: {
+      type: 'website',
+      siteName: store.name,
+      locale: 'en_LK',
+      images: [{ url: '/brand/og-default.jpg', width: 1200, height: 480, alt: store.name }],
+    },
+    twitter: { card: 'summary_large_image' },
+    alternates: { canonical: '/' },
+  }
 }
 
 export const viewport: Viewport = {
@@ -41,17 +46,17 @@ export const viewport: Viewport = {
 }
 
 export default async function FrontendLayout({ children }: { children: ReactNode }) {
-  const [nav, bagSuggestions] = await Promise.all([getNavData(), getBagSuggestions()])
+  const [nav, bagSuggestions, store] = await Promise.all([getNavData(), getBagSuggestions(), getStoreSettings()])
   return (
     <html lang="en-LK" className={fontVariables}>
       <body>
-        <Providers>
+        <Providers store={store}>
           <AnnouncementBar />
           <Header nav={nav} />
           <main id="main" className="min-h-[60vh]">
             {children}
           </main>
-          <Footer />
+          <Footer store={store} />
           <CartDrawer suggestions={bagSuggestions} />
           <QuickAddSheet />
           <MobileBottomNav />

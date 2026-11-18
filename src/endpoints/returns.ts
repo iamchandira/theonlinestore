@@ -12,8 +12,11 @@ import { findShopperOrder } from './payments'
  *   POST /api/returns/:id/action  staff: approve, reject, receive (restock), refund, close
  */
 
-export const RETURN_DAYS = 7
-const NON_RETURNABLE_TYPES = ['chocolate'] // food can't be returned (returns policy)
+/** Return window and non-returnable product types come from Admin › Settings › Policies › Returns. */
+async function returnRules(payload: Parameters<Endpoint['handler']>[0]['payload']) {
+  const p = (await payload.findGlobal({ slug: 'policies', depth: 0, overrideAccess: true })) as { returnWindowDays?: number | null; nonReturnableTypes?: string[] | null }
+  return { days: p.returnWindowDays ?? 7, blocked: (p.nonReturnableTypes ?? ['chocolate']) as string[] }
+}
 const str = (v: unknown, max: number) =>
   String(v ?? '')
     .trim()
@@ -25,13 +28,15 @@ export async function returnableItems(
   payload: Parameters<Endpoint['handler']>[0]['payload'],
   order: Order,
 ) {
+  const rules = await returnRules(payload)
   const deliveredAt = order.statusDates?.deliveredAt
     ? new Date(order.statusDates.deliveredAt)
     : null
   const open =
+    rules.days > 0 &&
     ['delivered', 'completed'].includes(order.status) &&
     deliveredAt != null &&
-    Date.now() - deliveredAt.getTime() <= RETURN_DAYS * 86_400_000
+    Date.now() - deliveredAt.getTime() <= rules.days * 86_400_000
   const existing = await payload.find({
     collection: 'returns',
     where: { and: [{ order: { equals: order.id } }, { status: { not_equals: 'rejected' } }] },
@@ -64,7 +69,7 @@ export async function returnableItems(
   )
   const items = order.items.map((i) => {
     const pid = typeof i.product === 'object' ? i.product?.id : i.product
-    const food = NON_RETURNABLE_TYPES.includes(String(typeOf.get(pid as number) ?? ''))
+    const food = rules.blocked.includes(String(typeOf.get(pid as number) ?? '')) // e.g. food
     return {
       sku: i.sku,
       name: i.name,
@@ -75,8 +80,8 @@ export async function returnableItems(
       unitRefund: Math.round((i.lineTotal ?? 0) / i.quantity),
     }
   })
-  const until = deliveredAt ? new Date(deliveredAt.getTime() + RETURN_DAYS * 86_400_000) : null
-  return { open, until, items, existing: existing.docs as Return[] }
+  const until = deliveredAt ? new Date(deliveredAt.getTime() + rules.days * 86_400_000) : null
+  return { open, until, days: rules.days, items, existing: existing.docs as Return[] }
 }
 
 export const returnRequestEndpoint: Endpoint = {
@@ -99,7 +104,7 @@ export const returnRequestEndpoint: Endpoint = {
     if (!r.open)
       return Response.json(
         {
-          error: `Returns are open for ${RETURN_DAYS} days after delivery. Please contact us if something’s wrong.`,
+          error: r.days > 0 ? `Returns are open for ${r.days} days after delivery. Please contact us if something’s wrong.` : 'Please contact us about returns.',
         },
         { status: 409 },
       )
@@ -135,7 +140,7 @@ export const returnRequestEndpoint: Endpoint = {
       if (!line) return Response.json({ error: 'That item isn’t in this order.' }, { status: 400 })
       if (line.food)
         return Response.json(
-          { error: `${line.name} is food and can’t be returned.` },
+          { error: `${line.name} can’t be returned (see our returns policy).` },
           { status: 400 },
         )
       if (w.qty > line.left)

@@ -5,7 +5,6 @@ import {
   IconCash,
   IconCheck,
   IconCircleDashed,
-  IconFlask,
   IconLayoutDashboard,
   IconMessageStar,
   IconPackageOff,
@@ -18,7 +17,7 @@ import Link from 'next/link'
 import type { AdminViewServerProps } from 'payload'
 
 import { hasRole } from '../../../access/roles'
-import { site } from '../../../config/site'
+import { loadPaymentConfig } from '../../../lib/payments/config'
 
 const LKR = (n: number) => `Rs ${Math.round(n).toLocaleString('en-LK')}`
 /** Compact money for KPI tiles: Rs 16.7M, Rs 845K */
@@ -96,7 +95,6 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     mix: can('inventory-manager', 'marketing'),
     stockValue: can('inventory-manager'),
     prices: can(),
-    demo: can('marketing'),
     addProduct: can('marketing'),
     adjustStock: can('inventory-manager'),
     content: can('marketing'),
@@ -104,6 +102,11 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
 
   // Sales: the last 14 days (Sri Lanka time), cancelled orders excluded
   const { since, salesDays } = salesWindow(14)
+  const [storeSettings, policies, payCfg] = await Promise.all([
+    payload.findGlobal({ slug: 'store-settings', depth: 0 }),
+    payload.findGlobal({ slug: 'policies', depth: 0 }),
+    loadPaymentConfig(payload),
+  ])
   const [all, movements, staff, home, pendingReviews, recentOrders] = await Promise.all([
     payload.find({
       collection: 'products',
@@ -116,7 +119,6 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
         _status: true,
         productType: true,
         priceTBC: true,
-        isDemo: true,
         totalStock: true,
         lowStock: true,
         variants: true,
@@ -150,7 +152,6 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
   const published = products.filter((p) => p._status === 'published')
   const outOfStock = published.filter((p) => (p.totalStock ?? 0) <= 0)
   const priceTBC = products.filter((p) => p.priceTBC)
-  const demo = products.filter((p) => p.isDemo)
   const retailValue = products.reduce(
     (sum, p) =>
       sum + (p.variants ?? []).reduce((s, v) => s + (v.price ?? 0) * Math.max(0, v.stock ?? 0), 0),
@@ -196,11 +197,18 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
       cta: 'Review prices',
     },
     {
-      done: !site.contact.phone.includes('000 0000'),
+      done: Boolean(storeSettings.contact?.phone && storeSettings.contact?.email),
       title: 'Add your contact details',
-      text: 'Phone, WhatsApp and social links (store settings).',
-      href: undefined,
-      cta: 'Owner to provide',
+      text: 'Phone, WhatsApp, email, address and social links.',
+      href: '/admin/globals/store-settings',
+      cta: 'Store details',
+    },
+    {
+      done: Boolean(policies.termsBody && policies.returnsBody && policies.privacyBody),
+      title: 'Write your policies',
+      text: 'Terms & conditions, returns & refunds, and privacy.',
+      href: '/admin/globals/policies',
+      cta: 'Edit policies',
     },
     {
       done: (home.rails?.length ?? 0) > 0,
@@ -217,18 +225,11 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
       cta: 'Add staff',
     },
     {
-      done: false,
+      done: payCfg.mode === 'live' && Boolean(payCfg.payhere.merchantId) && payCfg.bankTransfer.accounts.length > 0,
       title: 'Connect payments',
-      text: 'PayHere, Koko and Mintpay (Sprint 5).',
-      href: undefined,
-      cta: 'Coming in Sprint 5',
-    },
-    {
-      done: demo.length === 0,
-      title: 'Remove demo products before launch',
-      text: `${demo.length} sample products are live for design and testing.`,
-      href: '/admin/collections/products?tab=demo',
-      cta: 'View demo items',
+      text: `${payCfg.mode === 'live' ? 'Live mode' : 'Still in Test mode'} · ${payCfg.payhere.merchantId ? 'PayHere connected' : 'PayHere not connected'} · ${payCfg.bankTransfer.accounts.length} bank account(s).`,
+      href: '/admin/globals/payment-settings',
+      cta: 'Payment settings',
     },
   ]
   const doneCount = checklist.filter((c) => c.done).length
@@ -286,14 +287,6 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
       tone: 'info',
       href: '/admin/collections/products?tab=price-tbc',
     },
-    {
-      label: 'Demo products',
-      value: String(demo.length),
-      hint: 'sample items for testing',
-      icon: IconFlask,
-      tone: '',
-      href: '/admin/collections/products?tab=demo',
-    },
   ]
 
   const KPI_FOR: Record<string, boolean> = {
@@ -303,7 +296,6 @@ export async function Dashboard({ initPageResult }: AdminViewServerProps) {
     'Reviews waiting': show.reviews,
     'Stock value': show.stockValue,
     'Prices to confirm': show.prices,
-    'Demo products': show.demo,
   }
   const visibleKpis = kpis.filter((k) => KPI_FOR[k.label])
 

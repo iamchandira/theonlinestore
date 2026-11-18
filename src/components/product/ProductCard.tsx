@@ -7,7 +7,8 @@ import Link from 'next/link'
 import { useRef } from 'react'
 
 import { Badge, badgeLabel } from '@/components/ui/Badge'
-import { InstalmentLine, Price } from '@/components/ui/Price'
+import { InstalmentLine } from '@/components/ui/InstalmentLine'
+import { Price } from '@/components/ui/Price'
 import { Rating } from '@/components/ui/Rating'
 import { minPrice, primaryVariant, productHref, type Product } from '@/lib/catalog'
 import { percentOff, pluralize } from '@/lib/format'
@@ -103,11 +104,6 @@ export function ProductCard({ product, priority, className }: ProductCardProps) 
         <div className="pointer-events-none absolute left-[var(--ci)] top-[var(--ci)] flex flex-col items-start gap-1">
           {off > 0 && <Badge tone="sale" size="sm">-{off}%</Badge>}
           {badge && <Badge tone={badge.tone} size="sm">{badge.label}</Badge>}
-          {product.isDemo && (
-            <Badge tone="outline" size="sm" title="Sample product for design and testing">
-              Sample
-            </Badge>
-          )}
         </div>
 
         {/*

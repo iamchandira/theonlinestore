@@ -6,10 +6,11 @@ import { useState } from 'react'
 
 import { LogoMark } from '@/components/brand/Logo'
 import { Button } from '@/components/ui/Button'
-import { site } from '@/config/site'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 
 /** Newsletter sign-up with inline validation and a friendly success state (wired to email provider in Sprint 7). */
-export function Newsletter() {
+export function Newsletter({ title = 'Be the first to know', text = 'New arrivals, restocks and members-only deals. No spam, unsubscribe anytime.' }: { title?: string; text?: string }) {
+  const { contact } = useStoreSettings()
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
@@ -23,9 +24,9 @@ export function Newsletter() {
           <div className="flex flex-col gap-3">
             <LogoMark size={52} />
             <h2 id="news-title" className="text-3xl font-bold text-white md:text-4xl">
-              Get Rs 500 off your first order
+              {title}
             </h2>
-            <p className="max-w-md text-ink-300">New arrivals, restocks and members-only deals. No spam, unsubscribe anytime.</p>
+            <p className="max-w-md text-ink-300">{text}</p>
           </div>
           <div>
             <AnimatePresence mode="wait" initial={false}>
@@ -83,9 +84,11 @@ export function Newsletter() {
                 </motion.form>
               )}
             </AnimatePresence>
-            <a href={`https://wa.me/${site.contact.whatsapp}`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-ink-200 hover:text-white">
-              <IconBrandWhatsapp size={19} className="text-[#3ddc84]" /> Prefer WhatsApp? Join our deals channel
-            </a>
+            {contact.whatsapp && (
+              <a href={`https://wa.me/${contact.whatsapp}`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-ink-200 hover:text-white">
+                <IconBrandWhatsapp size={19} className="text-[#3ddc84]" /> Prefer WhatsApp? Join our deals channel
+              </a>
+            )}
           </div>
         </div>
       </div>

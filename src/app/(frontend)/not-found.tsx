@@ -3,13 +3,15 @@ import Link from 'next/link'
 
 import { BrandLoader } from '@/components/brand/BrandLoader'
 import { ButtonLink } from '@/components/ui/Button'
-import { categories } from '@/config/navigation'
-import { site } from '@/config/site'
+import { categories as allCategories, liveCategories } from '@/config/navigation'
+import { getStoreSettings } from '@/lib/store/settings'
 
 export const metadata = { title: 'Page not found' }
 
 /** Friendly 404 with routes back into shopping: no dead ends. */
-export default function NotFound() {
+export default async function NotFound() {
+  const { contact, categories: slugs } = await getStoreSettings()
+  const categories = liveCategories(allCategories, new Set(slugs))
   return (
     <section className="container-site flex flex-col items-center py-16 text-center md:py-24">
       <BrandLoader size={96} label="Page not found" />
@@ -22,9 +24,11 @@ export default function NotFound() {
         <ButtonLink href="/" size="lg">
           <IconArrowLeft size={19} /> Back to home
         </ButtonLink>
-        <ButtonLink href={`https://wa.me/${site.contact.whatsapp}`} size="lg" variant="outline">
-          <IconBrandWhatsapp size={19} /> Ask us on WhatsApp
-        </ButtonLink>
+        {contact.whatsapp && (
+          <ButtonLink href={`https://wa.me/${contact.whatsapp}`} size="lg" variant="outline">
+            <IconBrandWhatsapp size={19} /> Ask us on WhatsApp
+          </ButtonLink>
+        )}
       </div>
       <nav aria-label="Popular categories" className="mt-10 flex flex-wrap justify-center gap-2">
         {categories.map((c) => (

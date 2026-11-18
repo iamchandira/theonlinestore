@@ -32,7 +32,6 @@ export async function Inventory({ initPageResult, params, searchParams }: AdminV
         threshold: v.lowStockThreshold ?? 5,
         price: v.price ?? 0,
         image: img?.sizes?.thumb?.url || img?.url || null,
-        isDemo: Boolean(p.isDemo),
       }
     }),
   )

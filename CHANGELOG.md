@@ -2,6 +2,34 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.9.0] · 2026-11-18 · Launch preparation
+### Added
+- **Settings › Store details:** store name, description, phone, WhatsApp, email, hours, address, business registration, social links and the announcement bar, used across the store, emails and invoices.
+- **Settings › Policies:** terms & conditions (with version, recorded on every order), returns & refunds (return window and non-returnable product types, used by Returns) and privacy, written in the admin and shown at /terms, /returns, /privacy.
+- **Free delivery on/off** in Checkout & delivery; every free-delivery message follows it.
+- **Bank accounts** (any number: bank, branch, account name and number, branch code, SWIFT) shown after ordering, on the order page and in emails. Bank transfer stays hidden until one is added.
+- **Instalment display controls:** "3 × Rs X" only shows when Koko/Mintpay is switched on, connected and set to show; an optional instalment fee is added at checkout and included in the "3 × Rs X".
+- **Home page banners & messages** in the admin: hero badge, sale banner (with end date), gift banner, gift finder text, newsletter text; each can be switched off.
+- **Production deployment kit** (`deploy/`): database compose file, Caddy (HTTPS), systemd service, deploy and backup scripts, production env template; runbook `docs/10-go-live.md`.
+- **Database migrations** (`src/migrations`), applied by `pnpm payload migrate` on deploy.
+- Sitemap and robots.txt; security headers; standalone build; upload folders outside the build (`UPLOADS_DIR`).
+- `production` branch built by `scripts/make-production.sh` (no tests, seed/demo scripts, test gateway or styleguide).
+
+### Changed
+- Menus, category tiles, search suggestions, the 404 page and the footer show only categories that exist in the admin; footer links to pages that don't exist yet were removed.
+- Payment names on product pages, the footer and home page follow Settings › Payments (no Koko/Mintpay/card claims unless they're available).
+- Seed scripts refuse to run against anything but a local database.
+- The test gateway can never run on a real domain, and its option is hidden in production builds.
+- Dev image optimisation uses WebP only (AVIF in production), which makes first image loads in development much faster.
+
+### Removed
+- Demo/sample product and review flags and labels from the code (local demo data is identified by `DEMO-` SKUs).
+- Hard-coded promises: "Rs 500 off your first order", "Up to 25% off body care" countdown, "Free gift wrapping", "Koko & Mintpay" USP.
+- The unused template Dockerfile.
+
+### Fixed
+- Uploads would have been lost on every deploy (they were saved inside the build folder).
+
 ## [0.8.0] · 2026-11-16 · Sprint 6: Orders & delivery
 ### Added
 - **Order lifecycle** (TOS-702): staff can only move orders along the allowed steps; packing and shipping need payment (COD excepted); shipping needs a courier and tracking number; each step's date is kept.

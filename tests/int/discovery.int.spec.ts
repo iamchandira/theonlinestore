@@ -75,7 +75,7 @@ describe('faceted filters (TOS-202)', () => {
 
 describe('reviews (TOS-206)', () => {
   it('only approved reviews count, emails stay private, and the rating follows moderation', async () => {
-    const product = (await payload.find({ collection: 'products', where: { _status: { equals: 'published' }, isDemo: { not_equals: true } }, limit: 1, depth: 0 })).docs[0]
+    const product = (await payload.find({ collection: 'products', where: { _status: { equals: 'published' }, 'variants.sku': { not_like: 'DEMO-' } }, limit: 1, depth: 0 })).docs[0]
     const before = { rating: product.rating ?? null, count: product.reviewCount ?? 0 }
 
     const review = await payload.create({

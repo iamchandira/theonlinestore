@@ -354,6 +354,10 @@ export const Orders: CollectionConfig = {
                       ...money('giftWrap', 'Gift wrap'),
                       admin: { readOnly: true, width: '20%' },
                     } as Field,
+                    {
+                      ...money('paymentFee', 'Payment fee'),
+                      admin: { readOnly: true, width: '20%', description: 'Cash on delivery or instalment fee' },
+                    } as Field,
                     { ...money('total'), admin: { readOnly: true, width: '20%' } } as Field,
                   ],
                 },

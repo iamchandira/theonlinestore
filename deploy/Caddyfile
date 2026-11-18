@@ -1,0 +1,39 @@
+# /etc/caddy/Caddyfile — HTTPS certificates are issued and renewed automatically once DNS points here.
+theonlinestore.lk {
+	encode zstd gzip
+
+	# Browsers must always use HTTPS for this domain (and subdomains) for a year
+	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+	# Bank slips and product photos can be large phone pictures
+	request_body {
+		max_size 25MB
+	}
+
+	reverse_proxy 127.0.0.1:3000 {
+		# The app's rate limits use the visitor's real address from this header
+		header_up X-Real-IP {remote_host}
+	}
+
+	log {
+		output file /var/log/caddy/theonlinestore.log {
+			roll_size 20MiB
+			roll_keep 10
+		}
+	}
+}
+
+# www → main domain
+www.theonlinestore.lk {
+	redir https://theonlinestore.lk{uri} permanent
+}
+
+# Staging (optional): uncomment and point staging.theonlinestore.lk at a second app on port 3001
+# staging.theonlinestore.lk {
+# 	basic_auth {
+# 		team <hash from: caddy hash-password>
+# 	}
+# 	reverse_proxy 127.0.0.1:3001 {
+# 		header_up X-Real-IP {remote_host}
+# 	}
+# }

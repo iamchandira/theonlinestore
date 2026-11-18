@@ -5,7 +5,8 @@ import { motion } from 'motion/react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { categories, type Tint } from '@/config/navigation'
+import { categories, liveCategories, type Tint } from '@/config/navigation'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 import { fadeUp, stagger } from '@/lib/motion/variants'
 import { cn } from '@/lib/utils/cn'
 
@@ -33,6 +34,8 @@ const icons = { perfume: IconPerfume, shoe: IconShoe, gift: IconGift, candy: Ico
  * is recognisable at a glance. Horizontal snap scroll on phones, 4 × 2 grid on desktop.
  */
 export function CategoryTiles({ tileImages = {} }: { tileImages?: Record<string, string[]> }) {
+  const tiles = liveCategories(categories, new Set(useStoreSettings().categories))
+  if (!tiles.length) return null
   return (
     <section aria-labelledby="cat-title" className="container-site py-10 md:py-14">
       <div className="mb-5 flex items-end justify-between">
@@ -50,7 +53,7 @@ export function CategoryTiles({ tileImages = {} }: { tileImages?: Record<string,
         variants={stagger(0.05)}
         className="scrollbar-none -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0"
       >
-        {categories.map((c, i) => {
+        {tiles.map((c, i) => {
           const imgs = tileImages[c.slug] ?? []
           const Icon = c.icon ? icons[c.icon] : null
           return (

@@ -21,7 +21,6 @@ export type Row = {
   maxPrice: number | null
   onSale: boolean
   priceTBC: boolean
-  isDemo: boolean
   updatedAt: string
 }
 
@@ -166,15 +165,6 @@ export function ProductsTable({
                         <Link href={`/admin/collections/products/${r.id}`}>{r.name}</Link>
                         <small>
                           {[r.brand, r.category].filter(Boolean).join(' · ')}
-                          {r.isDemo && (
-                            <>
-                              {' '}
-                              ·{' '}
-                              <span style={{ color: 'var(--tos-info)', fontWeight: 600 }}>
-                                Demo
-                              </span>
-                            </>
-                          )}
                         </small>
                       </div>
                     </div>

@@ -31,8 +31,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title,
     description,
     alternates: { canonical: `/p/${product.slug}` },
-    // Demo/sample products are never indexed
-    robots: product.isDemo ? { index: false, follow: false } : undefined,
     openGraph: { type: 'website', title, description, images: image ? [{ url: abs(image) }] : undefined },
   }
 }
@@ -63,9 +61,9 @@ export default async function ProductPage({ params }: Props) {
     brand: { '@type': 'Brand', name: product.brand },
     url: `${site.url}/p/${product.slug}`,
   }
-  // Ratings in search results only from genuine reviews (never sample reviews on demo products)
-  if (reviews.summary.count > 0 && !reviews.summary.samplesOnly && !product.isDemo) {
-    const genuine = reviews.reviews.filter((r) => !r.isSample)
+  // Ratings in search results come from approved shopper reviews
+  if (reviews.summary.count > 0) {
+    const genuine = reviews.reviews
     productLd.aggregateRating = { '@type': 'AggregateRating', ratingValue: reviews.summary.average, reviewCount: reviews.summary.count, bestRating: 5, worstRating: 1 }
     productLd.review = genuine.slice(0, 5).map((r) => ({
       '@type': 'Review',

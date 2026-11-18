@@ -7,12 +7,16 @@ import { useState } from 'react'
 
 import { LogoMark } from '@/components/brand/Logo'
 import { Drawer } from '@/components/ui/Drawer'
-import { categories } from '@/config/navigation'
-import { site } from '@/config/site'
+import { categories, liveCategories } from '@/config/navigation'
+import { useStoreSettings, whatsappLink } from '@/lib/store/StoreSettingsProvider'
 import { cn } from '@/lib/utils/cn'
 
 /** Mobile navigation drawer: accordion categories, account shortcuts, help contacts. */
 export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const store = useStoreSettings()
+  const wa = whatsappLink(store)
+  const phone = store.contact.phone
+  const cats = liveCategories(categories, new Set(store.categories))
   const [expanded, setExpanded] = useState<string | null>('skincare')
   return (
     <Drawer
@@ -26,12 +30,16 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
       }
       footer={
         <div className="flex flex-col gap-2 text-sm">
-          <a href={`https://wa.me/${site.contact.whatsapp}`} className="flex h-11 items-center gap-2 font-semibold text-[#128c4a]">
-            <IconBrandWhatsapp size={20} /> Chat with us on WhatsApp
-          </a>
-          <a href={`tel:${site.contact.phone.replace(/\s/g, '')}`} className="flex h-11 items-center gap-2 text-ink-700">
-            <IconPhone size={20} /> {site.contact.phone}
-          </a>
+          {wa && (
+            <a href={wa} className="flex h-11 items-center gap-2 font-semibold text-[#128c4a]">
+              <IconBrandWhatsapp size={20} /> Chat with us on WhatsApp
+            </a>
+          )}
+          {phone && (
+            <a href={`tel:${phone.replace(/\s/g, '')}`} className="flex h-11 items-center gap-2 text-ink-700">
+              <IconPhone size={20} /> {phone}
+            </a>
+          )}
         </div>
       }
     >
@@ -45,7 +53,7 @@ export function MobileMenu({ open, onClose }: { open: boolean; onClose: () => vo
       </div>
       <nav aria-label="Categories" className="px-2 pb-4">
         <ul>
-          {categories.map((c) => (
+          {cats.map((c) => (
             <li key={c.slug} className="border-b border-line last:border-0">
               {c.children ? (
                 <>

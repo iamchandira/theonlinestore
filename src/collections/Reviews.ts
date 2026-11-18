@@ -145,13 +145,6 @@ export const Reviews: CollectionConfig = {
     { name: 'helpfulCount', type: 'number', defaultValue: 0, admin: { position: 'sidebar', readOnly: true } },
     { name: 'user', type: 'relationship', relationTo: 'users', admin: { position: 'sidebar', readOnly: true }, access: { read: staffOnlyField } },
     {
-      name: 'isSample',
-      label: 'Sample review',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: { position: 'sidebar', description: 'Illustrative review on a demo product. Removed with the demo products.' },
-    },
-    {
       name: 'moderationNote',
       type: 'textarea',
       access: { read: staffOnlyField },

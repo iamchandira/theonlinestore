@@ -15,8 +15,8 @@ import { useEffect, useRef, useState } from 'react'
 
 import { Logo } from '@/components/brand/Logo'
 import { CountBadge } from '@/components/ui/IconButton'
-import { primaryNav, type MegaKey } from '@/config/navigation'
-import { site } from '@/config/site'
+import { linkIsLive, primaryNav, type MegaKey } from '@/config/navigation'
+import { useStoreSettings } from '@/lib/store/StoreSettingsProvider'
 import type { NavData } from '@/lib/catalog/server'
 import { formatLKR } from '@/lib/format'
 import { useAuth } from '@/lib/auth/AuthProvider'
@@ -40,6 +40,9 @@ import { SearchBox } from './SearchBox'
  * reserves its space at the top of the page.
  */
 export function Header({ nav }: { nav: NavData }) {
+  const { deliveryEstimate, categories: catSlugs } = useStoreSettings()
+  const available = new Set(catSlugs)
+  const nav_ = primaryNav.filter((i) => (i.mega === 'beauty' ? ['beauty', 'skincare', 'hair-care', 'body-care', 'lips'].some((x) => available.has(x)) : linkIsLive(i.href, available)))
   const { itemCount, subtotal, wishlist, setCartOpen, cartIconRef, addPulse } = useShop()
   const { user: authUser } = useAuth()
   const [mega, setMega] = useState<null | MegaKey>(null)
@@ -162,7 +165,7 @@ export function Header({ nav }: { nav: NavData }) {
           <div className="container-site flex items-center justify-between">
             <nav aria-label="Shop categories">
               <ul className="flex items-center gap-1" onMouseLeave={scheduleClose}>
-                {primaryNav.map((item) => (
+                {nav_.map((item) => (
                   <li key={item.label} onMouseEnter={() => (item.mega ? openMega(item.mega) : scheduleClose())}>
                     {item.mega ? (
                       <button
@@ -193,7 +196,7 @@ export function Header({ nav }: { nav: NavData }) {
             </nav>
             <p className="flex items-center gap-2 text-sm text-ink-600">
               <IconTruckDelivery size={18} className="text-sunset-600" />
-              Island-wide delivery in <strong className="font-semibold text-ink-900">{site.deliveryEstimate}</strong>
+              Island-wide delivery in <strong className="font-semibold text-ink-900">{deliveryEstimate}</strong>
             </p>
           </div>
           <AnimatePresence>
