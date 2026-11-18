@@ -2,6 +2,10 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.9.1] · 2026-11-19 · Security update
+### Changed
+- Next.js 16.4.1 → 16.4.6 (and eslint-config-next) for a known security vulnerability reported at build time. Builds no longer stop on the first attempt.
+
 ## [0.9.0] · 2026-11-18 · Launch preparation
 ### Added
 - **Settings › Store details:** store name, description, phone, WhatsApp, email, hours, address, business registration, social links and the announcement bar, used across the store, emails and invoices.
