@@ -10,13 +10,14 @@ How to put The Online Store on a server, connect the domain, configure it from t
 | `production` | What the server runs. Built from `main` by `scripts/make-production.sh`, which removes everything that only exists for development and testing | The server |
 | `launch-prep`, `sprint/*` | Short-lived work branches, merged into `main` | Developers |
 
-**Release a new version:**
+**Release a new version** from the separate production folder, so the development copy keeps its test tools:
 
 ```bash
-git checkout production
+# once: git worktree add ../theonlinestore-production production
+cd ../theonlinestore-production
 git merge main          # if a deleted test/demo file conflicts, the script below deletes it again
 ./scripts/make-production.sh
-git commit -am "Production: merge main"
+git add -A && git commit -m "Production: merge main"
 git push origin production
 ```
 
