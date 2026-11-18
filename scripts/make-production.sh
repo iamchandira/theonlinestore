@@ -4,9 +4,9 @@
 # built-in test gateway, the design styleguide).
 #
 #   git checkout production
-#   git merge main            # conflicts in files this script deletes are fine: it deletes them again
-#   ./scripts/make-production.sh
-#   git commit -am "Production: merge main"
+#   git merge main            # conflicts in package.json, the lockfile or deleted files are expected
+#   ./scripts/make-production.sh   # resolves them and strips dev-only files again
+#   git add -A && git commit -m "Production: merge main"
 #
 # Safe to run any number of times. Run it on the production branch only.
 set -euo pipefail
@@ -16,6 +16,15 @@ branch=$(git rev-parse --abbrev-ref HEAD)
 if [ "$branch" != "production" ]; then
   echo "Run this on the production branch (you're on '$branch')." >&2
   exit 1
+fi
+
+# Mid-merge from main: package.json and the lockfile always conflict (this script edits them), and files
+# this script deletes may conflict too. Take main's versions; the steps below strip them again.
+if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+  echo "→ Resolving the merge with main's package.json and lockfile"
+  git checkout --theirs package.json pnpm-lock.yaml 2>/dev/null || true
+  git add package.json pnpm-lock.yaml
+  pnpm install --frozen-lockfile >/dev/null
 fi
 
 remove() { for p in "$@"; do if [ -e "$p" ] || git ls-files --error-unmatch "$p" >/dev/null 2>&1; then git rm -rq --ignore-unmatch "$p"; rm -rf "$p"; echo "  removed $p"; fi; done; }
