@@ -15,8 +15,8 @@ How to put The Online Store on a server, connect the domain, configure it from t
 ```bash
 # once: git worktree add ../theonlinestore-production production
 cd ../theonlinestore-production
-git merge main          # if a deleted test/demo file conflicts, the script below deletes it again
-./scripts/make-production.sh
+git merge main          # conflicts in package.json, the lockfile or deleted test files are expected
+./scripts/make-production.sh   # resolves those conflicts and strips dev-only files again
 git add -A && git commit -m "Production: merge main"
 git push origin production
 ```
