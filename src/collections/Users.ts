@@ -71,6 +71,18 @@ export const Users: CollectionConfig = {
     delete: ({ req }) => hasRole(req.user, 'admin'),
   },
   hooks: {
+    beforeOperation: [
+      async ({ args, operation, req }) => {
+        // The very first account (the owner, from /admin's "Create first user") is confirmed straight away,
+        // so don't send it a "confirm your email" message. Payload would otherwise send one and, if email
+        // isn't working yet on a new server, fail the whole sign-up.
+        if (operation === 'create') {
+          const { totalDocs } = await req.payload.count({ collection: 'users', overrideAccess: true, req })
+          if (totalDocs === 0) return { ...args, disableVerificationEmail: true }
+        }
+        return args
+      },
+    ],
     beforeChange: [
       async ({ data, operation, req, originalDoc }) => {
         // The very first user becomes super-admin (bootstrap); everyone else defaults to customer
