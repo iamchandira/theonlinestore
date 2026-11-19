@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Deploys the latest code on the server. Run as the "store" user from /srv/theonlinestore/app:
 #   ./deploy/deploy.sh            (production branch)
-# Database migrations run automatically during the build and on start.
+# Order: backup → install → database migrations → build → restart → health check.
 set -euo pipefail
 cd /srv/theonlinestore/app
 BRANCH="${1:-production}"
@@ -16,7 +16,6 @@ echo "→ Backing up the database first"
 
 echo "→ Installing and building"
 set -a; source /srv/theonlinestore/.env; set +a
-corepack enable >/dev/null 2>&1 || true
 pnpm install --frozen-lockfile --prod=false
 # Apply database changes once, before the build (the build reads the database for pre-rendered pages)
 pnpm payload migrate

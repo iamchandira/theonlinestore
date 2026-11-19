@@ -45,67 +45,114 @@ The server applies migrations in `deploy.sh` before every build. Never point the
 
 ## 3. Set up the server (once)
 
-Run as root on the new server, replacing values in `<…>`.
+Replace everything in `<…>`. `your-mac$` lines run on your computer, `root#` on the server as root, `store$` on the server as the app user.
+
+**3.1 First login and updates**
 
 ```bash
-# Updates, firewall, automatic security patches
-apt update && apt -y upgrade
-apt -y install ufw unattended-upgrades git curl
-ufw allow OpenSSH && ufw allow 80 && ufw allow 443 && ufw --force enable
-
-# App user (no password login; add your SSH key to /home/store/.ssh/authorized_keys)
-adduser --disabled-password --gecos "" store
-mkdir -p /srv/theonlinestore/{uploads,backups,pgdata,image-cache} && chown -R store:store /srv/theonlinestore
-
-# Docker (database), Node 22 + pnpm (app), Caddy (HTTPS)
-curl -fsSL https://get.docker.com | sh && usermod -aG docker store
-curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt -y install nodejs && corepack enable
-apt -y install debian-keyring debian-archive-keyring apt-transport-https
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
-curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/apt/sources.list.d/caddy-stable.list
-apt update && apt -y install caddy
-
-# Let the app user restart the store service (used by deploy.sh)
-echo 'store ALL=(root) NOPASSWD: /usr/bin/systemctl restart theonlinestore' > /etc/sudoers.d/theonlinestore
+your-mac$ ssh root@<server-ip>
+root# apt update && apt -y upgrade && apt -y install ufw unattended-upgrades git curl
+root# timedatectl set-timezone Asia/Colombo
+root# dpkg-reconfigure -f noninteractive unattended-upgrades
 ```
 
-SSH hardening: in `/etc/ssh/sshd_config` set `PasswordAuthentication no` and `PermitRootLogin prohibit-password`, then `systemctl restart ssh`.
-
-**Code, settings and database** (as `store`):
+**3.2 Firewall and swap** (the build needs more memory than 4 GB on its own)
 
 ```bash
-sudo -iu store
-git clone -b production <your private repo URL> /srv/theonlinestore/app
-cp /srv/theonlinestore/app/deploy/env.production.example /srv/theonlinestore/.env
-nano /srv/theonlinestore/.env      # fill every value (openssl rand -hex 32 for secrets)
-chmod 600 /srv/theonlinestore/.env
-docker compose -f /srv/theonlinestore/app/deploy/docker-compose.db.yml --env-file /srv/theonlinestore/.env up -d
+root# ufw allow OpenSSH && ufw allow 80 && ufw allow 443 && ufw --force enable
+root# fallocate -l 4G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+root# echo '/swapfile none swap sw 0 0' >> /etc/fstab
 ```
 
-**Service and web server** (back as root: `exit`):
+**3.3 App user and folders**
 
 ```bash
-cp /srv/theonlinestore/app/deploy/theonlinestore.service /etc/systemd/system/
-systemctl daemon-reload && systemctl enable theonlinestore      # started by the first deploy
-cp /srv/theonlinestore/app/deploy/Caddyfile /etc/caddy/Caddyfile && mkdir -p /var/log/caddy && chown caddy:caddy /var/log/caddy
-systemctl reload caddy
+root# adduser --disabled-password --gecos "" store
+root# mkdir -p /home/store/.ssh && cp ~/.ssh/authorized_keys /home/store/.ssh/ && chown -R store:store /home/store/.ssh
+root# mkdir -p /srv/theonlinestore/{uploads,backups,pgdata,image-cache,repo.git}
+root# chown -R store:store /srv/theonlinestore
+root# echo 'store ALL=(root) NOPASSWD: /usr/bin/systemctl restart theonlinestore' > /etc/sudoers.d/theonlinestore
 ```
 
-**First build** (as `store`):
+**3.4 Software: Docker, Node 22, pnpm, Caddy**
 
 ```bash
-sudo -iu store
-/srv/theonlinestore/app/deploy/deploy.sh production     # backup → migrations → build → start → check
+root# curl -fsSL https://get.docker.com | sh && usermod -aG docker store
+root# curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && apt -y install nodejs
+root# npm install -g pnpm@12.8.1
+root# apt -y install debian-keyring debian-archive-keyring apt-transport-https
+root# curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+root# curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' > /etc/apt/sources.list.d/caddy-stable.list
+root# apt update && apt -y install caddy
+root# node -v && pnpm -v && docker -v && caddy version
 ```
 
-**Nightly backups** (as `store`, `crontab -e`):
+**3.5 SSH hardening** (first check `ssh store@<server-ip>` works from your computer)
 
+```bash
+root# sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/; s/^#\?PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config
+root# systemctl restart ssh
 ```
+
+**3.6 Send the code to the server** (a private Git repository on the server itself; nothing goes to a third party)
+
+```bash
+store$ git init --bare /srv/theonlinestore/repo.git
+
+your-mac$ cd "<project>/theonlinestore-production"
+your-mac$ git remote add server store@<server-ip>:/srv/theonlinestore/repo.git
+your-mac$ git push server production
+
+store$ git clone -b production /srv/theonlinestore/repo.git /srv/theonlinestore/app
+```
+
+(If you use a private GitHub repository instead, push `production` there and clone from it; `deploy.sh` pulls from `origin` either way.)
+
+**3.7 Settings file**
+
+```bash
+store$ cp /srv/theonlinestore/app/deploy/env.production.example /srv/theonlinestore/.env
+store$ openssl rand -hex 24      # database password: paste into POSTGRES_PASSWORD and inside DATABASE_URL
+store$ openssl rand -hex 32      # PAYLOAD_SECRET
+store$ nano /srv/theonlinestore/.env
+store$ chmod 600 /srv/theonlinestore/.env
+```
+
+Fill every value: `NEXT_PUBLIC_SITE_URL=https://theonlinestore.lk`, the password written out in full in both places, SMTP details, PayHere values (or leave PayHere empty to launch with cash on delivery and bank transfer). Never add `ALLOW_TEST_GATEWAY`.
+
+**3.8 Database**
+
+```bash
+store$ docker compose -f /srv/theonlinestore/app/deploy/docker-compose.db.yml --env-file /srv/theonlinestore/.env up -d
+store$ docker ps          # postgres … (healthy)
+```
+
+**3.9 Service and web server**
+
+```bash
+root# cp /srv/theonlinestore/app/deploy/theonlinestore.service /etc/systemd/system/
+root# systemctl daemon-reload && systemctl enable theonlinestore
+root# cp /srv/theonlinestore/app/deploy/Caddyfile /etc/caddy/Caddyfile
+root# mkdir -p /var/log/caddy && chown caddy:caddy /var/log/caddy
+root# systemctl reload caddy
+```
+
+**3.10 First deploy**
+
+```bash
+store$ /srv/theonlinestore/app/deploy/deploy.sh
+```
+
+It backs up, installs, creates the database tables (migrations), builds (3–6 minutes), starts the store and prints `✓ Live`. Check: `curl -I http://127.0.0.1:3000` and `journalctl -u theonlinestore -n 50`.
+
+**3.11 Nightly backups**
+
+```bash
+store$ crontab -e
 30 2 * * * /srv/theonlinestore/app/deploy/backup.sh >> /srv/theonlinestore/backups/backup.log 2>&1
-0 3 * * * rclone sync /srv/theonlinestore/backups remote:theonlinestore-backups   # after `rclone config`
 ```
 
-Test a restore once before launch (the command is at the bottom of `backup.sh`).
+Copy `/srv/theonlinestore/backups` off the server too (e.g. `rclone` to Google Drive or Backblaze), and test one restore before launch (command at the bottom of `backup.sh`).
 
 ## 4. Connect the domain
 
@@ -125,11 +172,13 @@ When DNS has updated (minutes to a few hours), Caddy gets the HTTPS certificate 
 ## 5. Updating the live store
 
 ```bash
-ssh store@<server>
-/srv/theonlinestore/app/deploy/deploy.sh
+your-mac$ cd "<project>/theonlinestore-production"
+your-mac$ git merge main && ./scripts/make-production.sh && git add -A && git commit -m "Production: merge main"
+your-mac$ git push server production
+your-mac$ ssh store@<server-ip> /srv/theonlinestore/app/deploy/deploy.sh
 ```
 
-It backs up the database, pulls `production`, installs, runs migrations, builds, restarts and checks the store answers. Logs: `journalctl -u theonlinestore -f`. A deploy takes 2–4 minutes; the store is unavailable for a few seconds during the restart.
+It backs up the database, pulls `production`, installs, runs migrations, builds, restarts and checks the store answers. Logs: `journalctl -u theonlinestore -f`. The store is unavailable for a few seconds during the restart.
 
 ## 6. Configure the store in the admin (no seeding)
 
