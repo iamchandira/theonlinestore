@@ -135,9 +135,11 @@ export default buildConfig({
       generateLabel: (_, doc) => String(doc.name ?? ''),
       generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.slug}`, ''),
     }),
-    // SEO fields (meta title, description, image) with sensible auto-generated defaults
+    // SEO fields (meta title, description, image) with sensible auto-generated defaults.
+    // Products place the same fields in their own "SEO" tab (collections/Products.ts); the plugin still
+    // powers their "Auto-generate" buttons.
     seoPlugin({
-      collections: ['products', 'categories', 'brands'],
+      collections: ['categories', 'brands'],
       uploadsCollection: 'media',
       tabbedUI: false,
       generateTitle: ({ doc }) => `${(doc as { name?: string }).name ?? ''} | ${siteName}`,

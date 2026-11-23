@@ -173,7 +173,7 @@ The admin is designed as its own product UI, taking ideas from Shopify, Linear, 
   - Status pills: Active, Draft, Low, Out, Demo, Price TBC.
   - KPI cards, progress bar, checklist, bar chart.
   - Tabs with counts, search field, select, data table with sticky header, floating bulk-action bar, pager, stock stepper, highlighted dirty rows, toast.
-- **Sidebar:** grouped sections with small caps headings, Tabler icons, count badges and "Soon" tags for features on the roadmap. Stays open on desktop; a drawer on phones.
+- **Sidebar:** top-level areas with Tabler icons that open into sub menus (a thin guide line, smaller text), count badges, a red dot on a closed area that needs attention, and "Soon" tags for features on the roadmap. Stays open on desktop; a drawer on phones.
 - **Command palette:** ⌘K / Ctrl+K, keyboard-first, arrow keys and Enter.
 - **Responsive:** header actions become icon-only below 768 px, and KPI cards reflow (`minmax(148px, 1fr)`).
 - **Motion:** 150 ms fades and slides only, switched off under `prefers-reduced-motion`.

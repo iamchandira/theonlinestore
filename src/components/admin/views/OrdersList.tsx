@@ -5,6 +5,7 @@ import type { ListViewServerProps, Where } from 'payload'
 import { ORDER_STATUSES, PAYMENT_STATUSES } from '../../../collections/Orders'
 import { PAYMENT_METHODS } from '../../../collections/Transactions'
 import { OrdersTable, type OrderRow } from './OrdersTable'
+import { CleanListURL } from './CleanListURL'
 
 const TABS = [
   { key: 'all', label: 'All', statuses: null },
@@ -159,6 +160,7 @@ export async function OrdersList(props: ListViewServerProps) {
 
   return (
     <div className="tos-page">
+      <CleanListURL href={href({ page })} />
       <header className="tos-page__header">
         <div>
           <p className="tos-page__eyebrow">Sales</p>

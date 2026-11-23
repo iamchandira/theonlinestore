@@ -25,11 +25,13 @@ test.describe('Admin Panel', () => {
   })
 
   test('can navigate to list view', async () => {
+    // Users open as Customers / Staff tabs with clean addresses (no ?where[roles]…, ?limit=…&depth=…)
     await page.goto('http://localhost:3000/admin/collections/users')
-    // Payload appends saved list preferences (?limit=…&sort=…), so match the path only
-    await expect(page).toHaveURL(/\/admin\/collections\/users(\?.*)?$/)
-    const listViewArtifact = page.locator('h1', { hasText: 'Users' }).first()
-    await expect(listViewArtifact).toBeVisible()
+    await expect(page.locator('h1', { hasText: 'Customers' }).first()).toBeVisible()
+    await expect(page).toHaveURL(/\/admin\/collections\/users$/)
+    await page.getByRole('link', { name: /Staff & roles/ }).first().click()
+    await expect(page.locator('h1', { hasText: 'Staff & roles' }).first()).toBeVisible()
+    await expect(page).toHaveURL(/\/admin\/collections\/users\?view=staff$/)
   })
 
   test('can navigate to edit view', async () => {

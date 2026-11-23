@@ -23,6 +23,7 @@ import {
   IconPhoto,
   IconBell,
   IconBox,
+  IconChevronDown,
   IconPackages,
   IconReceipt,
   IconSearch,
@@ -39,7 +40,7 @@ import {
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, type ComponentType } from 'react'
+import { useEffect, useRef, useState, type ComponentType } from 'react'
 
 const ICONS: Record<string, ComponentType<{ size?: number; stroke?: number }>> = {
   home: IconHome,
@@ -85,17 +86,20 @@ export type NavItemDef = {
   also?: string[]
   /** Distinguishes two links to the same collection by query (customers vs staff) */
   match?: string
+  /** …and the opposite: not active when the query contains this */
+  unless?: string
   badge?: string
   badgeTone?: 'danger'
   soon?: string
+  /** Pages inside this area (shown as a sub menu) */
+  children?: NavItemDef[]
 }
-export type NavGroupDef = { label?: string; items: NavItemDef[] }
 
 export function NavClient({
-  groups,
+  items,
   user,
 }: {
-  groups: NavGroupDef[]
+  items: NavItemDef[]
   user: { name: string; email: string; role: string; initials: string; href: string }
 }) {
   const { navOpen, hydrated, shouldAnimate, navRef, setNavOpen } = useNav()
@@ -175,7 +179,8 @@ export function NavClient({
     setNavOpen(false)
   }
 
-  const isActive = (item: NavItemDef) => {
+  const isActive = (item: NavItemDef): boolean => {
+    if (item.children) return item.children.some(isActive)
     if (!item.href) return false
     const path = item.href.split('?')[0]
     if (item.exact) return pathname === path
@@ -183,9 +188,92 @@ export function NavClient({
       (p) => pathname === p || pathname.startsWith(`${p}/`),
     )
     if (!onPath) return false
-    if (item.match) return query.includes(item.match) || pathname !== path
-    // Users list without a role filter: don't highlight both Customers and Staff
+    if (item.match) return query.includes(item.match)
+    if (item.unless) return !query.includes(item.unless)
     return true
+  }
+
+  /**
+   * Sub menus: the area holding the current page opens by itself; anything the user opens or closes is
+   * remembered (per user, like the sidebar itself).
+   */
+  const activeArea = items.find((i) => i.children && isActive(i))?.label
+  const [toggled, setToggled] = useState<Record<string, boolean>>({})
+  useEffect(() => {
+    void getPreference<Record<string, boolean> | null>('tos-nav-areas').then((saved) => {
+      if (saved && typeof saved === 'object') setToggled((t) => ({ ...saved, ...t }))
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  // Arriving in an area (from a link, search or the dashboard) always shows its pages
+  const [seenArea, setSeenArea] = useState(activeArea)
+  if (activeArea !== seenArea) {
+    setSeenArea(activeArea)
+    if (activeArea && toggled[activeArea] === false) setToggled({ ...toggled, [activeArea]: true })
+  }
+  const isOpen = (label: string) => toggled[label] ?? label === activeArea
+  const toggle = (label: string) => {
+    const next = { ...toggled, [label]: !isOpen(label) }
+    setToggled(next)
+    void setPreference('tos-nav-areas', next, true)
+  }
+
+  const renderLink = (item: NavItemDef, sub = false) => {
+    const Icon = ICONS[item.icon] ?? IconBox
+    const cls = `tos-nav__link${sub ? ' tos-nav__link--sub' : ''}`
+    if (item.soon || !item.href) {
+      return (
+        <span key={item.label} className={`${cls} tos-nav__link--soon`} title={`Coming in ${item.soon}`} aria-disabled="true">
+          {!sub && <Icon size={19} stroke={1.75} />}
+          {item.label}
+          <span className="tos-nav__badge tos-nav__badge--soon">Soon</span>
+        </span>
+      )
+    }
+    const active = isActive(item)
+    return (
+      <Link
+        key={item.label}
+        href={item.href}
+        prefetch={false}
+        className={`${cls}${active ? ' tos-nav__link--active' : ''}`}
+        aria-current={active ? 'page' : undefined}
+      >
+        {!sub && <Icon size={19} stroke={1.75} />}
+        {item.label}
+        {item.badge && (
+          <span className={`tos-nav__badge${item.badgeTone === 'danger' ? '' : ' tos-nav__badge--soon'}`}>{item.badge}</span>
+        )}
+      </Link>
+    )
+  }
+
+  const renderArea = (area: NavItemDef) => {
+    const Icon = ICONS[area.icon] ?? IconBox
+    const open = isOpen(area.label)
+    const active = isActive(area)
+    const id = `tos-nav-${area.label.toLowerCase().replace(/[^a-z]+/g, '-')}`
+    // Closed areas still show that something needs attention (orders to process, slips, low stock…)
+    const alerts = (area.children ?? []).filter((c) => c.badge && c.badgeTone === 'danger').length
+    return (
+      <div key={area.label} className={`tos-nav__area${open ? ' tos-nav__area--open' : ''}`}>
+        <button
+          type="button"
+          className={`tos-nav__link tos-nav__area-toggle${active ? ' tos-nav__area-toggle--active' : ''}`}
+          aria-expanded={open}
+          aria-controls={id}
+          onClick={() => toggle(area.label)}
+        >
+          <Icon size={19} stroke={1.75} />
+          {area.label}
+          {!open && alerts > 0 && <span className="tos-nav__dot" aria-label="Needs attention" />}
+          <IconChevronDown size={16} stroke={2} className="tos-nav__chevron" />
+        </button>
+        <div id={id} className="tos-nav__sub" hidden={!open}>
+          {area.children!.map((c) => renderLink(c, true))}
+        </div>
+      </div>
+    )
   }
 
   const classes = [
@@ -231,48 +319,9 @@ export function NavClient({
             </span>
           </button>
 
-          {groups.map((g, gi) => (
-            <div key={g.label ?? gi} className="tos-nav__group">
-              {g.label && <div className="tos-nav__label">{g.label}</div>}
-              {g.items.map((item) => {
-                const Icon = ICONS[item.icon] ?? IconBox
-                if (item.soon || !item.href) {
-                  return (
-                    <span
-                      key={item.label}
-                      className="tos-nav__link tos-nav__link--soon"
-                      title={`Coming in ${item.soon}`}
-                      aria-disabled="true"
-                    >
-                      <Icon size={19} stroke={1.75} />
-                      {item.label}
-                      <span className="tos-nav__badge tos-nav__badge--soon">Soon</span>
-                    </span>
-                  )
-                }
-                const active = isActive(item)
-                return (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    prefetch={false}
-                    className={`tos-nav__link${active ? ' tos-nav__link--active' : ''}`}
-                    aria-current={active ? 'page' : undefined}
-                  >
-                    <Icon size={19} stroke={1.75} />
-                    {item.label}
-                    {item.badge && (
-                      <span
-                        className={`tos-nav__badge${item.badgeTone === 'danger' ? '' : ' tos-nav__badge--soon'}`}
-                      >
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                )
-              })}
-            </div>
-          ))}
+          <div className="tos-nav__group">
+            {items.map((item) => (item.children ? renderArea(item) : renderLink(item)))}
+          </div>
 
           <div className="tos-nav__footer">
             <a className="tos-nav__link" href="/" target="_blank" rel="noopener noreferrer">

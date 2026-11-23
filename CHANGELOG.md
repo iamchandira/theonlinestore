@@ -2,6 +2,19 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.9.2] · 2026-11-24 · Admin tidy-up
+### Added
+- **Announcement bar icons:** pick an icon (or none) for each message in Settings › Store details, from a grid of 18. Messages saved before keep the icons they had. Needs the database migration `20261123_210038_announcement_icons` (run by `deploy.sh`).
+
+### Changed
+- **Sidebar sub menus:** Orders, Products, Catalogue setup, Content, Insights and Settings open into their pages. The area you're in opens by itself, your choices are remembered, and a closed area shows a red dot when something needs attention.
+- **Customers and Staff & roles** have their own page with tabs, search and a clean address (`/admin/collections/users`, `?view=staff`) instead of `?where[roles][contains]=customer&limit=10&depth=1`. Customers show email confirmation and order count; staff show their roles.
+- Orders, Products, Reviews and Customers keep short addresses (Payload's `limit`, `depth` and remembered `sort` are no longer added).
+- **Product SEO** (title, description, image, preview) moved to its own **SEO** tab when creating or editing a product. Stored data is unchanged.
+
+### Removed
+- The unused demo/sample columns (`is_demo`, `is_sample`) from the database, in the same migration.
+
 ## [0.9.1] · 2026-11-19 · Security update
 ### Changed
 - Next.js 16.4.1 → 16.4.6 (and eslint-config-next) for a known security vulnerability reported at build time. Builds no longer stop on the first attempt.

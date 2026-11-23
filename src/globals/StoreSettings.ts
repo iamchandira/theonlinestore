@@ -2,6 +2,7 @@ import type { GlobalConfig } from 'payload'
 
 import { allowRoles, anyone } from '../access/roles'
 import { audit } from '../lib/payload/audit'
+import { ANNOUNCEMENT_ICON_KEYS, NO_ICON } from '../lib/store/announcementIconKeys'
 
 /**
  * Store details (launch prep): name, contact details, social links, announcement bar and the default
@@ -97,9 +98,24 @@ export const StoreSettings: GlobalConfig = {
               name: 'announcements',
               type: 'array',
               labels: { singular: 'Message', plural: 'Messages' },
-              admin: { description: 'Short messages that scroll across the top of every page. Leave empty to hide the bar. Only promise what is switched on (e.g. instalments).' },
-              defaultValue: [{ text: 'Island-wide delivery' }, { text: 'Cash on delivery available across Sri Lanka' }, { text: '100% genuine brands, sourced from authorised suppliers' }],
-              fields: [{ name: 'text', type: 'text', required: true, maxLength: 90 }],
+              defaultValue: [
+                { text: 'Island-wide delivery', icon: 'delivery' },
+                { text: 'Cash on delivery available across Sri Lanka', icon: 'cash' },
+                { text: '100% genuine brands, sourced from authorised suppliers', icon: 'genuine' },
+              ],
+              admin: {
+                description: 'Short messages that scroll across the top of every page. Leave empty to hide the bar. Only promise what is switched on (e.g. instalments).',
+                components: { RowLabel: '/components/admin/fields/AnnouncementRowLabel#AnnouncementRowLabel' },
+              },
+              fields: [
+                { name: 'text', type: 'text', required: true, maxLength: 90 },
+                {
+                  name: 'icon',
+                  type: 'select',
+                  options: [...ANNOUNCEMENT_ICON_KEYS, NO_ICON].map((v) => ({ label: v, value: v })),
+                  admin: { components: { Field: '/components/admin/fields/IconPicker#IconPicker' } },
+                },
+              ],
             },
           ],
         },

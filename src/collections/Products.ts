@@ -1,3 +1,4 @@
+import { MetaDescriptionField, MetaImageField, MetaTitleField, OverviewField, PreviewField } from '@payloadcms/plugin-seo/fields'
 import { APIError, slugField, type CollectionConfig, type Where } from 'payload'
 import { exportEndpoint, importEndpoint } from '../endpoints/productsCsv'
 import { cardsEndpoint, facetsEndpoint, pairsEndpoint, suggestEndpoint } from '../endpoints/storefront'
@@ -503,6 +504,25 @@ export const Products: CollectionConfig = {
               type: 'relationship',
               relationTo: 'products',
               hasMany: true,
+            },
+          ],
+        },
+        {
+          // Search engines and link previews (WhatsApp, Facebook). Stored as `meta`, as before.
+          label: 'SEO',
+          description: 'How this product looks in Google and when its link is shared. Leave empty to use the product name and short description.',
+          fields: [
+            {
+              name: 'meta',
+              type: 'group',
+              label: false,
+              fields: [
+                OverviewField({}),
+                MetaTitleField({ hasGenerateFn: true }),
+                MetaDescriptionField({ hasGenerateFn: true }),
+                MetaImageField({ relationTo: 'media', hasGenerateFn: false }),
+                PreviewField({ hasGenerateFn: false }),
+              ],
             },
           ],
         },

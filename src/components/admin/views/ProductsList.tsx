@@ -4,6 +4,7 @@ import type { ListViewServerProps, Where } from 'payload'
 
 import { ProductsTable, type Row } from './ProductsTable'
 import { ProductsToolbar } from './ProductsToolbar'
+import { CleanListURL } from './CleanListURL'
 
 const TABS = [
   { key: 'all', label: 'All' },
@@ -103,6 +104,7 @@ export async function ProductsList(props: ListViewServerProps) {
 
   return (
     <div className="tos-page">
+      <CleanListURL href={keep({ page })} />
       <header className="tos-page__header">
         <div>
           <p className="tos-page__eyebrow">Catalogue</p>
