@@ -2,6 +2,21 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.9.4] · 2026-11-24 · Product page redesign
+### Changed
+- **Edit / create product page redesigned:**
+  - Five tabs: Product, Variants & pricing, Details, Merchandising, SEO.
+  - Each tab holds titled section cards with a one-line hint.
+  - Extra photos now sit in the Product tab, next to the name and description.
+  - A tab shows a red count when it has an error.
+- **Summary card** at the top of the sidebar: price range (with "On sale"), stock (with low / sold-out warnings), units sold and rating, plus links to the store page and stock history. It replaces eight greyed-out read-only inputs, and the sidebar scrolls with the page.
+- **Action bar:** a coloured status pill (Published / Draft / New) and an "Unsaved changes" note next to Save Draft and Publish. The developer-only API tab and the repeated collection note are gone.
+- "Price to be confirmed" shows as an amber warning when ticked.
+- No data changes: field names and stored values are the same (no migration).
+
+### Fixed
+- **Admin on phones and tablets:** pages were squeezed into a narrow strip because the content fell into the closed sidebar's column. The top bar and action bar now fit the screen, and on the product page Save / Publish stay pinned while scrolling.
+
 ## [0.9.3] · 2026-11-24 · Admin polish
 ### Changed
 - Sidebar sub menus open and close with a smooth animation (instant when reduced motion is on).

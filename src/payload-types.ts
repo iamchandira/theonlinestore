@@ -337,8 +337,6 @@ export interface Order {
   createdAt: string;
 }
 /**
- * Prices are in LKR. A product flagged "Price to be confirmed" shows a warning until its prices are checked.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
@@ -373,11 +371,9 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * One benefit per line.
+   * Drag to reorder. Shown after the variant’s own photo.
    */
-  benefits?: string | null;
-  howToUse?: string | null;
-  ingredients?: string | null;
+  gallery?: (number | Media)[] | null;
   /**
    * What the variants differ by, e.g. Size.
    */
@@ -422,10 +418,6 @@ export interface Product {
     image?: (number | null) | Media;
     id?: string | null;
   }[];
-  /**
-   * Extra photos shown after the variant photo.
-   */
-  gallery?: (number | Media)[] | null;
   details?: {
     concentration?: ('Parfum' | 'Eau de Parfum' | 'Eau de Toilette' | 'Eau de Cologne' | 'Body mist') | null;
     scentFamily?: ('Floral' | 'Fresh' | 'Citrus' | 'Woody' | 'Oriental' | 'Gourmand' | 'Aquatic' | 'Fruity') | null;
@@ -472,6 +464,12 @@ export interface Product {
     giftWrapped?: boolean | null;
     personalisable?: boolean | null;
   };
+  /**
+   * One benefit per line.
+   */
+  benefits?: string | null;
+  howToUse?: string | null;
+  ingredients?: string | null;
   badge?: ('bestseller' | 'new' | 'trending' | 'gift' | 'limited') | null;
   tags?: (number | Tag)[] | null;
   recipients?: (number | Recipient)[] | null;
@@ -503,19 +501,16 @@ export interface Product {
   generateSlug?: boolean | null;
   slug: string;
   /**
-   * Imported with placeholder prices. Untick once prices are checked.
+   * Shown as a warning in the admin until the prices are checked. Untick once they are.
    */
   priceTBC?: boolean | null;
   minPrice?: number | null;
   maxPrice?: number | null;
   totalStock?: number | null;
-  /**
-   * A variant is at or below its threshold.
-   */
   lowStock?: boolean | null;
   onSale?: boolean | null;
   /**
-   * Units sold (updated by orders from Sprint 6). Drives "Bestsellers" sorting.
+   * Units sold (updated by orders). Drives "Bestsellers" sorting.
    */
   salesCount?: number | null;
   /**
@@ -1791,9 +1786,7 @@ export interface ProductsSelect<T extends boolean = true> {
   categories?: T;
   shortDescription?: T;
   description?: T;
-  benefits?: T;
-  howToUse?: T;
-  ingredients?: T;
+  gallery?: T;
   optionName?: T;
   option2Name?: T;
   variants?:
@@ -1812,7 +1805,6 @@ export interface ProductsSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
-  gallery?: T;
   details?:
     | T
     | {
@@ -1837,6 +1829,9 @@ export interface ProductsSelect<T extends boolean = true> {
         giftWrapped?: T;
         personalisable?: T;
       };
+  benefits?: T;
+  howToUse?: T;
+  ingredients?: T;
   badge?: T;
   tags?: T;
   recipients?: T;
