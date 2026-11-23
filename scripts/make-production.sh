@@ -36,6 +36,11 @@ echo "→ Seed, demo and design-only scripts and data"
 remove scripts/seed-demo.ts scripts/demo scripts/seed-catalog.ts scripts/seed-admin.ts scripts/devOnly.ts \
   scripts/screenshots.mjs scripts/check-contrast.ts seed public/catalogue
 
+echo "→ Local development services (Postgres with the default password, Mailpit inbox)"
+# Hosting panels (e.g. Hostinger's Docker Manager) start a root docker-compose.yml on their own, which would
+# expose both to the internet. The server's database is deploy/docker-compose.db.yml only.
+remove docker-compose.yml
+
 echo "→ Test gateway and styleguide"
 remove "src/app/(frontend)/checkout/pay/test-gateway" "src/app/(frontend)/styleguide"
 cat > src/lib/payments/simulator.ts <<'TS'
