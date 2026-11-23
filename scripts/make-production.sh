@@ -62,7 +62,11 @@ for (const k of ["test", "test:e2e", "test:int", "check:contrast", "seed:admin",
 fs.writeFileSync("package.json", JSON.stringify(p, null, 2) + "\n")
 '
 echo "→ Test-only dependencies"
-pnpm remove @playwright/test @testing-library/react @vitejs/plugin-react jsdom vite-tsconfig-paths vitest >/dev/null
+test_deps=$(node -e '
+const p = require("./package.json"), all = { ...p.dependencies, ...p.devDependencies }
+console.log(["@playwright/test", "@testing-library/react", "@vitejs/plugin-react", "jsdom", "vite-tsconfig-paths", "vitest"].filter((d) => d in all).join(" "))
+')
+if [ -n "$test_deps" ]; then pnpm remove $test_deps >/dev/null; fi
 git add package.json pnpm-lock.yaml
 
 echo "→ Local-only settings in the env template"
