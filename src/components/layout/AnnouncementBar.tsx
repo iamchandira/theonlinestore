@@ -34,7 +34,8 @@ export function AnnouncementBar() {
     return (
       <div className="relative z-50 bg-ink-900 py-2 text-center text-[0.8125rem] font-medium text-white">
         <p className="container-site flex items-center justify-center gap-2">
-          <AnnouncementIcon icon={announcements[0].icon} index={0} size={16} className="shrink-0 text-sunset-300" />
+          {/* A single message only shows an icon that was picked (it never had one before icons existed) */}
+          {announcements[0].icon && <AnnouncementIcon icon={announcements[0].icon} index={0} size={16} className="shrink-0 text-sunset-300" />}
           <span>{announcements[0].text}</span>
         </p>
       </div>

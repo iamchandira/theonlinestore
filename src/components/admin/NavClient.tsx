@@ -201,7 +201,10 @@ export function NavClient({
   const [toggled, setToggled] = useState<Record<string, boolean>>({})
   useEffect(() => {
     void getPreference<Record<string, boolean> | null>('tos-nav-areas').then((saved) => {
-      if (saved && typeof saved === 'object') setToggled((t) => ({ ...saved, ...t }))
+      if (!saved || typeof saved !== 'object') return
+      // The area you're in always opens, even if it was closed last time
+      const { [activeArea ?? '']: _current, ...rest } = saved
+      setToggled((t) => ({ ...rest, ...(activeArea && saved[activeArea] ? { [activeArea]: true } : {}), ...t }))
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
