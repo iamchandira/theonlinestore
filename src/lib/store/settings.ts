@@ -26,7 +26,8 @@ export type StorePublic = {
   deliveryEstimate: string
   contact: { phone: string; whatsapp: string; email: string; hours: string; address: string; businessRegistration: string }
   social: { facebook: string; instagram: string; tiktok: string; youtube: string }
-  announcements: string[]
+  /** Announcement bar messages; icon is a key from announcementIcons.ts, 'none', or null (standard icon) */
+  announcements: { text: string; icon: string | null }[]
   /** null when free delivery is switched off */
   freeDeliveryThreshold: number | null
   /** Short names of the payment methods shoppers can use now, in checkout order */
@@ -66,7 +67,7 @@ export const getStoreSettings = cache(async (): Promise<StorePublic> => {
       businessRegistration: s.contact?.businessRegistration ?? '',
     },
     social: { facebook: s.social?.facebook ?? '', instagram: s.social?.instagram ?? '', tiktok: s.social?.tiktok ?? '', youtube: s.social?.youtube ?? '' },
-    announcements: (s.announcements ?? []).map((a) => a.text).filter(Boolean),
+    announcements: (s.announcements ?? []).filter((a) => a.text).map((a) => ({ text: a.text, icon: a.icon ?? null })),
     freeDeliveryThreshold: c.freeDeliveryEnabled === false ? null : (c.freeThreshold ?? 10000),
     paymentMethods: usable.map((m) => SHORT[m.id]),
     instalments: bnpl.length ? { providers: bnpl.map((id) => SHORT[id]), feePercent: Math.min(...bnpl.map((id) => pay.instalmentDisplay[id].feePercent)) } : null,

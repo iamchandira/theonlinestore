@@ -2,6 +2,7 @@ import Link from 'next/link'
 import type { ListViewServerProps, Where } from 'payload'
 
 import { ReviewsTable, type ReviewRow } from './ReviewsTable'
+import { CleanListURL } from './CleanListURL'
 
 const TABS = [
   { key: 'pending', label: 'Waiting for approval' },
@@ -68,6 +69,7 @@ export async function ReviewsList(props: ListViewServerProps) {
 
   return (
     <div className="tos-page">
+      <CleanListURL href={href({ page })} />
       <header className="tos-page__header">
         <div>
           <p className="tos-page__eyebrow">Catalogue</p>

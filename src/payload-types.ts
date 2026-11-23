@@ -485,6 +485,14 @@ export interface Product {
    */
   crossSells?: (number | Product)[] | null;
   upsells?: (number | Product)[] | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   /**
    * Controls the detail fields, filters and page sections.
    */
@@ -516,14 +524,6 @@ export interface Product {
   rating?: number | null;
   reviewCount?: number | null;
   searchText?: string | null;
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -1844,6 +1844,13 @@ export interface ProductsSelect<T extends boolean = true> {
   concerns?: T;
   crossSells?: T;
   upsells?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   productType?: T;
   generateSlug?: T;
   slug?: T;
@@ -1857,13 +1864,6 @@ export interface ProductsSelect<T extends boolean = true> {
   rating?: T;
   reviewCount?: T;
   searchText?: T;
-  meta?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        image?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -2329,6 +2329,29 @@ export interface StoreSetting {
   announcements?:
     | {
         text: string;
+        icon?:
+          | (
+              | 'delivery'
+              | 'cash'
+              | 'card'
+              | 'genuine'
+              | 'gift'
+              | 'discount'
+              | 'sparkles'
+              | 'flame'
+              | 'bolt'
+              | 'clock'
+              | 'calendar'
+              | 'package'
+              | 'secure'
+              | 'star'
+              | 'heart'
+              | 'location'
+              | 'phone'
+              | 'whatsapp'
+              | 'none'
+            )
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -2814,6 +2837,7 @@ export interface StoreSettingsSelect<T extends boolean = true> {
     | T
     | {
         text?: T;
+        icon?: T;
         id?: T;
       };
   updatedAt?: T;

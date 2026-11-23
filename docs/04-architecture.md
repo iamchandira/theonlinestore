@@ -108,7 +108,7 @@ The Payload admin is customised through its component API, without forking Paylo
 
 | Slot | Component | What it does |
 |---|---|---|
-| `admin.components.Nav` | `Nav.tsx` (server) + `NavClient.tsx` | Grouped sidebar (Home, Sales, Catalogue, Content, Insights, Settings), role-aware, with live badges for drafts and low stock |
+| `admin.components.Nav` | `Nav.tsx` (server) + `NavClient.tsx` | Sidebar with sub menus (Orders, Products, Catalogue setup, Content, Insights, Settings; Home, Customers and Discounts at the top level), role-aware, with live badges. The current area opens by itself; open/closed areas are saved as the `tos-nav-areas` preference |
 | `admin.components.actions` | `HeaderActions.tsx` | Search (⌘K) and View store |
 | `admin.components.providers` | `CommandPalette.tsx` | ⌘K palette: product search by name or SKU, pages, actions |
 | `admin.components.beforeLogin` | `LoginIntro.tsx` | Branded login |
@@ -116,6 +116,10 @@ The Payload admin is customised through its component API, without forking Paylo
 | `views.inventory` (`/admin/inventory`) | `views/Inventory.tsx` + `InventoryTable.tsx` | Bulk stock adjustment. Wraps Payload's `DefaultTemplate`. |
 | `products` list view | `views/ProductsList.tsx` + `ProductsToolbar` + `ProductsTable` | Status tabs, search, type filter, sort, bulk actions through the REST API |
 | Variant `RowLabel` | `VariantRowLabel.tsx` | Readable collapsed variant rows |
+| `users` list view | `views/UsersList.tsx` | Customers / Staff & roles tabs (`?view=staff`), search, read as the signed-in user so roles only see accounts they may |
+| Custom list addresses | `views/CleanListURL.tsx` | Puts back the address a custom list was built from (Payload's list wrapper adds `limit`, `depth` and a remembered `sort`) |
+| Announcement icon | `fields/IconPicker.tsx` + `fields/AnnouncementRowLabel.tsx` | Icon grid for each announcement message; icons live in `lib/store/announcementIcons.ts` (keys in `announcementIconKeys.ts`) |
+| Product SEO tab | `collections/Products.ts` | The SEO plugin's fields placed in a product tab (same `meta` data); the plugin still handles Categories and Brands and powers "Auto-generate" |
 
 **Demo data:** products with `isDemo` come from `pnpm seed:demo` (SKUs `DEMO-…`, media `demo-*.webp`, four fictional brands). Their pages are `noindex`. `pnpm seed:demo --remove` deletes the products, their stock history, their media and the demo brands.
 

@@ -40,6 +40,8 @@ export const Users: CollectionConfig = {
     defaultColumns: ['fullName', 'email', 'roles', 'phone', 'createdAt'],
     group: 'Customers & Staff',
     description: 'Customers and staff accounts. Roles control what each staff member can see and do.',
+    // Customers / Staff tabs with clean addresses (?view=staff) instead of a role filter in the URL
+    components: { views: { list: { Component: '/components/admin/views/UsersList#UsersList' } } },
   },
   auth: {
     tokenExpiration: 60 * 60 * 24 * 30, // 30 days ("Remember me"); without it the cookie ends with the browser session

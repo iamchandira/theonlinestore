@@ -25,14 +25,17 @@ import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997e
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { VariantRowLabel as VariantRowLabel_68eaae0e2613d0adaa320e3b74503794 } from '../../../components/admin/VariantRowLabel'
-import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { OverviewComponent as OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaDescriptionComponent as MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
+import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { ProductsList as ProductsList_35d44351a0dfdab7b71afe62aeca468f } from '../../../components/admin/views/ProductsList'
 import { ReviewsList as ReviewsList_068eb4f2e7b1121fba7c0b816aa7ddda } from '../../../components/admin/views/ReviewsList'
+import { UsersList as UsersList_8b49d061b2c390956cb5e3eea6dcbd34 } from '../../../components/admin/views/UsersList'
+import { IconPicker as IconPicker_d45a79217f6fa571a01f407369195447 } from '../../../components/admin/fields/IconPicker'
+import { AnnouncementRowLabel as AnnouncementRowLabel_d75459c3f3b800c55429a427e448e8d9 } from '../../../components/admin/fields/AnnouncementRowLabel'
 import { Nav as Nav_965175d01b56876a09418037afb35340 } from '../../../components/admin/Nav'
 import { AdminIcon as AdminIcon_80ebcb12978a9db9a1c04af0af89c7ec } from '../../../components/admin/Graphics'
 import { AdminLogo as AdminLogo_80ebcb12978a9db9a1c04af0af89c7ec } from '../../../components/admin/Graphics'
@@ -75,14 +78,17 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "/components/admin/VariantRowLabel#VariantRowLabel": VariantRowLabel_68eaae0e2613d0adaa320e3b74503794,
-  "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
   "@payloadcms/plugin-seo/client#OverviewComponent": OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaTitleComponent": MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaDescriptionComponent": MetaDescriptionComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaImageComponent": MetaImageComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
+  "@payloadcms/next/client#SlugField": SlugField_2b8867833a34864a02ddf429b0728a40,
   "/components/admin/views/ProductsList#ProductsList": ProductsList_35d44351a0dfdab7b71afe62aeca468f,
   "/components/admin/views/ReviewsList#ReviewsList": ReviewsList_068eb4f2e7b1121fba7c0b816aa7ddda,
+  "/components/admin/views/UsersList#UsersList": UsersList_8b49d061b2c390956cb5e3eea6dcbd34,
+  "/components/admin/fields/IconPicker#IconPicker": IconPicker_d45a79217f6fa571a01f407369195447,
+  "/components/admin/fields/AnnouncementRowLabel#AnnouncementRowLabel": AnnouncementRowLabel_d75459c3f3b800c55429a427e448e8d9,
   "/components/admin/Nav#Nav": Nav_965175d01b56876a09418037afb35340,
   "/components/admin/Graphics#AdminIcon": AdminIcon_80ebcb12978a9db9a1c04af0af89c7ec,
   "/components/admin/Graphics#AdminLogo": AdminLogo_80ebcb12978a9db9a1c04af0af89c7ec,

@@ -615,6 +615,57 @@ body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
     }
   }
 }
+/* Sub menus: an area (Orders, Products, Settings…) opens into its pages */
+.tos-nav__area-toggle {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  &--active {
+    color: var(--tos-ink);
+    font-weight: 700;
+    svg {
+      color: var(--tos-brand-600);
+    }
+  }
+}
+.tos-nav__chevron {
+  margin-left: auto;
+  transition: transform 0.2s;
+  .tos-nav__area--open & {
+    transform: rotate(180deg);
+  }
+}
+.tos-nav__dot + .tos-nav__chevron {
+  margin-left: 8px;
+}
+.tos-nav__dot {
+  margin-left: auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tos-danger);
+}
+.tos-nav__sub {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 6px 19px;
+  padding-left: 12px;
+  border-left: 1px solid var(--tos-line);
+  &[hidden] {
+    display: none;
+  }
+}
+.tos-nav__link--sub {
+  min-height: 32px;
+  font-size: 13.5px;
+  &.tos-nav__link--active::before {
+    left: -13px;
+  }
+}
 .tos-nav__badge {
   margin-left: auto;
   min-width: 22px;
@@ -2364,4 +2415,57 @@ $tos-sections: (
 }
 .tos-table tr[aria-selected='true'] td {
   background: var(--tos-brand-50, #fff3ec);
+}
+
+/* Announcement bar: icon picker (Store details) */
+.tos-iconpick__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+.tos-iconpick__opt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px 8px;
+  border: 1px solid var(--tos-line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--tos-ink-2);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+  &:hover {
+    border-color: var(--tos-brand-600);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--tos-brand-600);
+    outline-offset: 1px;
+  }
+  &--on {
+    border-color: var(--tos-brand-600);
+    background: var(--tos-brand-50);
+    color: var(--tos-brand-700);
+  }
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+}
+.tos-iconpick__label {
+  font-size: 11px;
+  line-height: 14px;
+  text-align: center;
+}
+.tos-iconpick__none {
+  height: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 20px;
+}
+.tos-rowlabel svg {
+  color: var(--tos-brand-600);
+  flex-shrink: 0;
 }
