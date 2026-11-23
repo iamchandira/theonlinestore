@@ -107,20 +107,54 @@ h1, h2, h3, h4,
   color: var(--tos-ink);
 }
 
-/* Primary buttons in brand orange (accessible 4.6:1 with white) */
+/* Primary buttons in brand orange (accessible 4.6:1 with white). Colours go through Payload's button
+   variables, so split buttons (Publish ▾), whose class sits on a wrapper, colour both halves alike. */
 .btn--style-primary {
-  background-color: var(--tos-brand-600) !important;
-  color: #fff !important;
+  --bg-color: var(--tos-brand-600) !important;
+  --color: #fff !important;
+  --hover-bg: var(--tos-brand-700) !important;
+  --hover-color: #fff !important;
+  --btn-border: 1px solid transparent !important;
+  --hover-btn-border: 1px solid transparent !important;
+}
+.btn.btn--style-primary {
+  background-color: var(--bg-color) !important;
+  color: var(--color) !important;
   box-shadow: 0 6px 16px -8px rgb(217 57 10 / 0.6);
   &:hover:not(:disabled) {
-    background-color: var(--tos-brand-700) !important;
+    background-color: var(--hover-bg) !important;
   }
 }
 .btn--style-primary:disabled,
 .btn--style-primary.btn--disabled {
-  background-color: var(--theme-elevation-100) !important;
-  color: var(--tos-muted) !important;
+  --bg-color: var(--theme-elevation-100) !important;
+  --color: var(--tos-muted) !important;
+  --hover-bg: var(--theme-elevation-100) !important;
+  --hover-color: var(--tos-muted) !important;
   box-shadow: none !important;
+}
+/* Split button: one pill, the ▾ part separated by a thin line */
+.btn--withPopup {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 999px;
+  .btn {
+    border-radius: 999px 0 0 999px !important;
+    box-shadow: none !important;
+  }
+  .popup-button {
+    height: 100%;
+    padding: 0 12px 0 10px;
+    border-radius: 0 999px 999px 0 !important;
+    border: 0 !important;
+    border-left: 1px solid rgb(255 255 255 / 0.35) !important;
+  }
+  &.btn--style-primary:not(.btn--disabled) {
+    box-shadow: 0 6px 16px -8px rgb(217 57 10 / 0.6) !important;
+  }
+  &.btn--disabled .popup-button {
+    border-left-color: var(--tos-line-strong) !important;
+  }
 }
 .btn--style-secondary {
   border-radius: 999px;
@@ -131,6 +165,15 @@ h1, h2, h3, h4,
 }
 
 /* Inputs and cards */
+/* Payload wraps text areas in a square, tinted box; the rounded text area is the only box we want */
+.textarea-outer {
+  background: transparent !important;
+  border-radius: var(--style-radius-m);
+}
+.field-type textarea:disabled,
+.field-type textarea[readonly] {
+  resize: none;
+}
 .field-type input,
 .field-type textarea,
 .react-select .rs__control {
@@ -424,7 +467,7 @@ body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
   flex-direction: column;
   flex-shrink: 0;
   min-height: 100%;
-  padding: 0 var(--tos-nav-x) 12px;
+  padding: 0 var(--tos-nav-x); /* the pinned footer has its own bottom padding */
   /* The column scrolls; nothing inside it may be squeezed to fit */
   > * {
     flex-shrink: 0;
@@ -649,15 +692,36 @@ body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
   background: var(--tos-danger);
 }
 .tos-nav__sub {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  margin: 0 0 0 19px;
+  /* Hidden (and out of the accessibility tree) once the closing animation has finished */
+  visibility: hidden;
+  transition:
+    grid-template-rows 0.26s cubic-bezier(0.2, 0, 0, 1),
+    opacity 0.2s ease,
+    margin 0.26s cubic-bezier(0.2, 0, 0, 1),
+    visibility 0s linear 0.26s;
+  .tos-nav__area--open > & {
+    grid-template-rows: 1fr;
+    opacity: 1;
+    margin: 2px 0 6px 19px;
+    visibility: visible;
+    transition-delay: 0s;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
+}
+.tos-nav__sub-inner {
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin: 2px 0 6px 19px;
   padding-left: 12px;
   border-left: 1px solid var(--tos-line);
-  &[hidden] {
-    display: none;
-  }
 }
 .tos-nav__link--sub {
   min-height: 32px;
@@ -686,8 +750,14 @@ body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
   }
 }
 .tos-nav__footer {
+  /* Stays at the bottom of the sidebar; the menu above scrolls underneath it */
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   margin-top: auto;
-  padding-top: 12px;
+  margin-inline: calc(var(--tos-nav-x) * -1);
+  padding: 10px var(--tos-nav-x) 12px;
+  background: #fff;
   border-top: 1px solid var(--tos-line);
   display: flex;
   flex-direction: column;
@@ -696,17 +766,50 @@ body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
 .tos-nav__group:has(+ .tos-nav__footer) {
   margin-bottom: 20px;
 }
+.tos-nav__me {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 6px;
+}
 .tos-nav__user {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 6px;
   padding: 8px 10px;
   border-radius: 12px;
   text-decoration: none !important;
   color: var(--tos-ink);
   &:hover {
     background: var(--tos-canvas);
+  }
+}
+.tos-nav__user-text {
+  min-width: 0;
+  > * {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+.tos-nav__logout {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: var(--tos-subtle);
+  transition: background-color 0.15s, color 0.15s;
+  &:hover {
+    background: var(--tos-danger-bg);
+    color: var(--tos-danger);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--tos-brand-600);
+    outline-offset: -2px;
   }
 }
 .tos-avatar {

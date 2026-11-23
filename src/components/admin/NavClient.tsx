@@ -272,8 +272,9 @@ export function NavClient({
           {!open && alerts > 0 && <span className="tos-nav__dot" aria-label="Needs attention" />}
           <IconChevronDown size={16} stroke={2} className="tos-nav__chevron" />
         </button>
-        <div id={id} className="tos-nav__sub" hidden={!open}>
-          {area.children!.map((c) => renderLink(c, true))}
+        {/* Animated open/close: the grid row grows from 0fr to 1fr; closed rows are inert (not tabbable) */}
+        <div id={id} className="tos-nav__sub" inert={!open ? true : undefined}>
+          <div className="tos-nav__sub-inner">{area.children!.map((c) => renderLink(c, true))}</div>
         </div>
       </div>
     )
@@ -326,24 +327,26 @@ export function NavClient({
             {items.map((item) => (item.children ? renderArea(item) : renderLink(item)))}
           </div>
 
+          {/* Pinned to the bottom of the sidebar while the menu scrolls */}
           <div className="tos-nav__footer">
             <a className="tos-nav__link" href="/" target="_blank" rel="noopener noreferrer">
               <IconExternalLink size={19} stroke={1.75} />
               View store
             </a>
-            <Link className="tos-nav__link" href="/admin/logout" prefetch={false}>
-              <IconLogout size={19} stroke={1.75} />
-              Log out
-            </Link>
-            <Link className="tos-nav__user" href={user.href} prefetch={false}>
-              <span className="tos-avatar" aria-hidden>
-                {user.initials}
-              </span>
-              <span>
-                <span className="tos-nav__user-name">{user.name}</span>
-                <span className="tos-nav__user-role">{user.role}</span>
-              </span>
-            </Link>
+            <div className="tos-nav__me">
+              <Link className="tos-nav__user" href={user.href} prefetch={false} title="Your account">
+                <span className="tos-avatar" aria-hidden>
+                  {user.initials}
+                </span>
+                <span className="tos-nav__user-text">
+                  <span className="tos-nav__user-name">{user.name}</span>
+                  <span className="tos-nav__user-role">{user.role}</span>
+                </span>
+              </Link>
+              <Link className="tos-nav__logout" href="/admin/logout" prefetch={false} aria-label="Log out" title="Log out">
+                <IconLogout size={19} stroke={1.75} />
+              </Link>
+            </div>
           </div>
         </nav>
       </div>

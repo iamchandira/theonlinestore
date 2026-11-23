@@ -2,6 +2,15 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.9.3] · 2026-11-24 · Admin polish
+### Changed
+- Sidebar sub menus open and close with a smooth animation (instant when reduced motion is on).
+- The sidebar footer (View store, your name and role) stays pinned at the bottom while the menu scrolls; **Log out** is now an icon to the right of your name.
+
+### Fixed
+- **Publish changes ▾** (and other split buttons): the orange square behind the grey button is gone. Both halves now form one pill that is orange when it can be used and grey when it can't.
+- Read-only text boxes (e.g. an order's "Note from the customer") no longer show a square tinted box behind their rounded corners or a resize grip.
+
 ## [0.9.2] · 2026-11-24 · Admin tidy-up
 ### Added
 - **Announcement bar icons:** pick an icon (or none) for each message in Settings › Store details, from a grid of 18. Messages saved before keep the icons they had. Needs the database migration `20261123_210038_announcement_icons` (run by `deploy.sh`).
