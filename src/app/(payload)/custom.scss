@@ -624,7 +624,6 @@ body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
   &--active {
     background: var(--tos-brand-50);
     color: var(--tos-brand-700);
-    font-weight: 700;
     svg {
       color: var(--tos-brand-600);
     }
@@ -663,12 +662,12 @@ body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
   width: 100%;
   border: 0;
   background: transparent;
-  font: inherit;
+  /* Same size and weight as every other menu item (a button would otherwise use the browser's font) */
+  font-family: inherit;
   text-align: left;
   cursor: pointer;
   &--active {
     color: var(--tos-ink);
-    font-weight: 700;
     svg {
       color: var(--tos-brand-600);
     }
@@ -724,8 +723,10 @@ body:has(.template-default--nav-open) .template-default__nav-toggler-wrapper {
   border-left: 1px solid var(--tos-line);
 }
 .tos-nav__link--sub {
+  /* Every sub menu item: one size and weight (the selected one is shown by colour, not boldness) */
   min-height: 32px;
   font-size: 13.5px;
+  font-weight: 500;
   &.tos-nav__link--active::before {
     left: -13px;
   }
