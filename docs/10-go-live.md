@@ -124,8 +124,10 @@ Fill every value: `NEXT_PUBLIC_SITE_URL=https://theonlinestore.lk`, the password
 
 ```bash
 store$ docker compose -f /srv/theonlinestore/app/deploy/docker-compose.db.yml --env-file /srv/theonlinestore/.env up -d
-store$ docker ps          # postgres … (healthy)
+store$ docker ps          # postgres … 127.0.0.1:5432->5432/tcp (healthy)
 ```
+
+Start the database only with this command. Don't deploy the project from a hosting panel's Docker manager (e.g. Hostinger's): the panel can start containers on public ports. The production branch has no root `docker-compose.yml`, so `docker ps` should show this one `postgres` container and nothing on `0.0.0.0`.
 
 **3.9 Service and web server**
 
