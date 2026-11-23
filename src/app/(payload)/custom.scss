@@ -2946,3 +2946,51 @@ $tos-sections: (
     }
   }
 }
+
+/* Relationship fields with "+ add new": the select and the + button form one joined control */
+.relationship__wrap:has(> .relationship-add-new) {
+  display: flex;
+  align-items: stretch;
+  .react-select {
+    flex: 1;
+    min-width: 0;
+  }
+  .rs__control {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+}
+.relationship-add-new {
+  display: flex;
+  margin: 0 !important;
+}
+.relationship-add-new__add-button {
+  height: auto !important;
+  min-height: 100%;
+  width: 42px;
+  margin: 0 !important;
+  display: grid;
+  place-items: center;
+  background: #fff !important;
+  border: 1px solid var(--tos-line-strong) !important;
+  border-left: 0 !important;
+  border-radius: 0 var(--style-radius-m) var(--style-radius-m) 0 !important;
+  box-shadow: none !important;
+  color: var(--tos-ink-2);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  &:hover {
+    background: var(--tos-canvas) !important;
+    color: var(--tos-brand-700);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--tos-brand-600);
+    outline-offset: -2px;
+  }
+}
+/* Hover and focus outline the whole joined control */
+.relationship__wrap:has(> .relationship-add-new):hover .relationship-add-new__add-button {
+  border-color: var(--tos-subtle) !important;
+}
+.relationship__wrap:has(.rs__control--is-focused) .relationship-add-new__add-button {
+  border-color: var(--tos-ink) !important;
+}
