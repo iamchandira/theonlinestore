@@ -174,12 +174,12 @@ h1, h2, h3, h4,
 .field-type textarea[readonly] {
   resize: none;
 }
-.field-type input,
+.field-type input:not(.rs__input),
 .field-type textarea,
 .react-select .rs__control {
   border-radius: var(--style-radius-m) !important;
 }
-.field-type input:focus,
+.field-type input:not(.rs__input):focus,
 .field-type textarea:focus {
   box-shadow: 0 0 0 4px var(--tos-brand-100) !important;
   border-color: var(--tos-ink) !important;
@@ -1963,13 +1963,13 @@ $tos-sections: (
   color: var(--tos-muted) !important;
   font-size: 12.5px;
 }
-.field-type input,
+.field-type input:not(.rs__input),
 .field-type textarea,
 .react-select .rs__control {
   border-color: var(--tos-line-strong) !important;
   box-shadow: none !important;
 }
-.field-type input:hover,
+.field-type input:not(.rs__input):hover,
 .field-type textarea:hover,
 .react-select .rs__control:hover {
   border-color: var(--tos-subtle) !important;
@@ -1979,11 +1979,22 @@ $tos-sections: (
 .blocks-field__header {
   margin-bottom: 12px;
 }
+/* No clipping on the card itself, or dropdowns and date pickers inside it get cut off at its edge; the header
+   rounds its own corners instead */
 .collapsible {
   border: 1px solid var(--tos-line) !important;
   border-radius: var(--tos-radius) !important;
   box-shadow: none !important;
-  overflow: clip;
+  overflow: visible;
+  > .collapsible__toggle-wrap {
+    border-radius: calc(var(--tos-radius) - 1px) calc(var(--tos-radius) - 1px) 0 0;
+    .collapsible__toggle {
+      border-radius: inherit;
+    }
+  }
+  &.collapsible--collapsed > .collapsible__toggle-wrap {
+    border-radius: calc(var(--tos-radius) - 1px);
+  }
   &:hover {
     border-color: var(--tos-line-strong) !important;
   }
