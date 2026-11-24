@@ -119,6 +119,10 @@ The Payload admin is customised through its component API, without forking Paylo
 | `users` list view | `views/UsersList.tsx` | Customers / Staff & roles tabs (`?view=staff`), search, read as the signed-in user so roles only see accounts they may |
 | Custom list addresses | `views/CleanListURL.tsx` | Puts back the address a custom list was built from (Payload's list wrapper adds `limit`, `depth` and a remembered `sort`) |
 | Announcement icon | `fields/IconPicker.tsx` + `fields/AnnouncementRowLabel.tsx` | Icon grid for each announcement message; icons live in `lib/store/announcementIcons.ts` (keys in `announcementIconKeys.ts`) |
+| Section cards | `fields/section.ts` + `SectionLabel.tsx` | `section(title, hint, fields, { sidebar, collapsed, condition })`: a titled card on any edit page (presentation only). A page or tab whose fields are all in sections loses the big outer card; custom.scss "Edit pages (redesign, shared)" |
+| SEO card | `fields/seo.ts` | The SEO plugin's `meta` fields in a card for Categories and Brands (the plugin's `collections` is empty; it still powers Auto-generate) |
+| Category parent | `collections/Categories.ts` | `parent` / `breadcrumbs` defined in the cards with the plugin's helpers; nested-docs is told their names so it doesn't add its own |
+| Phone tables | `TableLabels.tsx` (admin provider) | Copies table headings onto cells (`data-label`) so `.tos-table` can show one labelled card per row under 640 px |
 | Product SEO tab | `collections/Products.ts` | The SEO plugin's fields placed in a product tab (same `meta` data); the plugin still handles Categories and Brands and powers "Auto-generate" |
 
 **Demo data:** products with `isDemo` come from `pnpm seed:demo` (SKUs `DEMO-…`, media `demo-*.webp`, four fictional brands). Their pages are `noindex`. `pnpm seed:demo --remove` deletes the products, their stock history, their media and the demo brands.

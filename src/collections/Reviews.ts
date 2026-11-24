@@ -5,6 +5,7 @@ import { allowRoles, hasRole, isStaff } from '../access/roles'
 import { audit } from '../lib/payload/audit'
 import { revalidate } from '../lib/payload/revalidate'
 import { allow, clientIp } from '../lib/server/rateLimit'
+import { section } from '../fields/section'
 
 /**
  * Product reviews (TOS-206).
@@ -81,6 +82,7 @@ const MAX_PHOTO_BYTES = 5 * 1024 * 1024
 export const Reviews: CollectionConfig = {
   slug: 'reviews',
   admin: {
+    hideAPIURL: true,
     group: 'Catalogue',
     useAsTitle: 'title',
     defaultColumns: ['product', 'rating', 'title', 'authorName', 'status', 'createdAt'],
@@ -97,59 +99,69 @@ export const Reviews: CollectionConfig = {
   defaultSort: '-createdAt',
   hooks: { afterChange: [afterChange], afterDelete: [afterDelete] },
   fields: [
-    { name: 'product', type: 'relationship', relationTo: 'products', required: true, index: true },
-    { name: 'rating', type: 'number', required: true, min: 1, max: 5, admin: { step: 1, description: '1 to 5 stars' } },
-    { name: 'title', type: 'text', maxLength: 100 },
-    { name: 'body', label: 'Review', type: 'textarea', required: true, maxLength: 2000 },
-    { name: 'photos', type: 'upload', relationTo: 'review-media', hasMany: true, maxRows: 3 },
-    {
-      name: 'reply',
-      label: 'Public reply',
-      type: 'textarea',
-      maxLength: 1000,
-      admin: { description: 'Shown under the review as "Reply from The Online Store".' },
-    },
-    {
-      type: 'row',
-      fields: [
-        { name: 'authorName', label: 'Name shown', type: 'text', required: true, maxLength: 60, admin: { width: '50%' } },
-        {
-          name: 'authorEmail',
-          label: 'Email (private)',
-          type: 'email',
-          access: { read: staffOnlyField },
-          admin: { width: '50%', description: 'Never shown on the store.' },
+    // Edit page: section cards (src/fields/section.ts); field names and stored data unchanged
+    section('Review', 'What the shopper wrote. Edit only to fix typos or remove personal details.', [
+      { name: 'product', type: 'relationship', relationTo: 'products', required: true, index: true },
+      { name: 'rating', type: 'number', required: true, min: 1, max: 5, admin: { step: 1, description: '1 to 5 stars' } },
+      { name: 'title', type: 'text', maxLength: 100 },
+      { name: 'body', label: 'Review', type: 'textarea', required: true, maxLength: 2000 },
+      { name: 'photos', type: 'upload', relationTo: 'review-media', hasMany: true, maxRows: 3 },
+    ]),
+    section('Reviewer', 'The name shown on the store. The email stays private.', [
+      {
+        type: 'row',
+        fields: [
+          { name: 'authorName', label: 'Name shown', type: 'text', required: true, maxLength: 60, admin: { width: '50%' } },
+          {
+            name: 'authorEmail',
+            label: 'Email (private)',
+            type: 'email',
+            access: { read: staffOnlyField },
+            admin: { width: '50%', description: 'Never shown on the store.' },
+          },
+        ],
+      },
+    ]),
+    section('Public reply', 'Shown under the review on the product page.', [
+      {
+        name: 'reply',
+        label: 'Public reply',
+        type: 'textarea',
+        maxLength: 1000,
+        admin: { description: 'Shown under the review as "Reply from The Online Store".' },
+      },
+    ]),
+    section('Moderation', 'Only approved reviews appear on the store.', [
+      // ----- sidebar -----
+      {
+        name: 'status',
+        type: 'select',
+        required: true,
+        defaultValue: 'pending',
+        index: true,
+        options: [
+          { label: 'Pending approval', value: 'pending' },
+          { label: 'Approved', value: 'approved' },
+          { label: 'Rejected', value: 'rejected' },
+        ],
         },
-      ],
-    },
-    // ----- sidebar -----
-    {
-      name: 'status',
-      type: 'select',
-      required: true,
-      defaultValue: 'pending',
-      index: true,
-      options: [
-        { label: 'Pending approval', value: 'pending' },
-        { label: 'Approved', value: 'approved' },
-        { label: 'Rejected', value: 'rejected' },
-      ],
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'verifiedBuyer',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: { position: 'sidebar', description: 'Bought this product from us. Set from orders once checkout launches (Sprint 6).' },
-    },
-    { name: 'helpfulCount', type: 'number', defaultValue: 0, admin: { position: 'sidebar', readOnly: true } },
-    { name: 'user', type: 'relationship', relationTo: 'users', admin: { position: 'sidebar', readOnly: true }, access: { read: staffOnlyField } },
-    {
-      name: 'moderationNote',
-      type: 'textarea',
-      access: { read: staffOnlyField },
-      admin: { position: 'sidebar', description: 'Internal note (why it was rejected, etc.).' },
-    },
+      {
+        name: 'verifiedBuyer',
+        type: 'checkbox',
+        defaultValue: false,
+        admin: { description: 'Bought this product from us. Set from orders once checkout launches (Sprint 6).' },
+      },
+      {
+        name: 'moderationNote',
+        type: 'textarea',
+        access: { read: staffOnlyField },
+        admin: { description: 'Internal note (why it was rejected, etc.).' },
+      },
+    ], { sidebar: true }),
+    section('Details', 'Recorded automatically.', [
+      { name: 'helpfulCount', type: 'number', defaultValue: 0, admin: { readOnly: true } },
+      { name: 'user', type: 'relationship', relationTo: 'users', admin: { readOnly: true }, access: { read: staffOnlyField } },
+    ], { sidebar: true }),
   ],
   endpoints: [
     {

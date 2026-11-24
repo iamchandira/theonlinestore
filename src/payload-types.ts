@@ -184,7 +184,6 @@ export interface UserAuthOperations {
  */
 export interface Order {
   id: number;
-  orderNumber: string;
   items: {
     product?: (number | null) | Product;
     sku: string;
@@ -270,9 +269,6 @@ export interface Order {
     message?: string | null;
   };
   customerNote?: string | null;
-  /**
-   * Needed before the order can be marked Shipped. Shoppers see the tracking link.
-   */
   shipment?: {
     courier?: (number | null) | Courier;
     trackingNumber?: string | null;
@@ -290,6 +286,7 @@ export interface Order {
    * Internal only
    */
   staffNotes?: string | null;
+  orderNumber: string;
   status:
     | 'pending-payment'
     | 'processing'
@@ -303,17 +300,6 @@ export interface Order {
     | 'refunded'
     | 'returned'
     | 'failed-delivery';
-  paymentMethod: 'payhere' | 'koko' | 'mintpay' | 'cod' | 'bank-transfer';
-  paymentStatus: 'unpaid' | 'pending' | 'slip-uploaded' | 'paid' | 'failed' | 'partially-refunded' | 'refunded';
-  /**
-   * Unpaid card, instalment and bank transfer orders are cancelled after this.
-   */
-  paymentDueAt?: string | null;
-  paidAt?: string | null;
-  refundedTotal?: number | null;
-  /**
-   * Set automatically as the order moves along.
-   */
   statusDates?: {
     packedAt?: string | null;
     shippedAt?: string | null;
@@ -322,6 +308,14 @@ export interface Order {
     cancelledAt?: string | null;
     returnedAt?: string | null;
   };
+  paymentMethod: 'payhere' | 'koko' | 'mintpay' | 'cod' | 'bank-transfer';
+  paymentStatus: 'unpaid' | 'pending' | 'slip-uploaded' | 'paid' | 'failed' | 'partially-refunded' | 'refunded';
+  /**
+   * Unpaid card, instalment and bank transfer orders are cancelled after this.
+   */
+  paymentDueAt?: string | null;
+  paidAt?: string | null;
+  refundedTotal?: number | null;
   codRemittance?: {
     remittedAt?: string | null;
     reference?: string | null;
@@ -331,14 +325,12 @@ export interface Order {
   termsAcceptedAt?: string | null;
   termsVersion?: string | null;
   stockReturned?: boolean | null;
-  accessToken?: string | null;
   clientIp?: string | null;
+  accessToken?: string | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
- * Prices are in LKR. A product flagged "Price to be confirmed" shows a warning until its prices are checked.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
@@ -373,11 +365,9 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * One benefit per line.
+   * Drag to reorder. Shown after the variant’s own photo.
    */
-  benefits?: string | null;
-  howToUse?: string | null;
-  ingredients?: string | null;
+  gallery?: (number | Media)[] | null;
   /**
    * What the variants differ by, e.g. Size.
    */
@@ -422,10 +412,6 @@ export interface Product {
     image?: (number | null) | Media;
     id?: string | null;
   }[];
-  /**
-   * Extra photos shown after the variant photo.
-   */
-  gallery?: (number | Media)[] | null;
   details?: {
     concentration?: ('Parfum' | 'Eau de Parfum' | 'Eau de Toilette' | 'Eau de Cologne' | 'Body mist') | null;
     scentFamily?: ('Floral' | 'Fresh' | 'Citrus' | 'Woody' | 'Oriental' | 'Gourmand' | 'Aquatic' | 'Fruity') | null;
@@ -472,6 +458,12 @@ export interface Product {
     giftWrapped?: boolean | null;
     personalisable?: boolean | null;
   };
+  /**
+   * One benefit per line.
+   */
+  benefits?: string | null;
+  howToUse?: string | null;
+  ingredients?: string | null;
   badge?: ('bestseller' | 'new' | 'trending' | 'gift' | 'limited') | null;
   tags?: (number | Tag)[] | null;
   recipients?: (number | Recipient)[] | null;
@@ -503,19 +495,16 @@ export interface Product {
   generateSlug?: boolean | null;
   slug: string;
   /**
-   * Imported with placeholder prices. Untick once prices are checked.
+   * Shown as a warning in the admin until the prices are checked. Untick once they are.
    */
   priceTBC?: boolean | null;
   minPrice?: number | null;
   maxPrice?: number | null;
   totalStock?: number | null;
-  /**
-   * A variant is at or below its threshold.
-   */
   lowStock?: boolean | null;
   onSale?: boolean | null;
   /**
-   * Units sold (updated by orders from Sprint 6). Drives "Bestsellers" sorting.
+   * Units sold (updated by orders). Drives "Bestsellers" sorting.
    */
   salesCount?: number | null;
   /**
@@ -537,16 +526,6 @@ export interface Product {
 export interface Brand {
   id: number;
   name: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  /**
-   * Used to group brands in the Brands menu.
-   */
-  group: 'k-beauty' | 'derm' | 'everyday' | 'fragrance' | 'footwear' | 'gifts';
-  featured?: boolean | null;
   logo?: (number | null) | Media;
   description?: string | null;
   meta?: {
@@ -557,6 +536,19 @@ export interface Brand {
      */
     image?: (number | null) | Media;
   };
+  /**
+   * Used to group brands in the Brands menu.
+   */
+  group: 'k-beauty' | 'derm' | 'everyday' | 'fragrance' | 'footwear' | 'gifts';
+  /**
+   * Shown on the home page and at the top of the Brands menu.
+   */
+  featured?: boolean | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -629,11 +621,6 @@ export interface Category {
   id: number;
   name: string;
   /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  /**
    * Short line shown on category tiles, e.g. "K-beauty and derm favourites".
    */
   blurb?: string | null;
@@ -641,21 +628,7 @@ export interface Category {
    * Intro shown at the top of the category page (also used for SEO).
    */
   description?: string | null;
-  /**
-   * Category mood tint (design system).
-   */
-  tint?: ('skincare' | 'hair' | 'body' | 'lips' | 'fragrance' | 'chocolate' | 'footwear' | 'gifts' | 'sky') | null;
   image?: (number | null) | Media;
-  order?: number | null;
-  parent?: (number | null) | Category;
-  breadcrumbs?:
-    | {
-        doc?: (number | null) | Category;
-        url?: string | null;
-        label?: string | null;
-        id?: string | null;
-      }[]
-    | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -664,6 +637,31 @@ export interface Category {
      */
     image?: (number | null) | Media;
   };
+  /**
+   * Leave empty for a top-level department.
+   */
+  parent?: (number | null) | Category;
+  /**
+   * Lower numbers come first.
+   */
+  order?: number | null;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | Category;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Category mood tint (design system).
+   */
+  tint?: ('skincare' | 'hair' | 'body' | 'lips' | 'fragrance' | 'chocolate' | 'footwear' | 'gifts' | 'sky') | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -744,10 +742,6 @@ export interface Concern {
 export interface Discount {
   id: number;
   /**
-   * Summary of this discount.
-   */
-  offer?: string | null;
-  /**
    * Shown to shoppers on the discount line, e.g. “Avurudu 10% off”.
    */
   name: string;
@@ -771,6 +765,10 @@ export interface Discount {
    * 100 = free
    */
   getPercent?: number | null;
+  /**
+   * Lower runs first
+   */
+  priority?: number | null;
   appliesTo: 'all' | 'products' | 'categories' | 'brands';
   products?: (number | Product)[] | null;
   /**
@@ -797,15 +795,18 @@ export interface Discount {
   usagePerCustomer?: number | null;
   combinable?: boolean | null;
   /**
-   * Lower runs first
+   * Switch off to pause it without deleting it.
    */
-  priority?: number | null;
   active?: boolean | null;
   startsAt?: string | null;
   /**
    * Optional end date and time
    */
   endsAt?: string | null;
+  /**
+   * Plain-language summary of this discount.
+   */
+  offer?: string | null;
   /**
    * Orders that used it
    */
@@ -827,6 +828,7 @@ export interface Courier {
    * Use {tracking} where the tracking number goes, e.g. https://courier.lk/track?no={tracking}. Leave empty if the courier has no tracking page.
    */
   trackingUrl?: string | null;
+  phone?: string | null;
   active?: boolean | null;
   /**
    * Untick for your own riders.
@@ -836,7 +838,6 @@ export interface Courier {
    * Shown on the COD reconciliation screen.
    */
   collectsCod?: boolean | null;
-  phone?: string | null;
   /**
    * Pickup times, account number, contact person.
    */
@@ -857,9 +858,6 @@ export interface User {
    * Sri Lankan mobile, e.g. +94 77 123 4567. Used for SMS / WhatsApp order updates.
    */
   phone?: string | null;
-  /**
-   * Delivery addresses (TOS-304). The default one is pre-selected at checkout.
-   */
   addresses?:
     | {
         label?: string | null;
@@ -922,8 +920,9 @@ export interface User {
    * When consent was last given or withdrawn (PDPA).
    */
   marketingConsentAt?: string | null;
+  staffNote?: string | null;
   /**
-   * Customer asked for their account to be deleted (process within 14 days).
+   * The customer asked for their account to be deleted (process within 14 days).
    */
   deletionRequestedAt?: string | null;
   wishlist?:
@@ -944,7 +943,6 @@ export interface User {
     | number
     | boolean
     | null;
-  staffNote?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -991,8 +989,6 @@ export interface Return {
   reason: 'damaged' | 'wrong-item' | 'size' | 'changed-mind' | 'other';
   status: 'requested' | 'approved' | 'rejected' | 'received' | 'refunded' | 'closed';
   details?: string | null;
-  refundAmount?: number | null;
-  decisionNote?: string | null;
   timeline?:
     | {
         at?: string | null;
@@ -1001,6 +997,8 @@ export interface Return {
         id?: string | null;
       }[]
     | null;
+  refundAmount?: number | null;
+  decisionNote?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1124,26 +1122,26 @@ export interface Review {
   title?: string | null;
   body: string;
   photos?: (number | ReviewMedia)[] | null;
-  /**
-   * Shown under the review as "Reply from The Online Store".
-   */
-  reply?: string | null;
   authorName: string;
   /**
    * Never shown on the store.
    */
   authorEmail?: string | null;
+  /**
+   * Shown under the review as "Reply from The Online Store".
+   */
+  reply?: string | null;
   status: 'pending' | 'approved' | 'rejected';
   /**
    * Bought this product from us. Set from orders once checkout launches (Sprint 6).
    */
   verifiedBuyer?: boolean | null;
-  helpfulCount?: number | null;
-  user?: (number | null) | User;
   /**
    * Internal note (why it was rejected, etc.).
    */
   moderationNote?: string | null;
+  helpfulCount?: number | null;
+  user?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
 }
@@ -1527,7 +1525,6 @@ export interface PayloadMigration {
  * via the `definition` "orders_select".
  */
 export interface OrdersSelect<T extends boolean = true> {
-  orderNumber?: T;
   items?:
     | T
     | {
@@ -1613,12 +1610,8 @@ export interface OrdersSelect<T extends boolean = true> {
         id?: T;
       };
   staffNotes?: T;
+  orderNumber?: T;
   status?: T;
-  paymentMethod?: T;
-  paymentStatus?: T;
-  paymentDueAt?: T;
-  paidAt?: T;
-  refundedTotal?: T;
   statusDates?:
     | T
     | {
@@ -1629,6 +1622,11 @@ export interface OrdersSelect<T extends boolean = true> {
         cancelledAt?: T;
         returnedAt?: T;
       };
+  paymentMethod?: T;
+  paymentStatus?: T;
+  paymentDueAt?: T;
+  paidAt?: T;
+  refundedTotal?: T;
   codRemittance?:
     | T
     | {
@@ -1640,8 +1638,8 @@ export interface OrdersSelect<T extends boolean = true> {
   termsAcceptedAt?: T;
   termsVersion?: T;
   stockReturned?: T;
-  accessToken?: T;
   clientIp?: T;
+  accessToken?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1665,8 +1663,6 @@ export interface ReturnsSelect<T extends boolean = true> {
   reason?: T;
   status?: T;
   details?: T;
-  refundAmount?: T;
-  decisionNote?: T;
   timeline?:
     | T
     | {
@@ -1675,6 +1671,8 @@ export interface ReturnsSelect<T extends boolean = true> {
         by?: T;
         id?: T;
       };
+  refundAmount?: T;
+  decisionNote?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1752,7 +1750,6 @@ export interface PaymentSlipsSelect<T extends boolean = true> {
  * via the `definition` "discounts_select".
  */
 export interface DiscountsSelect<T extends boolean = true> {
-  offer?: T;
   name?: T;
   mode?: T;
   code?: T;
@@ -1762,6 +1759,7 @@ export interface DiscountsSelect<T extends boolean = true> {
   buyQty?: T;
   getQty?: T;
   getPercent?: T;
+  priority?: T;
   appliesTo?: T;
   products?: T;
   categories?: T;
@@ -1772,10 +1770,10 @@ export interface DiscountsSelect<T extends boolean = true> {
   usageLimit?: T;
   usagePerCustomer?: T;
   combinable?: T;
-  priority?: T;
   active?: T;
   startsAt?: T;
   endsAt?: T;
+  offer?: T;
   usedCount?: T;
   internalNote?: T;
   updatedAt?: T;
@@ -1791,9 +1789,7 @@ export interface ProductsSelect<T extends boolean = true> {
   categories?: T;
   shortDescription?: T;
   description?: T;
-  benefits?: T;
-  howToUse?: T;
-  ingredients?: T;
+  gallery?: T;
   optionName?: T;
   option2Name?: T;
   variants?:
@@ -1812,7 +1808,6 @@ export interface ProductsSelect<T extends boolean = true> {
         image?: T;
         id?: T;
       };
-  gallery?: T;
   details?:
     | T
     | {
@@ -1837,6 +1832,9 @@ export interface ProductsSelect<T extends boolean = true> {
         giftWrapped?: T;
         personalisable?: T;
       };
+  benefits?: T;
+  howToUse?: T;
+  ingredients?: T;
   badge?: T;
   tags?: T;
   recipients?: T;
@@ -1878,14 +1876,14 @@ export interface ReviewsSelect<T extends boolean = true> {
   title?: T;
   body?: T;
   photos?: T;
-  reply?: T;
   authorName?: T;
   authorEmail?: T;
+  reply?: T;
   status?: T;
   verifiedBuyer?: T;
+  moderationNote?: T;
   helpfulCount?: T;
   user?: T;
-  moderationNote?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1938,14 +1936,20 @@ export interface ReviewMediaSelect<T extends boolean = true> {
  */
 export interface CategoriesSelect<T extends boolean = true> {
   name?: T;
-  generateSlug?: T;
-  slug?: T;
   blurb?: T;
   description?: T;
-  tint?: T;
   image?: T;
-  order?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
   parent?: T;
+  order?: T;
+  generateSlug?: T;
+  slug?: T;
   breadcrumbs?:
     | T
     | {
@@ -1954,13 +1958,7 @@ export interface CategoriesSelect<T extends boolean = true> {
         label?: T;
         id?: T;
       };
-  meta?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        image?: T;
-      };
+  tint?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1970,10 +1968,6 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface BrandsSelect<T extends boolean = true> {
   name?: T;
-  generateSlug?: T;
-  slug?: T;
-  group?: T;
-  featured?: T;
   logo?: T;
   description?: T;
   meta?:
@@ -1983,6 +1977,10 @@ export interface BrandsSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
+  group?: T;
+  featured?: T;
+  generateSlug?: T;
+  slug?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2147,10 +2145,10 @@ export interface UsersSelect<T extends boolean = true> {
   marketingOptIn?: T;
   marketingChannels?: T;
   marketingConsentAt?: T;
+  staffNote?: T;
   deletionRequestedAt?: T;
   wishlist?: T;
   cart?: T;
-  staffNote?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -2178,10 +2176,10 @@ export interface UsersSelect<T extends boolean = true> {
 export interface CouriersSelect<T extends boolean = true> {
   name?: T;
   trackingUrl?: T;
+  phone?: T;
   active?: T;
   requiresTracking?: T;
   collectsCod?: T;
-  phone?: T;
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2371,7 +2369,7 @@ export interface HomePage {
    */
   heroProducts?: (number | Product)[] | null;
   /**
-   * Shown in this order, in the upper or lower part of the page.
+   * Shown in this order, in the upper or lower part of the page. Open a rail to edit it.
    */
   rails?:
     | {

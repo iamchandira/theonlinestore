@@ -2099,6 +2099,11 @@ $tos-sections: (
   .template-default--nav-open {
     grid-template-columns: 0 auto !important;
   }
+  /* The drawer leaves the grid, so pin the page to the content column (else it lands in the 0 px nav column) */
+  .template-default > .template-default__wrap {
+    grid-column: 2;
+    min-width: 0;
+  }
   .nav.tos-nav {
     position: fixed;
     inset: 0 auto 0 0;
@@ -2572,4 +2577,595 @@ $tos-sections: (
 .tos-rowlabel svg {
   color: var(--tos-brand-600);
   flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Edit pages (redesign, shared): tabs and titled section cards instead of one big card, a sidebar that
+   scrolls with the page, and an action bar that stays in reach on phones. Fields are grouped with
+   `section()` (src/fields/section.ts). A page (or tab) only drops the big card when every field in it
+   sits in a section, so pages with loose fields keep the old card.
+   ========================================================================== */
+$edit: ':is(.collection-edit, .global-edit)';
+$sectioned: ':is(:has(> .tos-section), :has(> .tabs-field)):not(:has(> .field-type:not(.tos-section, .tabs-field, .hidden)))';
+
+#{$edit} {
+  /* Main column: sections are the cards, so no card around them */
+  .document-fields__main > .document-fields__edit > .document-fields__fields#{$sectioned} {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+  /* Tabs sit on the page, above their section cards */
+  .document-fields__fields#{$sectioned} > .tabs-field {
+    margin: 0 !important;
+    > .tabs-field__tabs-wrap {
+      margin: 0 0 18px !important;
+      padding: 0 !important;
+      border-bottom: 1px solid var(--tos-line-strong);
+    }
+  }
+  .render-fields:has(> .tos-section) {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Sidebar: scrolls with the page (not pinned in its own scroll box) */
+  .document-fields__sidebar-wrap {
+    --sidebar-wrap-position: static;
+    --sidebar-wrap-height: auto;
+    position: static !important;
+    height: auto !important;
+  }
+  .document-fields__sidebar {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  .document-fields__sidebar-fields > .render-fields {
+    padding: 22px;
+  }
+  /* Sidebar made only of sections: each section is its own card */
+  .document-fields__sidebar-fields > .render-fields#{$sectioned} {
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+}
+
+/* Section card */
+.tos-section {
+  margin: 0 !important;
+  > .field-description {
+    display: none; /* shown in the card header instead */
+  }
+  > .collapsible {
+    background: #fff;
+    border: 1px solid var(--tos-line) !important;
+    border-radius: var(--tos-radius-lg) !important;
+    box-shadow: var(--tos-shadow) !important;
+    > .collapsible__toggle-wrap {
+      background: #fff !important;
+      padding: 18px 22px !important;
+      min-height: 0;
+      border-radius: var(--tos-radius-lg) var(--tos-radius-lg) 0 0;
+      .collapsible__toggle {
+        border-radius: inherit;
+      }
+    }
+    &.collapsible--collapsed > .collapsible__toggle-wrap {
+      border-radius: var(--tos-radius-lg);
+    }
+    /* (the content sits inside the open/close animation wrapper) */
+    > [class^='rah'] > div > .collapsible__content {
+      padding: 6px 22px 24px !important;
+      border-top: 1px solid var(--tos-line);
+      border-radius: 0 0 var(--tos-radius-lg) var(--tos-radius-lg) !important;
+      > .render-fields {
+        padding-top: 18px;
+      }
+    }
+  }
+  /* Rows of arrays inside a section: lighter than the section card */
+  .array-field__row > .collapsible,
+  .blocks-field__row > .collapsible {
+    box-shadow: none !important;
+  }
+}
+/* Sidebar sections are a little tighter */
+.document-fields__sidebar .tos-section > .collapsible {
+  > .collapsible__toggle-wrap {
+    padding: 16px 20px !important;
+  }
+  > [class^='rah'] > div > .collapsible__content {
+    padding: 4px 20px 20px !important;
+    > .render-fields {
+      padding-top: 14px;
+    }
+  }
+}
+.tos-section__head {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+}
+.tos-section__title {
+  font: 700 16px/1.3 var(--tos-display);
+  letter-spacing: -0.01em;
+  color: var(--tos-ink);
+}
+.tos-section__hint {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--tos-muted);
+}
+
+/* Tablets and phones: the action bar (Save / Publish) stays in reach while scrolling */
+@media (max-width: 1024px) {
+  #{$edit} .doc-controls {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+  .tos-docstatus {
+    margin-right: auto;
+  }
+}
+/* Phones: the bar grows to two rows (status and dates, then the buttons side by side) */
+@media (max-width: 640px) {
+  #{$edit} {
+    .doc-controls,
+    .doc-controls__wrapper {
+      height: auto !important;
+      min-height: 0 !important;
+    }
+    .doc-controls__content {
+      display: none; /* dates are in Versions; the status pill says what matters */
+    }
+    /* …but Payload's "Revert to published" link stays when there are unpublished changes */
+    .doc-controls__content:has(.status__action) {
+      display: block;
+      padding-top: 8px;
+      .doc-controls__meta > li:not(.doc-controls__status) {
+        display: none;
+      }
+    }
+    .doc-controls__controls-wrapper {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      height: auto !important; /* Payload fixes it to one row on phones */
+      padding-block: 10px;
+      border-top: 0 !important;
+      background: transparent !important;
+    }
+    .doc-controls__controls {
+      flex: 1;
+      align-items: center;
+      overflow: visible !important;
+    }
+    .tos-docstatus {
+      flex: 1 1 auto;
+      margin: 0;
+    }
+    .doc-controls__controls > .form-submit {
+      flex: 1 1 40%;
+      .btn,
+      .btn--withPopup {
+        width: 100%;
+      }
+      .btn--withPopup .btn {
+        flex: 1;
+      }
+    }
+    /* Tabs scroll sideways instead of running off the screen */
+    .document-fields__fields > .tabs-field > .tabs-field__tabs-wrap {
+      overflow-x: auto;
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+  }
+}
+
+/* Product page extras */
+.collection-edit--products {
+  #field-priceTBC {
+    accent-color: var(--tos-warning);
+  }
+  .field-type.checkbox:has(#field-priceTBC:checked) {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--tos-warning-bg);
+    .field-description {
+      color: var(--tos-warning) !important;
+    }
+  }
+}
+/* Action bar: our status pill replaces Payload's grey "Status: Published" (its "Revert" action stays) */
+.collection-edit--products .doc-controls {
+  .status__label,
+  .status__value {
+    display: none;
+  }
+  .status__value-wrap {
+    font-size: 0; /* hides the " — " separator */
+    .status__action {
+      font-size: 13px;
+    }
+  }
+  .doc-controls__meta > li:nth-child(3) {
+    display: none; /* "Created" — in Versions if needed */
+  }
+}
+.tos-docstatus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 6px;
+  white-space: nowrap;
+  .tos-pill {
+    height: 26px;
+    padding: 0 11px;
+    font-size: 12.5px;
+  }
+}
+.tos-docstatus__more {
+  font-weight: 500;
+  opacity: 0.85;
+}
+.tos-docstatus__unsaved {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tos-warning);
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+/* Product summary card (sidebar) */
+.tos-pov {
+  margin: -2px 0 22px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--tos-line);
+}
+.tos-pov__title {
+  margin: 0 0 14px;
+  font: 700 16px/1.3 var(--tos-display) !important;
+  color: var(--tos-ink);
+}
+.tos-pov__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0;
+}
+.tos-pov__stat {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--tos-canvas);
+  &--wide {
+    grid-column: 1 / -1;
+  }
+  dt {
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tos-muted);
+  }
+  dd {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    font: 700 17px/1.25 var(--tos-display);
+    color: var(--tos-ink);
+  }
+}
+.tos-pov__note {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: 500 12.5px/1.2 var(--font-body);
+  color: var(--tos-muted);
+  &--warning {
+    color: var(--tos-warning);
+    font-weight: 600;
+  }
+  &--danger {
+    color: var(--tos-danger);
+    font-weight: 600;
+  }
+  &--success {
+    color: var(--tos-success);
+    font-weight: 600;
+  }
+}
+.tos-pov__star {
+  color: #f5a524;
+}
+.tos-pov__empty,
+.tos-pov__hint {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--tos-muted);
+}
+.tos-pov__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 12px;
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tos-brand-700);
+    text-decoration: none;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+/* The type-specific "details" group adds no empty space when a product type has no detail fields
+   (it must stay displayed: Payload only draws a group's fields once it is on screen) */
+.collection-edit--products #field-details {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  > .group-field__wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  .render-fields:empty {
+    margin: 0;
+  }
+}
+
+/* Phones: the action bar's buttons wrap instead of running off the screen */
+@media (max-width: 640px) {
+  .doc-controls__wrapper {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+  .doc-controls__controls-wrapper {
+    width: 100%;
+    overflow: visible !important;
+  }
+  .doc-controls__controls {
+    flex-wrap: wrap;
+    gap: 8px !important;
+    width: 100%;
+  }
+  .doc-controls__content {
+    overflow: hidden;
+  }
+}
+/* Phones: the top bar (breadcrumb, search, View store, account) fits the screen */
+@media (max-width: 640px) {
+  .app-header__controls-wrapper,
+  .app-header__step-nav-wrapper {
+    min-width: 0;
+  }
+  .app-header__step-nav-wrapper {
+    overflow: hidden;
+  }
+  .app-header__actions-wrapper {
+    flex-shrink: 0;
+  }
+  .app-header__account {
+    display: none; /* the account is also in the sidebar footer */
+  }
+  .doc-controls__meta {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+}
+.collection-edit--products #field-details:has(.field-type) {
+  margin-bottom: 20px !important;
+}
+/* Relationship fields with "+ add new": the select and the + button form one joined control */
+.relationship__wrap:has(> .relationship-add-new) {
+  display: flex;
+  align-items: stretch;
+  .react-select {
+    flex: 1;
+    min-width: 0;
+  }
+  .rs__control {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+  }
+}
+.relationship-add-new {
+  display: flex;
+  margin: 0 !important;
+}
+.relationship-add-new__add-button {
+  height: auto !important;
+  min-height: 100%;
+  width: 42px;
+  margin: 0 !important;
+  display: grid;
+  place-items: center;
+  background: #fff !important;
+  border: 1px solid var(--tos-line-strong) !important;
+  border-left: 0 !important;
+  border-radius: 0 var(--style-radius-m) var(--style-radius-m) 0 !important;
+  box-shadow: none !important;
+  color: var(--tos-ink-2);
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  &:hover {
+    background: var(--tos-canvas) !important;
+    color: var(--tos-brand-700);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--tos-brand-600);
+    outline-offset: -2px;
+  }
+}
+/* Hover and focus outline the whole joined control */
+.relationship__wrap:has(> .relationship-add-new):hover .relationship-add-new__add-button {
+  border-color: var(--tos-subtle) !important;
+}
+.relationship__wrap:has(.rs__control--is-focused) .relationship-add-new__add-button {
+  border-color: var(--tos-ink) !important;
+}
+
+/* A card holding just one data group: the card already carries its title (cards with several groups keep
+   their sub-headings) */
+.tos-section > .collapsible > [class^='rah'] > div > .collapsible__content > .render-fields > .group-field:only-child {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  > .group-field__wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+    > .group-field__header {
+      display: none;
+    }
+  }
+}
+/* Edit pages of collections: the collection's note (same on every document) is on the list page instead */
+.template-default__wrap:has(> .collection-edit) .doc-header__after-header {
+  display: none;
+}
+/* Payload's own blocks above the fields (account sign-in, file upload) become cards like the sections */
+.document-fields__edit:has(> .document-fields__fields > .tos-section) > :is(.collection-edit__auth, .file-field, .upload) {
+  margin: 0 0 20px !important;
+  padding: 18px 22px 22px;
+  background: #fff;
+  border: 1px solid var(--tos-line);
+  border-radius: var(--tos-radius-lg);
+  box-shadow: var(--tos-shadow);
+}
+.document-fields__edit:has(> .document-fields__fields > .tos-section) > .collection-edit__auth::before {
+  content: 'Sign-in';
+  display: block;
+  margin-bottom: 14px;
+  font: 700 16px/1.3 var(--tos-display);
+  color: var(--tos-ink);
+}
+/* Account page: Payload's settings block draws divider lines past the screen edge on phones */
+.payload-settings {
+  overflow-x: clip;
+}
+
+/* Phones: admin tables become one card per row, each value labelled with its column name
+   (labels are added by components/admin/TableLabels.tsx) */
+@media (max-width: 640px) {
+  .tos-table-wrap {
+    overflow-x: visible;
+  }
+  .tos-table {
+    display: block;
+    /* The header row shrinks to a "Select all" bar (only on tables with selection) */
+    thead {
+      display: block;
+      tr {
+        display: block;
+      }
+      th {
+        display: none;
+      }
+      th:has(> input[type='checkbox']) {
+        position: static;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: auto !important;
+        padding: 10px 16px;
+        &::after {
+          content: 'Select all';
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--tos-ink-2);
+        }
+      }
+    }
+    thead:not(:has(input[type='checkbox'])) {
+      display: none;
+    }
+    tbody {
+      display: block;
+    }
+    tbody tr {
+      position: relative;
+      display: block;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--tos-line);
+    }
+    tbody tr:last-child {
+      border-bottom: 0;
+    }
+    /* Label on the left, the cell's content (however many parts) right-aligned as one block */
+    td {
+      position: relative;
+      display: block;
+      min-height: 24px;
+      padding: 3px 0 3px 38% !important;
+      border: 0 !important;
+      text-align: right;
+      &::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        top: 4px;
+        max-width: 36%;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.4;
+        color: var(--tos-muted);
+        text-align: left;
+      }
+      &[data-label='']::before {
+        display: none;
+      }
+    }
+    /* The row's title (order number, product, name…) leads the card, without a label */
+    td[data-primary] {
+      display: block;
+      padding: 0 36px 6px 0 !important;
+      text-align: left;
+      &::before {
+        display: none;
+      }
+    }
+    /* Selection checkbox: top-right corner of the card */
+    td:has(> input[type='checkbox']:only-child) {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      padding: 0 !important;
+    }
+    .num {
+      text-align: right;
+    }
+  }
+  .tos-product-cell {
+    min-width: 0;
+  }
+}
+/* Narrow desktops (around 1025 px): the main column may shrink so the sidebar never runs off the screen */
+.document-fields__main,
+.document-fields__main .document-fields__edit {
+  min-width: 0;
 }

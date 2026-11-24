@@ -56,7 +56,7 @@ export default buildConfig({
       // Fully custom admin UI (Sprint 1.5): sidebar, header actions, command palette, dashboard, inventory
       Nav: '/components/admin/Nav#Nav',
       actions: ['/components/admin/HeaderActions#HeaderActions'],
-      providers: ['/components/admin/CommandPalette#CommandPaletteProvider'],
+      providers: ['/components/admin/CommandPalette#CommandPaletteProvider', '/components/admin/TableLabels#TableLabels'],
       beforeLogin: ['/components/admin/LoginIntro#LoginIntro'],
       views: {
         dashboard: { Component: '/components/admin/views/Dashboard#Dashboard' },
@@ -132,14 +132,17 @@ export default buildConfig({
     // Category tree: adds `parent` + `breadcrumbs` (e.g. /skincare/serums) to categories
     nestedDocsPlugin({
       collections: ['categories'],
+      // The fields are defined in collections/Categories.ts (inside its section cards)
+      parentFieldSlug: 'parent',
+      breadcrumbsFieldSlug: 'breadcrumbs',
       generateLabel: (_, doc) => String(doc.name ?? ''),
       generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.slug}`, ''),
     }),
-    // SEO fields (meta title, description, image) with sensible auto-generated defaults.
-    // Products place the same fields in their own "SEO" tab (collections/Products.ts); the plugin still
-    // powers their "Auto-generate" buttons.
+    // SEO fields (meta title, description, image) with sensible auto-generated defaults. Products,
+    // Categories and Brands place the fields themselves, inside their section cards (fields/seo.ts and
+    // collections/Products.ts); the plugin powers their "Auto-generate" buttons.
     seoPlugin({
-      collections: ['categories', 'brands'],
+      collections: [],
       uploadsCollection: 'media',
       tabbedUI: false,
       generateTitle: ({ doc }) => `${(doc as { name?: string }).name ?? ''} | ${siteName}`,

@@ -2,15 +2,16 @@ import { slugField, type CollectionConfig } from 'payload'
 
 import { anyone, catalogDeleters, catalogEditors } from '../access/roles'
 import { auditDelete } from '../lib/payload/audit'
+import { section } from '../fields/section'
 
 const taxonomy = (slug: string, singular: string, plural: string, description: string): CollectionConfig => ({
   slug,
   labels: { singular, plural },
-  admin: { useAsTitle: 'name', group: 'Catalogue', description },
+  admin: { useAsTitle: 'name', group: 'Catalogue', description, hideAPIURL: true },
   access: { read: anyone, create: catalogEditors, update: catalogEditors, delete: catalogDeleters },
   hooks: { afterDelete: [auditDelete(slug, (d) => String(d.name))] },
   defaultSort: 'name',
-  fields: [{ name: 'name', type: 'text', required: true, unique: true }, slugField({ useAsSlug: 'name' })],
+  fields: [section(singular, 'The name shoppers see and its web address.', [{ name: 'name', type: 'text', required: true, unique: true }, slugField({ useAsSlug: 'name' })])],
 })
 
 export const Tags = taxonomy('tags', 'Tag', 'Tags', 'Merchandising tags such as K-beauty, Derm, Bestseller, New, Gift.')

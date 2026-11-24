@@ -55,8 +55,12 @@ export const Products: CollectionConfig = {
     defaultColumns: ['name', 'brand', 'minPrice', 'totalStock', 'lowStock', '_status'],
     listSearchableFields: ['name', 'searchText'],
     preview: (doc) => `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/p/${doc.slug}`,
-    description: 'Prices are in LKR. A product flagged "Price to be confirmed" shows a warning until its prices are checked.',
-    components: { views: { list: { Component: '/components/admin/views/ProductsList#ProductsList' } } },
+    hideAPIURL: true,
+    components: {
+      views: { list: { Component: '/components/admin/views/ProductsList#ProductsList' } },
+      // Coloured status pill (Published / Draft / Unpublished changes) and "Unsaved changes" in the action bar
+      edit: { beforeDocumentControls: ['/components/admin/product/ProductStatus#ProductStatus'] },
+    },
   },
   // Drafts + scheduled publishing (TOS-110). The public only ever sees published products.
   versions: { drafts: { schedulePublish: true }, maxPerDoc: 25 },
@@ -217,6 +221,8 @@ export const Products: CollectionConfig = {
     cardsEndpoint,
     pairsEndpoint,
   ],
+  // Edit page (redesign): tabs for the main kinds of information; inside each tab, section cards with a
+  // title and a one-line hint. Tabs and sections are presentation only: field names and data are unchanged.
   fields: [
     {
       type: 'tabs',
@@ -224,309 +230,357 @@ export const Products: CollectionConfig = {
         {
           label: 'Product',
           fields: [
-            { name: 'name', type: 'text', required: true, admin: { description: 'Without the brand, e.g. "Hydrating Facial Cleanser".' } },
-            {
-              type: 'row',
-              fields: [
-                { name: 'brand', type: 'relationship', relationTo: 'brands', required: true, admin: { width: '50%' } },
-                {
-                  name: 'categories',
-                  type: 'relationship',
-                  relationTo: 'categories',
-                  hasMany: true,
-                  required: true,
-                  admin: { width: '50%', description: 'Pick the most specific category (e.g. Serums). The first one is the main category.' },
-                },
-              ],
-            },
-            { name: 'shortDescription', type: 'textarea', admin: { description: 'One or two sentences shown near the price.' } },
-            { name: 'description', type: 'richText' },
-            { name: 'benefits', type: 'textarea', admin: { description: 'One benefit per line.' } },
-            { name: 'howToUse', type: 'textarea' },
-            { name: 'ingredients', type: 'textarea' },
+          {
+            type: 'collapsible',
+            label: 'Product information',
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'What shoppers see first: the name, brand, category and description.' },
+            fields: [
+                  { name: 'name', type: 'text', required: true, admin: { description: 'Without the brand, e.g. "Hydrating Facial Cleanser".' } },
+                  {
+                    type: 'row',
+                    fields: [
+                      { name: 'brand', type: 'relationship', relationTo: 'brands', required: true, admin: { width: '50%' } },
+                      {
+                        name: 'categories',
+                        type: 'relationship',
+                        relationTo: 'categories',
+                        hasMany: true,
+                        required: true,
+                        admin: { width: '50%', description: 'Pick the most specific category (e.g. Serums). The first one is the main category.' },
+                      },
+                    ],
+                  },
+                  { name: 'shortDescription', type: 'textarea', admin: { description: 'One or two sentences shown near the price.' } },
+                  { name: 'description', type: 'richText' },
+            ],
+          },
+          {
+            type: 'collapsible',
+            label: 'Photos',
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Extra photos for the gallery. Each variant’s own photo is set in the Variants & pricing tab.' },
+            fields: [
+                  { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true, label: 'Extra photos', admin: { description: 'Drag to reorder. Shown after the variant’s own photo.' } },
+            ],
+          },
           ],
         },
         {
-          label: 'Variants & stock',
-          description: 'Each variant is a sellable SKU with its own price, stock and photo.',
+          label: 'Variants & pricing',
           fields: [
-            {
-              type: 'row',
-              fields: [
-                {
-                  name: 'optionName',
-                  label: 'Option 1',
-                  type: 'select',
-                  required: true,
-                  defaultValue: 'Size',
-                  options: OPTION_TYPES.map((o) => ({ label: o, value: o })),
-                  admin: { width: '50%', description: 'What the variants differ by, e.g. Size.' },
-                },
-                {
-                  name: 'option2Name',
-                  label: 'Option 2 (optional)',
-                  type: 'select',
-                  options: OPTION_TYPES.map((o) => ({ label: o, value: o })),
-                  admin: { width: '50%', description: 'A second dimension, e.g. Colour for shoes (size × colour).' },
-                },
-              ],
-            },
-            {
-              name: 'variants',
-              type: 'array',
-              required: true,
-              minRows: 1,
-              labels: { singular: 'Variant', plural: 'Variants' },
-              admin: { initCollapsed: true, components: { RowLabel: '/components/admin/VariantRowLabel#VariantRowLabel' } },
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'label', label: 'Option 1 value', type: 'text', required: true, admin: { width: '25%', description: 'e.g. 100 ml, EU 38' } },
-                    {
-                      name: 'option2',
-                      label: 'Option 2 value',
-                      type: 'text',
-                      admin: { width: '25%', description: 'e.g. Black', condition: (data) => Boolean(data?.option2Name) },
-                    },
-                    { name: 'sku', type: 'text', required: true, index: true, admin: { width: '25%' } },
-                    { name: 'barcode', type: 'text', admin: { width: '25%' } },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'price',
-                      type: 'number',
-                      required: true,
-                      min: 0,
-                      admin: { width: '25%', description: 'Selling price (Rs)' },
-                      access: { update: fieldRoles('store-manager') },
-                    },
-                    {
-                      name: 'compareAtPrice',
-                      type: 'number',
-                      min: 0,
-                      admin: { width: '25%', description: '"Was" price (Rs), for sales' },
-                      access: { update: fieldRoles('store-manager', 'marketing') },
-                    },
-                    {
-                      name: 'cost',
-                      type: 'number',
-                      min: 0,
-                      admin: { width: '25%', description: 'Cost price (staff only)' },
-                      access: { read: fieldRoles('store-manager', 'inventory-manager'), update: fieldRoles('store-manager') },
-                    },
-                    { name: 'weight', type: 'number', min: 0, admin: { width: '25%', description: 'Grams (for delivery fees)' } },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'stock',
-                      type: 'number',
-                      required: true,
-                      defaultValue: 0,
-                      min: 0,
-                      admin: { width: '50%' },
-                      access: { update: fieldRoles('store-manager', 'inventory-manager') },
-                    },
-                    {
-                      name: 'lowStockThreshold',
-                      type: 'number',
-                      defaultValue: 5,
-                      min: 0,
-                      admin: { width: '50%', description: 'Flag as low stock at or below this' },
-                      access: { update: fieldRoles('store-manager', 'inventory-manager') },
-                    },
-                  ],
-                },
-                { name: 'image', type: 'upload', relationTo: 'media' },
-              ],
-            },
-            { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true, admin: { description: 'Extra photos shown after the variant photo.' } },
+          {
+            type: 'collapsible',
+            label: 'Variants, prices & stock',
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Each variant is a sellable SKU with its own price (Rs), stock and photo.' },
+            fields: [
+                  {
+                    type: 'row',
+                    fields: [
+                      {
+                        name: 'optionName',
+                        label: 'Option 1',
+                        type: 'select',
+                        required: true,
+                        defaultValue: 'Size',
+                        options: OPTION_TYPES.map((o) => ({ label: o, value: o })),
+                        admin: { width: '50%', description: 'What the variants differ by, e.g. Size.' },
+                      },
+                      {
+                        name: 'option2Name',
+                        label: 'Option 2 (optional)',
+                        type: 'select',
+                        options: OPTION_TYPES.map((o) => ({ label: o, value: o })),
+                        admin: { width: '50%', description: 'A second dimension, e.g. Colour for shoes (size × colour).' },
+                      },
+                    ],
+                  },
+                  {
+                    name: 'variants',
+                    type: 'array',
+                    required: true,
+                    minRows: 1,
+                    labels: { singular: 'Variant', plural: 'Variants' },
+                    admin: { initCollapsed: true, components: { RowLabel: '/components/admin/VariantRowLabel#VariantRowLabel' } },
+                    fields: [
+                      {
+                        type: 'row',
+                        fields: [
+                          { name: 'label', label: 'Option 1 value', type: 'text', required: true, admin: { width: '25%', description: 'e.g. 100 ml, EU 38' } },
+                          {
+                            name: 'option2',
+                            label: 'Option 2 value',
+                            type: 'text',
+                            admin: { width: '25%', description: 'e.g. Black', condition: (data) => Boolean(data?.option2Name) },
+                          },
+                          { name: 'sku', type: 'text', required: true, index: true, admin: { width: '25%' } },
+                          { name: 'barcode', type: 'text', admin: { width: '25%' } },
+                        ],
+                      },
+                      {
+                        type: 'row',
+                        fields: [
+                          {
+                            name: 'price',
+                            type: 'number',
+                            required: true,
+                            min: 0,
+                            admin: { width: '25%', description: 'Selling price (Rs)' },
+                            access: { update: fieldRoles('store-manager') },
+                          },
+                          {
+                            name: 'compareAtPrice',
+                            type: 'number',
+                            min: 0,
+                            admin: { width: '25%', description: '"Was" price (Rs), for sales' },
+                            access: { update: fieldRoles('store-manager', 'marketing') },
+                          },
+                          {
+                            name: 'cost',
+                            type: 'number',
+                            min: 0,
+                            admin: { width: '25%', description: 'Cost price (staff only)' },
+                            access: { read: fieldRoles('store-manager', 'inventory-manager'), update: fieldRoles('store-manager') },
+                          },
+                          { name: 'weight', type: 'number', min: 0, admin: { width: '25%', description: 'Grams (for delivery fees)' } },
+                        ],
+                      },
+                      {
+                        type: 'row',
+                        fields: [
+                          {
+                            name: 'stock',
+                            type: 'number',
+                            required: true,
+                            defaultValue: 0,
+                            min: 0,
+                            admin: { width: '50%' },
+                            access: { update: fieldRoles('store-manager', 'inventory-manager') },
+                          },
+                          {
+                            name: 'lowStockThreshold',
+                            type: 'number',
+                            defaultValue: 5,
+                            min: 0,
+                            admin: { width: '50%', description: 'Flag as low stock at or below this' },
+                            access: { update: fieldRoles('store-manager', 'inventory-manager') },
+                          },
+                        ],
+                      },
+                      { name: 'image', type: 'upload', relationTo: 'media' },
+                    ],
+                  },
+            ],
+          },
           ],
         },
         {
           label: 'Details',
-          description: 'Fields here change with the product type (set in the sidebar).',
           fields: [
-            {
-              name: 'details',
-              type: 'group',
-              label: false,
-              fields: [
-                // Fragrance
-                {
-                  type: 'row',
-                  admin: { condition: isType('fragrance') },
-                  fields: [
-                    {
-                      name: 'concentration',
-                      type: 'select',
-                      admin: { width: '33%' },
-                      options: ['Parfum', 'Eau de Parfum', 'Eau de Toilette', 'Eau de Cologne', 'Body mist'].map((v) => ({ label: v, value: v })),
-                    },
-                    {
-                      name: 'scentFamily',
-                      type: 'select',
-                      admin: { width: '33%' },
-                      options: ['Floral', 'Fresh', 'Citrus', 'Woody', 'Oriental', 'Gourmand', 'Aquatic', 'Fruity'].map((v) => ({ label: v, value: v })),
-                    },
-                    {
-                      name: 'longevity',
-                      type: 'select',
-                      admin: { width: '34%' },
-                      options: ['Light (2–4 h)', 'Moderate (4–6 h)', 'Long-lasting (6–8 h)', 'Very long (8 h+)'].map((v) => ({ label: v, value: v })),
-                    },
-                  ],
-                },
-                {
-                  type: 'row',
-                  admin: { condition: isType('fragrance') },
-                  fields: [
-                    { name: 'topNotes', type: 'text', admin: { width: '33%', description: 'Comma separated' } },
-                    { name: 'heartNotes', type: 'text', admin: { width: '33%' } },
-                    { name: 'baseNotes', type: 'text', admin: { width: '34%' } },
-                  ],
-                },
-                // Fragrance + footwear + accessory
-                {
-                  name: 'gender',
-                  type: 'select',
-                  admin: { condition: isType('fragrance', 'footwear', 'accessory'), description: 'Used for "For her / For him" filters.' },
-                  options: [
-                    { label: 'Women', value: 'women' },
-                    { label: 'Men', value: 'men' },
-                    { label: 'Unisex', value: 'unisex' },
-                    { label: 'Kids', value: 'kids' },
-                  ],
-                },
-                // Footwear
-                {
-                  type: 'row',
-                  admin: { condition: isType('footwear') },
-                  fields: [
-                    {
-                      name: 'footwearStyle',
-                      label: 'Style',
-                      type: 'select',
-                      admin: { width: '33%' },
-                      options: ['Sneakers', 'Sandals', 'Slides', 'Heels', 'Flats', 'Formal', 'Boots'].map((v) => ({ label: v, value: v })),
-                    },
-                    { name: 'material', type: 'text', admin: { width: '33%', description: 'e.g. Canvas upper, rubber sole' } },
-                    {
-                      name: 'sizeSystem',
-                      type: 'select',
-                      defaultValue: 'EU',
-                      admin: { width: '34%' },
-                      options: ['EU', 'UK', 'US'].map((v) => ({ label: v, value: v })),
-                    },
-                  ],
-                },
-                { name: 'fit', type: 'text', admin: { condition: isType('footwear'), description: 'e.g. True to size; half a size up for wide feet' } },
-                // Chocolate & treats
-                {
-                  type: 'row',
-                  admin: { condition: isType('chocolate') },
-                  fields: [
-                    { name: 'netWeight', label: 'Net weight (g)', type: 'number', admin: { width: '33%' } },
-                    { name: 'cocoaPercent', label: 'Cocoa %', type: 'number', min: 0, max: 100, admin: { width: '33%' } },
-                    { name: 'origin', type: 'text', admin: { width: '34%', description: 'e.g. Belgium, Sri Lanka' } },
-                  ],
-                },
-                {
-                  name: 'dietary',
-                  type: 'select',
-                  hasMany: true,
-                  admin: { condition: isType('chocolate') },
-                  options: ['Vegan', 'Vegetarian', 'Gluten-free', 'Sugar-free', 'Halal', 'Nut-free'].map((v) => ({ label: v, value: v })),
-                },
-                { name: 'allergens', type: 'text', admin: { condition: isType('chocolate'), description: 'e.g. Contains milk, soy; may contain nuts' } },
-                { name: 'storage', type: 'text', admin: { condition: isType('chocolate'), description: 'e.g. Store below 25°C, away from sunlight' } },
-                // Gifts
-                { name: 'contents', label: 'What’s inside', type: 'textarea', admin: { condition: isType('gift'), description: 'One item per line.' } },
-                {
-                  type: 'row',
-                  admin: { condition: isType('gift') },
-                  fields: [
-                    { name: 'giftWrapped', label: 'Arrives gift-wrapped', type: 'checkbox', admin: { width: '50%' } },
-                    { name: 'personalisable', label: 'Can be personalised (message card)', type: 'checkbox', admin: { width: '50%' } },
-                  ],
-                },
-              ],
-            },
+          {
+            type: 'collapsible',
+            label: 'Product details',
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Shown on the product page. The fields change with the product type (in the sidebar).' },
+            fields: [
+                  {
+                    name: 'details',
+                    type: 'group',
+                    label: false,
+                    fields: [
+                      // Fragrance
+                      {
+                        type: 'row',
+                        admin: { condition: isType('fragrance') },
+                        fields: [
+                          {
+                            name: 'concentration',
+                            type: 'select',
+                            admin: { width: '33%' },
+                            options: ['Parfum', 'Eau de Parfum', 'Eau de Toilette', 'Eau de Cologne', 'Body mist'].map((v) => ({ label: v, value: v })),
+                          },
+                          {
+                            name: 'scentFamily',
+                            type: 'select',
+                            admin: { width: '33%' },
+                            options: ['Floral', 'Fresh', 'Citrus', 'Woody', 'Oriental', 'Gourmand', 'Aquatic', 'Fruity'].map((v) => ({ label: v, value: v })),
+                          },
+                          {
+                            name: 'longevity',
+                            type: 'select',
+                            admin: { width: '34%' },
+                            options: ['Light (2–4 h)', 'Moderate (4–6 h)', 'Long-lasting (6–8 h)', 'Very long (8 h+)'].map((v) => ({ label: v, value: v })),
+                          },
+                        ],
+                      },
+                      {
+                        type: 'row',
+                        admin: { condition: isType('fragrance') },
+                        fields: [
+                          { name: 'topNotes', type: 'text', admin: { width: '33%', description: 'Comma separated' } },
+                          { name: 'heartNotes', type: 'text', admin: { width: '33%' } },
+                          { name: 'baseNotes', type: 'text', admin: { width: '34%' } },
+                        ],
+                      },
+                      // Fragrance + footwear + accessory
+                      {
+                        name: 'gender',
+                        type: 'select',
+                        admin: { condition: isType('fragrance', 'footwear', 'accessory'), description: 'Used for "For her / For him" filters.' },
+                        options: [
+                          { label: 'Women', value: 'women' },
+                          { label: 'Men', value: 'men' },
+                          { label: 'Unisex', value: 'unisex' },
+                          { label: 'Kids', value: 'kids' },
+                        ],
+                      },
+                      // Footwear
+                      {
+                        type: 'row',
+                        admin: { condition: isType('footwear') },
+                        fields: [
+                          {
+                            name: 'footwearStyle',
+                            label: 'Style',
+                            type: 'select',
+                            admin: { width: '33%' },
+                            options: ['Sneakers', 'Sandals', 'Slides', 'Heels', 'Flats', 'Formal', 'Boots'].map((v) => ({ label: v, value: v })),
+                          },
+                          { name: 'material', type: 'text', admin: { width: '33%', description: 'e.g. Canvas upper, rubber sole' } },
+                          {
+                            name: 'sizeSystem',
+                            type: 'select',
+                            defaultValue: 'EU',
+                            admin: { width: '34%' },
+                            options: ['EU', 'UK', 'US'].map((v) => ({ label: v, value: v })),
+                          },
+                        ],
+                      },
+                      { name: 'fit', type: 'text', admin: { condition: isType('footwear'), description: 'e.g. True to size; half a size up for wide feet' } },
+                      // Chocolate & treats
+                      {
+                        type: 'row',
+                        admin: { condition: isType('chocolate') },
+                        fields: [
+                          { name: 'netWeight', label: 'Net weight (g)', type: 'number', admin: { width: '33%' } },
+                          { name: 'cocoaPercent', label: 'Cocoa %', type: 'number', min: 0, max: 100, admin: { width: '33%' } },
+                          { name: 'origin', type: 'text', admin: { width: '34%', description: 'e.g. Belgium, Sri Lanka' } },
+                        ],
+                      },
+                      {
+                        name: 'dietary',
+                        type: 'select',
+                        hasMany: true,
+                        admin: { condition: isType('chocolate') },
+                        options: ['Vegan', 'Vegetarian', 'Gluten-free', 'Sugar-free', 'Halal', 'Nut-free'].map((v) => ({ label: v, value: v })),
+                      },
+                      { name: 'allergens', type: 'text', admin: { condition: isType('chocolate'), description: 'e.g. Contains milk, soy; may contain nuts' } },
+                      { name: 'storage', type: 'text', admin: { condition: isType('chocolate'), description: 'e.g. Store below 25°C, away from sunlight' } },
+                      // Gifts
+                      { name: 'contents', label: 'What’s inside', type: 'textarea', admin: { condition: isType('gift'), description: 'One item per line.' } },
+                      {
+                        type: 'row',
+                        admin: { condition: isType('gift') },
+                        fields: [
+                          { name: 'giftWrapped', label: 'Arrives gift-wrapped', type: 'checkbox', admin: { width: '50%' } },
+                          { name: 'personalisable', label: 'Can be personalised (message card)', type: 'checkbox', admin: { width: '50%' } },
+                        ],
+                      },
+                    ],
+                  },
+                  { name: 'benefits', type: 'textarea', admin: { description: 'One benefit per line.' } },
+                  { name: 'howToUse', type: 'textarea' },
+                  { name: 'ingredients', type: 'textarea' },
+            ],
+          },
           ],
         },
         {
           label: 'Merchandising',
           fields: [
-            {
-              name: 'badge',
-              type: 'select',
-              options: [
-                { label: 'Bestseller', value: 'bestseller' },
-                { label: 'New', value: 'new' },
-                { label: 'Trending', value: 'trending' },
-                { label: 'Gift idea', value: 'gift' },
-                { label: 'Limited', value: 'limited' },
-              ],
-            },
-            { name: 'tags', type: 'relationship', relationTo: 'tags', hasMany: true },
-            {
-              type: 'row',
-              fields: [
-                { name: 'recipients', label: 'Good for (recipients)', type: 'relationship', relationTo: 'recipients', hasMany: true, admin: { width: '50%' } },
-                { name: 'occasions', type: 'relationship', relationTo: 'occasions', hasMany: true, admin: { width: '50%' } },
-              ],
-            },
-            {
-              name: 'concerns',
-              label: 'Skin / hair concerns',
-              type: 'relationship',
-              relationTo: 'concerns',
-              hasMany: true,
-              admin: { condition: isType('beauty'), description: 'Beauty products only.' },
-            },
-            {
-              name: 'crossSells',
-              label: 'Pairs well with (cross-sells)',
-              type: 'relationship',
-              relationTo: 'products',
-              hasMany: true,
-              admin: { description: 'Shown as "Pairs well with". Leave empty to suggest automatically from the same concerns.' },
-            },
-            {
-              name: 'upsells',
-              label: 'Upgrade to (upsells)',
-              type: 'relationship',
-              relationTo: 'products',
-              hasMany: true,
-            },
+          {
+            type: 'collapsible',
+            label: 'Merchandising',
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Badges, collections and recommendations that help shoppers find this product.' },
+            fields: [
+                  {
+                    name: 'badge',
+                    type: 'select',
+                    options: [
+                      { label: 'Bestseller', value: 'bestseller' },
+                      { label: 'New', value: 'new' },
+                      { label: 'Trending', value: 'trending' },
+                      { label: 'Gift idea', value: 'gift' },
+                      { label: 'Limited', value: 'limited' },
+                    ],
+                  },
+                  { name: 'tags', type: 'relationship', relationTo: 'tags', hasMany: true },
+                  {
+                    type: 'row',
+                    fields: [
+                      { name: 'recipients', label: 'Good for (recipients)', type: 'relationship', relationTo: 'recipients', hasMany: true, admin: { width: '50%' } },
+                      { name: 'occasions', type: 'relationship', relationTo: 'occasions', hasMany: true, admin: { width: '50%' } },
+                    ],
+                  },
+                  {
+                    name: 'concerns',
+                    label: 'Skin / hair concerns',
+                    type: 'relationship',
+                    relationTo: 'concerns',
+                    hasMany: true,
+                    admin: { condition: isType('beauty'), description: 'Beauty products only.' },
+                  },
+                  {
+                    name: 'crossSells',
+                    label: 'Pairs well with (cross-sells)',
+                    type: 'relationship',
+                    relationTo: 'products',
+                    hasMany: true,
+                    admin: { description: 'Shown as "Pairs well with". Leave empty to suggest automatically from the same concerns.' },
+                  },
+                  {
+                    name: 'upsells',
+                    label: 'Upgrade to (upsells)',
+                    type: 'relationship',
+                    relationTo: 'products',
+                    hasMany: true,
+                  },
+            ],
+          },
           ],
         },
         {
-          // Search engines and link previews (WhatsApp, Facebook). Stored as `meta`, as before.
           label: 'SEO',
-          description: 'How this product looks in Google and when its link is shared. Leave empty to use the product name and short description.',
           fields: [
             {
-              name: 'meta',
-              type: 'group',
-              label: false,
+              type: 'collapsible',
+              label: 'Search engine listing',
+              admin: {
+                className: 'tos-section',
+                components: { Label: '/components/admin/SectionLabel#SectionLabel' },
+                description: 'How this product appears in Google and when its link is shared. Leave empty to use the name and short description.',
+              },
               fields: [
-                OverviewField({}),
-                MetaTitleField({ hasGenerateFn: true }),
-                MetaDescriptionField({ hasGenerateFn: true }),
-                MetaImageField({ relationTo: 'media', hasGenerateFn: false }),
-                PreviewField({ hasGenerateFn: false }),
+                {
+                  name: 'meta',
+                  type: 'group',
+                  label: false,
+                  fields: [
+                    OverviewField({}),
+                    MetaTitleField({ hasGenerateFn: true }),
+                    MetaDescriptionField({ hasGenerateFn: true }),
+                    MetaImageField({ relationTo: 'media', hasGenerateFn: false }),
+                    PreviewField({ hasGenerateFn: false }),
+                  ],
+                },
               ],
             },
           ],
         },
       ],
+    },
+    {
+      // Price range, stock, sales and rating at a glance (read from the fields below)
+      name: 'overview',
+      type: 'ui',
+      admin: { position: 'sidebar', components: { Field: '/components/admin/product/ProductOverview#ProductOverview' } },
     },
     {
       name: 'productType',
@@ -543,27 +597,27 @@ export const Products: CollectionConfig = {
       label: 'Price to be confirmed',
       type: 'checkbox',
       defaultValue: false,
-      admin: { position: 'sidebar', description: 'Imported with placeholder prices. Untick once prices are checked.' },
+      admin: { position: 'sidebar', description: 'Shown as a warning in the admin until the prices are checked. Untick once they are.' },
     },
     // ----- computed / read-only -----
-    { name: 'minPrice', type: 'number', index: true, admin: { readOnly: true, position: 'sidebar' } },
-    { name: 'maxPrice', type: 'number', admin: { readOnly: true, position: 'sidebar' } },
-    { name: 'totalStock', type: 'number', admin: { readOnly: true, position: 'sidebar' } },
-    { name: 'lowStock', type: 'checkbox', index: true, admin: { readOnly: true, position: 'sidebar', description: 'A variant is at or below its threshold.' } },
-    { name: 'onSale', type: 'checkbox', index: true, admin: { readOnly: true, position: 'sidebar' } },
+    { name: 'minPrice', type: 'number', index: true, admin: { readOnly: true, hidden: true } },
+    { name: 'maxPrice', type: 'number', admin: { readOnly: true, hidden: true } },
+    { name: 'totalStock', type: 'number', admin: { readOnly: true, hidden: true } },
+    { name: 'lowStock', type: 'checkbox', index: true, admin: { readOnly: true, hidden: true } },
+    { name: 'onSale', type: 'checkbox', index: true, admin: { readOnly: true, hidden: true } },
     {
       name: 'salesCount',
       type: 'number',
       defaultValue: 0,
       index: true,
-      admin: { readOnly: true, position: 'sidebar', description: 'Units sold (updated by orders from Sprint 6). Drives "Bestsellers" sorting.' },
+      admin: { readOnly: true, hidden: true, description: 'Units sold (updated by orders). Drives "Bestsellers" sorting.' },
     },
     {
       name: 'rating',
       type: 'number',
-      admin: { readOnly: true, position: 'sidebar', description: 'Average of approved reviews (updated automatically).' },
+      admin: { readOnly: true, hidden: true, description: 'Average of approved reviews (updated automatically).' },
     },
-    { name: 'reviewCount', type: 'number', admin: { readOnly: true, position: 'sidebar' } },
+    { name: 'reviewCount', type: 'number', admin: { readOnly: true, hidden: true } },
     { name: 'searchText', type: 'text', index: true, admin: { hidden: true } },
   ],
 }

@@ -24,6 +24,7 @@ import {
 } from '../lib/orders/lifecycle'
 import { audit } from '../lib/payload/audit'
 import { PAYMENT_METHODS } from './Transactions'
+import { section } from '../fields/section'
 
 /**
  * Orders (Sprint 4). Created only by the checkout (`POST /api/orders/place`, see endpoints/checkout.ts):
@@ -218,6 +219,7 @@ export const Orders: CollectionConfig = {
     description:
       'Every order placed at checkout. Totals are calculated by the server and can’t be edited.',
     components: { views: { list: { Component: '/components/admin/views/OrdersList#OrdersList' } } },
+    hideAPIURL: true,
   },
   access: {
     read: readOrders,
@@ -252,371 +254,397 @@ export const Orders: CollectionConfig = {
       },
     ],
   },
+  // Edit page: tabs of section cards plus sidebar cards (src/fields/section.ts). Presentation only:
+  // field names and stored data are unchanged.
   fields: [
-    {
-      name: 'orderNumber',
-      type: 'text',
-      required: true,
-      unique: true,
-      index: true,
-      admin: { readOnly: true },
-    },
     {
       type: 'tabs',
       tabs: [
         {
           label: 'Order',
           fields: [
-            {
-              name: 'items',
-              type: 'array',
-              required: true,
-              admin: { readOnly: true },
-              fields: [
+            section('Items', 'What was ordered, at the prices charged. Can’t be edited.', [
                 {
-                  type: 'row',
+                  name: 'items',
+                  type: 'array',
+                  required: true,
+                  admin: { readOnly: true },
                   fields: [
                     {
-                      name: 'product',
-                      type: 'relationship',
-                      relationTo: 'products',
-                      admin: { width: '50%' },
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'product',
+                          type: 'relationship',
+                          relationTo: 'products',
+                          admin: { width: '50%' },
+                        },
+                        { name: 'sku', type: 'text', required: true, admin: { width: '25%' } },
+                        {
+                          name: 'quantity',
+                          type: 'number',
+                          required: true,
+                          min: 1,
+                          admin: { width: '25%' },
+                        },
+                      ],
                     },
-                    { name: 'sku', type: 'text', required: true, admin: { width: '25%' } },
                     {
-                      name: 'quantity',
-                      type: 'number',
-                      required: true,
-                      min: 1,
-                      admin: { width: '25%' },
+                      type: 'row',
+                      fields: [
+                        { name: 'name', type: 'text', required: true, admin: { width: '50%' } },
+                        { name: 'brand', type: 'text', admin: { width: '25%' } },
+                        { name: 'variant', type: 'text', admin: { width: '25%' } },
+                      ],
+                    },
+                    { name: 'image', type: 'text', admin: { hidden: true } },
+                    {
+                      type: 'row',
+                      fields: [
+                        {
+                          ...money('unitPrice', 'Unit price'),
+                          admin: { readOnly: true, width: '25%' },
+                        } as Field,
+                        {
+                          ...money('lineSubtotal', 'Subtotal'),
+                          admin: { readOnly: true, width: '25%' },
+                        } as Field,
+                        { ...money('discount'), admin: { readOnly: true, width: '25%' } } as Field,
+                        {
+                          ...money('lineTotal', 'Line total'),
+                          admin: { readOnly: true, width: '25%' },
+                        } as Field,
+                      ],
                     },
                   ],
                 },
+            ]),
+            section('Discounts', 'Coupon codes and promotions applied at checkout.', [
                 {
-                  type: 'row',
-                  fields: [
-                    { name: 'name', type: 'text', required: true, admin: { width: '50%' } },
-                    { name: 'brand', type: 'text', admin: { width: '25%' } },
-                    { name: 'variant', type: 'text', admin: { width: '25%' } },
-                  ],
-                },
-                { name: 'image', type: 'text', admin: { hidden: true } },
-                {
-                  type: 'row',
+                  name: 'discounts',
+                  type: 'array',
+                  admin: { readOnly: true },
                   fields: [
                     {
-                      ...money('unitPrice', 'Unit price'),
-                      admin: { readOnly: true, width: '25%' },
-                    } as Field,
-                    {
-                      ...money('lineSubtotal', 'Subtotal'),
-                      admin: { readOnly: true, width: '25%' },
-                    } as Field,
-                    { ...money('discount'), admin: { readOnly: true, width: '25%' } } as Field,
-                    {
-                      ...money('lineTotal', 'Line total'),
-                      admin: { readOnly: true, width: '25%' },
-                    } as Field,
+                      type: 'row',
+                      fields: [
+                        { name: 'label', type: 'text', admin: { width: '50%' } },
+                        { name: 'code', type: 'text', admin: { width: '25%' } },
+                        { ...money('amount'), admin: { readOnly: true, width: '25%' } } as Field,
+                      ],
+                    },
+                    { name: 'discount', type: 'relationship', relationTo: 'discounts' },
                   ],
                 },
-              ],
-            },
-            {
-              name: 'discounts',
-              type: 'array',
-              admin: { readOnly: true },
-              fields: [
+            ]),
+            section('Totals (Rs)', 'Worked out by the server at checkout.', [
                 {
-                  type: 'row',
+                  name: 'totals',
+                  type: 'group',
                   fields: [
-                    { name: 'label', type: 'text', admin: { width: '50%' } },
-                    { name: 'code', type: 'text', admin: { width: '25%' } },
-                    { ...money('amount'), admin: { readOnly: true, width: '25%' } } as Field,
+                    {
+                      type: 'row',
+                      fields: [
+                        { ...money('subtotal'), admin: { readOnly: true, width: '20%' } } as Field,
+                        {
+                          ...money('discountTotal', 'Discounts'),
+                          admin: { readOnly: true, width: '20%' },
+                        } as Field,
+                        { ...money('delivery'), admin: { readOnly: true, width: '20%' } } as Field,
+                        {
+                          ...money('giftWrap', 'Gift wrap'),
+                          admin: { readOnly: true, width: '20%' },
+                        } as Field,
+                        {
+                          ...money('paymentFee', 'Payment fee'),
+                          admin: { readOnly: true, width: '20%', description: 'Cash on delivery or instalment fee' },
+                        } as Field,
+                        { ...money('total'), admin: { readOnly: true, width: '20%' } } as Field,
+                      ],
+                    },
                   ],
                 },
-                { name: 'discount', type: 'relationship', relationTo: 'discounts' },
-              ],
-            },
-            {
-              name: 'totals',
-              type: 'group',
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    { ...money('subtotal'), admin: { readOnly: true, width: '20%' } } as Field,
-                    {
-                      ...money('discountTotal', 'Discounts'),
-                      admin: { readOnly: true, width: '20%' },
-                    } as Field,
-                    { ...money('delivery'), admin: { readOnly: true, width: '20%' } } as Field,
-                    {
-                      ...money('giftWrap', 'Gift wrap'),
-                      admin: { readOnly: true, width: '20%' },
-                    } as Field,
-                    {
-                      ...money('paymentFee', 'Payment fee'),
-                      admin: { readOnly: true, width: '20%', description: 'Cash on delivery or instalment fee' },
-                    } as Field,
-                    { ...money('total'), admin: { readOnly: true, width: '20%' } } as Field,
-                  ],
-                },
-              ],
-            },
+            ]),
           ],
         },
         {
           label: 'Customer & delivery',
           fields: [
-            {
-              name: 'contact',
-              type: 'group',
-              fields: [
+            section('Contact', 'Who placed the order.', [
                 {
-                  type: 'row',
+                  name: 'contact',
+                  type: 'group',
                   fields: [
-                    { name: 'fullName', type: 'text', required: true, admin: { width: '34%' } },
                     {
-                      name: 'email',
-                      type: 'email',
-                      required: true,
-                      index: true,
-                      admin: { width: '33%' },
-                    },
-                    {
-                      name: 'phone',
-                      type: 'text',
-                      required: true,
-                      index: true,
-                      admin: { width: '33%' },
+                      type: 'row',
+                      fields: [
+                        { name: 'fullName', type: 'text', required: true, admin: { width: '34%' } },
+                        {
+                          name: 'email',
+                          type: 'email',
+                          required: true,
+                          index: true,
+                          admin: { width: '33%' },
+                        },
+                        {
+                          name: 'phone',
+                          type: 'text',
+                          required: true,
+                          index: true,
+                          admin: { width: '33%' },
+                        },
+                      ],
                     },
                   ],
                 },
-              ],
-            },
-            { name: 'shippingAddress', type: 'group', fields: addressFields },
-            {
-              name: 'delivery',
-              type: 'group',
-              fields: [
+            ]),
+            section('Shipping address', 'Where the parcel goes.', [
+                { name: 'shippingAddress', type: 'group', fields: addressFields },
+            ]),
+            section('Delivery', 'Delivery option chosen at checkout.', [
                 {
-                  type: 'row',
+                  name: 'delivery',
+                  type: 'group',
                   fields: [
                     {
-                      name: 'method',
-                      type: 'select',
-                      options: ['standard', 'same-day'],
-                      defaultValue: 'standard',
-                      admin: { width: '34%' },
-                    },
-                    { name: 'zone', type: 'text', admin: { width: '33%' } },
-                    { name: 'eta', type: 'text', admin: { width: '33%' } },
-                  ],
-                },
-              ],
-            },
-            {
-              name: 'gift',
-              type: 'group',
-              fields: [
-                {
-                  type: 'row',
-                  fields: [
-                    { name: 'wrap', type: 'checkbox', admin: { width: '33%' } },
-                    {
-                      name: 'hidePrices',
-                      label: 'Hide prices on the packing slip',
-                      type: 'checkbox',
-                      admin: { width: '67%' },
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'method',
+                          type: 'select',
+                          options: ['standard', 'same-day'],
+                          defaultValue: 'standard',
+                          admin: { width: '34%' },
+                        },
+                        { name: 'zone', type: 'text', admin: { width: '33%' } },
+                        { name: 'eta', type: 'text', admin: { width: '33%' } },
+                      ],
                     },
                   ],
                 },
-                { name: 'message', type: 'textarea', maxLength: 300 },
-              ],
-            },
-            {
-              name: 'customerNote',
-              label: 'Note from the customer',
-              type: 'textarea',
-              maxLength: 500,
-              admin: { readOnly: true },
-            },
-            {
-              name: 'shipment',
-              type: 'group',
-              admin: {
-                description:
-                  'Needed before the order can be marked Shipped. Shoppers see the tracking link.',
-              },
-              fields: [
+            ]),
+            section('Gift & note', 'Gift wrap, the card message and the shopper’s note.', [
                 {
-                  type: 'row',
+                  name: 'gift',
+                  type: 'group',
                   fields: [
                     {
-                      name: 'courier',
-                      type: 'relationship',
-                      relationTo: 'couriers',
-                      filterOptions: { active: { equals: true } },
-                      admin: { width: '50%' },
+                      type: 'row',
+                      fields: [
+                        { name: 'wrap', type: 'checkbox', admin: { width: '33%' } },
+                        {
+                          name: 'hidePrices',
+                          label: 'Hide prices on the packing slip',
+                          type: 'checkbox',
+                          admin: { width: '67%' },
+                        },
+                      ],
                     },
-                    { name: 'trackingNumber', type: 'text', index: true, admin: { width: '50%' } },
+                    { name: 'message', type: 'textarea', maxLength: 300 },
                   ],
                 },
-                { name: 'deliveryNote', label: 'Note for the courier', type: 'text' },
-              ],
-            },
+                {
+                  name: 'customerNote',
+                  label: 'Note from the customer',
+                  type: 'textarea',
+                  maxLength: 500,
+                  admin: { readOnly: true },
+                },
+            ]),
+            section('Shipment', 'Needed before the order can be marked Shipped. Shoppers see the tracking link.', [
+                {
+                  name: 'shipment',
+                  type: 'group',
+                  fields: [
+                    {
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'courier',
+                          type: 'relationship',
+                          relationTo: 'couriers',
+                          filterOptions: { active: { equals: true } },
+                          admin: { width: '50%' },
+                        },
+                        { name: 'trackingNumber', type: 'text', index: true, admin: { width: '50%' } },
+                      ],
+                    },
+                    { name: 'deliveryNote', label: 'Note for the courier', type: 'text' },
+                  ],
+                },
+            ]),
           ],
         },
         {
           label: 'Timeline & notes',
           fields: [
-            {
-              name: 'timeline',
-              type: 'array',
-              admin: { readOnly: true },
-              fields: [
+            section('Timeline', 'Everything that happened to this order, newest last.', [
                 {
-                  type: 'row',
+                  name: 'timeline',
+                  type: 'array',
+                  admin: { readOnly: true },
                   fields: [
                     {
-                      name: 'at',
-                      type: 'date',
-                      admin: { width: '30%', date: { pickerAppearance: 'dayAndTime' } },
+                      type: 'row',
+                      fields: [
+                        {
+                          name: 'at',
+                          type: 'date',
+                          admin: { width: '30%', date: { pickerAppearance: 'dayAndTime' } },
+                        },
+                        { name: 'event', type: 'text', admin: { width: '45%' } },
+                        { name: 'by', type: 'text', admin: { width: '25%' } },
+                      ],
                     },
-                    { name: 'event', type: 'text', admin: { width: '45%' } },
-                    { name: 'by', type: 'text', admin: { width: '25%' } },
                   ],
                 },
-              ],
-            },
-            {
-              name: 'staffNotes',
-              type: 'textarea',
-              access: { read: staffOnly, update: staffOnly },
-              admin: { description: 'Internal only' },
-            },
+            ]),
+            section('Staff notes', 'Internal only: shoppers never see these.', [
+                {
+                  name: 'staffNotes',
+                  type: 'textarea',
+                  access: { read: staffOnly, update: staffOnly },
+                  admin: { description: 'Internal only' },
+                },
+            ]),
           ],
         },
       ],
     },
     // ----- sidebar -----
-    {
-      name: 'status',
-      type: 'select',
-      required: true,
-      defaultValue: 'pending-payment',
-      index: true,
-      options: [...ORDER_STATUSES],
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'paymentMethod',
-      type: 'select',
-      required: true,
-      options: [...PAYMENT_METHODS],
-      admin: { position: 'sidebar', readOnly: true },
-    },
-    {
-      name: 'paymentStatus',
-      type: 'select',
-      required: true,
-      defaultValue: 'unpaid',
-      options: [...PAYMENT_STATUSES],
-      // Changed by gateways, slip decisions and the Payment panel (POST /api/orders/:id/payment), which keep the transactions log
-      admin: { position: 'sidebar', readOnly: true },
-    },
-    {
-      name: 'paymentDueAt',
-      label: 'Pay by',
-      type: 'date',
-      index: true,
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-        date: { pickerAppearance: 'dayAndTime' },
-        description: 'Unpaid card, instalment and bank transfer orders are cancelled after this.',
-      },
-    },
-    {
-      name: 'paidAt',
-      type: 'date',
-      admin: { position: 'sidebar', readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
-    },
-    {
-      name: 'refundedTotal',
-      label: 'Refunded (Rs)',
-      type: 'number',
-      min: 0,
-      defaultValue: 0,
-      admin: { position: 'sidebar', readOnly: true },
-    },
-    {
-      name: 'statusDates',
-      type: 'group',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-        description: 'Set automatically as the order moves along.',
-      },
-      fields: [
-        'packedAt',
-        'shippedAt',
-        'deliveredAt',
-        'completedAt',
-        'cancelledAt',
-        'returnedAt',
-      ].map(
-        (name) =>
-          ({
-            name,
-            type: 'date',
-            admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
-          }) as Field,
-      ),
-    },
-    {
-      name: 'codRemittance',
-      label: 'COD remittance',
-      type: 'group',
-      admin: { position: 'sidebar', readOnly: true, condition: (d) => d?.paymentMethod === 'cod' },
-      fields: [
-        { name: 'remittedAt', type: 'date', admin: { readOnly: true } },
-        { name: 'reference', type: 'text', admin: { readOnly: true } },
-      ],
-    },
-    {
-      name: 'paymentPanel',
-      type: 'ui',
-      admin: {
-        position: 'sidebar',
-        components: { Field: '/components/admin/OrderPayment#OrderPayment' },
-      },
-    },
-    {
-      name: 'customer',
-      type: 'relationship',
-      relationTo: 'users',
-      index: true,
-      admin: { position: 'sidebar', readOnly: true },
-    },
-    {
-      name: 'coupon',
-      type: 'relationship',
-      relationTo: 'discounts',
-      admin: { position: 'sidebar', readOnly: true },
-    },
-    {
-      name: 'termsAcceptedAt',
-      type: 'date',
-      admin: { position: 'sidebar', readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
-    },
-    { name: 'termsVersion', type: 'text', admin: { position: 'sidebar', readOnly: true } },
-    {
-      name: 'stockReturned',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: { position: 'sidebar', readOnly: true },
-    },
+    section('Status', 'Change it as the order moves along. Dates are set automatically.', [
+        {
+          name: 'orderNumber',
+          type: 'text',
+          required: true,
+          unique: true,
+          index: true,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'status',
+          type: 'select',
+          required: true,
+          defaultValue: 'pending-payment',
+          index: true,
+          options: [...ORDER_STATUSES],
+      
+        },
+        {
+          name: 'statusDates',
+          type: 'group',
+          label: false,
+          admin: { readOnly: true },
+          fields: [
+            'packedAt',
+            'shippedAt',
+            'deliveredAt',
+            'completedAt',
+            'cancelledAt',
+            'returnedAt',
+          ].map(
+            (name) =>
+              ({
+                name,
+                type: 'date',
+                // Only the steps that have happened are shown
+                admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' }, condition: (_, sibling) => Boolean(sibling?.[name]) },
+              }) as Field,
+          ),
+        },
+    ], { sidebar: true }),
+    section('Payment', 'Record payments and refunds here; every change is logged.', [
+        {
+          name: 'paymentPanel',
+          type: 'ui',
+          admin: {
+            components: { Field: '/components/admin/OrderPayment#OrderPayment' },
+          },
+        },
+        {
+          name: 'paymentMethod',
+          type: 'select',
+          required: true,
+          options: [...PAYMENT_METHODS],
+          admin: { readOnly: true },
+        },
+        {
+          name: 'paymentStatus',
+          type: 'select',
+          required: true,
+          defaultValue: 'unpaid',
+          options: [...PAYMENT_STATUSES],
+          // Changed by gateways, slip decisions and the Payment panel (POST /api/orders/:id/payment), which keep the transactions log
+          admin: { readOnly: true },
+        },
+        {
+          name: 'paymentDueAt',
+          label: 'Pay by',
+          type: 'date',
+          index: true,
+          admin: {
+            readOnly: true,
+            date: { pickerAppearance: 'dayAndTime' },
+            description: 'Unpaid card, instalment and bank transfer orders are cancelled after this.',
+          },
+        },
+        {
+          name: 'paidAt',
+          type: 'date',
+          admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
+        },
+        {
+          name: 'refundedTotal',
+          label: 'Refunded (Rs)',
+          type: 'number',
+          min: 0,
+          defaultValue: 0,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'codRemittance',
+          label: 'COD remittance',
+          type: 'group',
+          admin: { readOnly: true, condition: (d) => d?.paymentMethod === 'cod' },
+          fields: [
+            { name: 'remittedAt', type: 'date', admin: { readOnly: true } },
+            { name: 'reference', type: 'text', admin: { readOnly: true } },
+          ],
+        },
+    ], { sidebar: true }),
+    section('Customer & checkout', 'Account, coupon and what was agreed at checkout.', [
+        {
+          name: 'customer',
+          type: 'relationship',
+          relationTo: 'users',
+          index: true,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'coupon',
+          type: 'relationship',
+          relationTo: 'discounts',
+          admin: { readOnly: true },
+        },
+        {
+          name: 'termsAcceptedAt',
+          type: 'date',
+          admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
+        },
+        { name: 'termsVersion', type: 'text', admin: { readOnly: true } },
+        {
+          name: 'stockReturned',
+          type: 'checkbox',
+          defaultValue: false,
+          admin: { readOnly: true },
+        },
+        {
+          name: 'clientIp',
+          type: 'text',
+          admin: { readOnly: true },
+          access: { read: staffOnly },
+        },
+    ], { sidebar: true }),
     // Private link for guests to view their order confirmation (never shown to staff UI)
     {
       name: 'accessToken',
@@ -624,12 +652,6 @@ export const Orders: CollectionConfig = {
       index: true,
       admin: { hidden: true },
       access: { read: () => false },
-    },
-    {
-      name: 'clientIp',
-      type: 'text',
-      admin: { position: 'sidebar', readOnly: true },
-      access: { read: staffOnly },
     },
   ],
   timestamps: true,

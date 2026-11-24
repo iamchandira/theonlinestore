@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { allowRoles } from '../access/roles'
 import { uploadDir } from '../lib/payload/uploads'
+import { section } from '../fields/section'
 
 /**
  * Bank transfer slips (Sprint 5, TOS-605). Uploaded by the shopper from their order page (private link
@@ -11,6 +12,7 @@ export const PaymentSlips: CollectionConfig = {
   slug: 'payment-slips',
   labels: { singular: 'Payment slip', plural: 'Payment slips' },
   admin: {
+    hideAPIURL: true,
     group: 'Sales',
     defaultColumns: ['createdAt', 'orderNumber', 'status', 'filename'],
     description:
@@ -24,45 +26,50 @@ export const PaymentSlips: CollectionConfig = {
   },
   defaultSort: '-createdAt',
   fields: [
-    {
-      name: 'order',
-      type: 'relationship',
-      relationTo: 'orders',
-      required: true,
-      index: true,
-      admin: { readOnly: true },
-    },
-    { name: 'orderNumber', type: 'text', index: true, admin: { readOnly: true } },
-    { name: 'note', label: 'Shopper’s note', type: 'textarea', admin: { readOnly: true } },
-    {
-      name: 'status',
-      type: 'select',
-      required: true,
-      defaultValue: 'pending',
-      options: [
-        { label: 'To verify', value: 'pending' },
-        { label: 'Verified', value: 'verified' },
-        { label: 'Rejected', value: 'rejected' },
-      ],
-      admin: { readOnly: true, position: 'sidebar' },
-    },
-    {
-      name: 'reason',
-      label: 'Reason (if rejected)',
-      type: 'text',
-      admin: { readOnly: true, position: 'sidebar' },
-    },
-    {
-      name: 'reviewedBy',
-      type: 'relationship',
-      relationTo: 'users',
-      admin: { readOnly: true, position: 'sidebar' },
-    },
-    {
-      name: 'reviewedAt',
-      type: 'date',
-      admin: { readOnly: true, position: 'sidebar', date: { pickerAppearance: 'dayAndTime' } },
-    },
+    // Edit page: section cards (src/fields/section.ts); field names and stored data unchanged
+    section('Slip', 'A bank transfer receipt uploaded by the shopper.', [
+      {
+        name: 'order',
+        type: 'relationship',
+        relationTo: 'orders',
+        required: true,
+        index: true,
+        admin: { readOnly: true },
+      },
+      { name: 'orderNumber', type: 'text', index: true, admin: { readOnly: true } },
+      { name: 'note', label: 'Shopper’s note', type: 'textarea', admin: { readOnly: true } },
+    ]),
+    section('Review', 'Accept or reject it from the order’s Payment panel.', [
+      {
+        name: 'status',
+        type: 'select',
+        required: true,
+        defaultValue: 'pending',
+        options: [
+          { label: 'To verify', value: 'pending' },
+          { label: 'Verified', value: 'verified' },
+          { label: 'Rejected', value: 'rejected' },
+        ],
+        admin: { readOnly: true },
+      },
+      {
+        name: 'reason',
+        label: 'Reason (if rejected)',
+        type: 'text',
+        admin: { readOnly: true },
+      },
+      {
+        name: 'reviewedBy',
+        type: 'relationship',
+        relationTo: 'users',
+        admin: { readOnly: true },
+      },
+      {
+        name: 'reviewedAt',
+        type: 'date',
+        admin: { readOnly: true, date: { pickerAppearance: 'dayAndTime' } },
+      },
+    ], { sidebar: true }),
   ],
   upload: {
     staticDir: uploadDir('private/payment-slips'),

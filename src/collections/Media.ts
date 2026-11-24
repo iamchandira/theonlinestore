@@ -2,11 +2,12 @@ import type { CollectionConfig } from 'payload'
 
 import { allowRoles, anyone } from '../access/roles'
 import { uploadDir } from '../lib/payload/uploads'
+import { section } from '../fields/section'
 
 /** Product photos, banners and editorial images. Sizes match storefront usage (4:5 product cards). */
 export const Media: CollectionConfig = {
   slug: 'media',
-  admin: { group: 'Content', description: 'Product photos, banners and logos. Uploads are converted to WebP automatically.' },
+  admin: { hideAPIURL: true, group: 'Content', description: 'Product photos, banners and logos. Uploads are converted to WebP automatically.' },
   access: {
     read: anyone,
     create: allowRoles('store-manager', 'inventory-manager', 'marketing'),
@@ -14,13 +15,16 @@ export const Media: CollectionConfig = {
     delete: allowRoles('store-manager'),
   },
   fields: [
-    {
-      name: 'alt',
-      type: 'text',
-      required: true,
-      admin: { description: 'Describe the image for screen readers and SEO, e.g. "CeraVe Hydrating Facial Cleanser 236 ml bottle".' },
-    },
-    { name: 'credit', type: 'text' },
+    // Edit page: section cards (src/fields/section.ts); field names and stored data unchanged
+    section('Image details', 'Describe the image for screen readers and search engines.', [
+      {
+        name: 'alt',
+        type: 'text',
+        required: true,
+        admin: { description: 'Describe the image for screen readers and SEO, e.g. "CeraVe Hydrating Facial Cleanser 236 ml bottle".' },
+      },
+      { name: 'credit', type: 'text' },
+    ]),
   ],
   upload: {
     staticDir: uploadDir('media'),
