@@ -36,6 +36,8 @@ import { SlugField as SlugField_2b8867833a34864a02ddf429b0728a40 } from '@payloa
 import { ProductStatus as ProductStatus_7fbfe6a952bf771d60ccd8b85d8cb837 } from '../../../components/admin/product/ProductStatus'
 import { ProductsList as ProductsList_35d44351a0dfdab7b71afe62aeca468f } from '../../../components/admin/views/ProductsList'
 import { ReviewsList as ReviewsList_068eb4f2e7b1121fba7c0b816aa7ddda } from '../../../components/admin/views/ReviewsList'
+import { ChatTranscript as ChatTranscript_2a3a49e408e9d5270ca727bc29ec6e09 } from '../../../components/admin/assistant/ChatTranscript'
+import { BlockVisitor as BlockVisitor_c87f4eb689c3baa3dc799ebed772a0f1 } from '../../../components/admin/assistant/BlockVisitor'
 import { UsersList as UsersList_8b49d061b2c390956cb5e3eea6dcbd34 } from '../../../components/admin/views/UsersList'
 import { IconPicker as IconPicker_d45a79217f6fa571a01f407369195447 } from '../../../components/admin/fields/IconPicker'
 import { AnnouncementRowLabel as AnnouncementRowLabel_d75459c3f3b800c55429a427e448e8d9 } from '../../../components/admin/fields/AnnouncementRowLabel'
@@ -94,6 +96,8 @@ export const importMap = {
   "/components/admin/product/ProductStatus#ProductStatus": ProductStatus_7fbfe6a952bf771d60ccd8b85d8cb837,
   "/components/admin/views/ProductsList#ProductsList": ProductsList_35d44351a0dfdab7b71afe62aeca468f,
   "/components/admin/views/ReviewsList#ReviewsList": ReviewsList_068eb4f2e7b1121fba7c0b816aa7ddda,
+  "/components/admin/assistant/ChatTranscript#ChatTranscript": ChatTranscript_2a3a49e408e9d5270ca727bc29ec6e09,
+  "/components/admin/assistant/BlockVisitor#BlockVisitor": BlockVisitor_c87f4eb689c3baa3dc799ebed772a0f1,
   "/components/admin/views/UsersList#UsersList": UsersList_8b49d061b2c390956cb5e3eea6dcbd34,
   "/components/admin/fields/IconPicker#IconPicker": IconPicker_d45a79217f6fa571a01f407369195447,
   "/components/admin/fields/AnnouncementRowLabel#AnnouncementRowLabel": AnnouncementRowLabel_d75459c3f3b800c55429a427e448e8d9,

@@ -2,6 +2,34 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.10.0] · 2026-11-24 · Shopping assistant (chatbot)
+### Added
+- **TOS Assistant**, a chat on every store page, powered by Google Gemini and answering only from the store's own data. It:
+  - suggests products after one or two short questions (skin type, who it's for, budget…), with tappable answers;
+  - shows real product cards with live price, photo and Add to bag, and adds products to the bag when asked;
+  - answers questions about the product being viewed ("Questions about this product?" on product pages);
+  - answers delivery, payment, returns and store questions;
+  - hands over to WhatsApp with the question pre-filled;
+  - replies in English, Sinhala, Tamil or Singlish.
+- **Settings › Chat assistant:** on/off, name, greeting, suggested questions, tone, questions & answers, extra notes, usage limits (per shopper, per chat, per day for the whole store, automatic blocking), model and backup model, and how long chats are kept.
+- **Insights › Chat conversations:** every chat with:
+  - the shopper (customer account or guest), IP, location from the IP, internet provider, device and browser;
+  - bot signals and a Suspicious flag;
+  - unanswered questions;
+  - Gemini token usage.
+  - A Block card blocks the IP, its range, the device or the customer, for a set time or until removed.
+- **Insights › Chat blocks:** every block, with blocked-attempt counts.
+- IP location runs offline from the free DB-IP Lite databases (`pnpm geoip:update`; `deploy.sh` refreshes them monthly). A daily job deletes chats past the retention period.
+- `GEMINI_API_KEY` and `GEOIP_DIR` in the env templates. Guide: `docs/11-chat-assistant.md`.
+- `deploy/Caddyfile`: `flush_interval -1`, so streamed chat replies aren't held back. Copy it to `/etc/caddy/Caddyfile` on the server and reload Caddy.
+
+### Changed
+- With the assistant on, the floating WhatsApp button moves above the chat button on desktop, and into the chat on phones.
+- The policy pages' short summaries now come from one shared file (`lib/store/policySummaries.ts`), so the pages and the assistant always agree. The privacy summary mentions chat logs.
+
+### Database
+- New tables for chat settings, conversations and blocks (migration `20261124_080116_chat_assistant`).
+
 ## [0.9.6] · 2026-11-24 · Admin select fixes
 ### Fixed
 - Dropdown lists (e.g. "Upgrade to") open past the edge of their card instead of being cut off at its bottom.

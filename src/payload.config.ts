@@ -18,6 +18,8 @@ import { Returns } from './collections/Returns'
 import { PaymentSlips } from './collections/PaymentSlips'
 import { Transactions } from './collections/Transactions'
 import { Categories } from './collections/Categories'
+import { ChatBlocks } from './collections/ChatBlocks'
+import { ChatConversations } from './collections/ChatConversations'
 import { Media } from './collections/Media'
 import { Products } from './collections/Products'
 import { ReviewMedia } from './collections/ReviewMedia'
@@ -26,11 +28,13 @@ import { SearchQueries } from './collections/SearchQueries'
 import { StockMovements } from './collections/StockMovements'
 import { Concerns, Occasions, Recipients, Tags } from './collections/Taxonomies'
 import { Users } from './collections/Users'
+import { ChatSettings } from './globals/ChatSettings'
 import { CheckoutSettings } from './globals/CheckoutSettings'
 import { PaymentSettings } from './globals/PaymentSettings'
 import { Policies } from './globals/Policies'
 import { StoreSettings } from './globals/StoreSettings'
 import { HomePage } from './globals/HomePage'
+import { assistantChatEndpoint, assistantEventEndpoint } from './endpoints/assistant'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -68,8 +72,10 @@ export default buildConfig({
     },
     theme: 'light',
   },
-  collections: [Orders, Returns, Transactions, PaymentSlips, Discounts, Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, Media, Users, Couriers, AuditLogs],
-  globals: [StoreSettings, HomePage, CheckoutSettings, PaymentSettings, Policies],
+  collections: [Orders, Returns, Transactions, PaymentSlips, Discounts, Products, Reviews, ReviewMedia, Categories, Brands, Tags, Concerns, Occasions, Recipients, StockMovements, SearchQueries, ChatConversations, ChatBlocks, Media, Users, Couriers, AuditLogs],
+  globals: [StoreSettings, HomePage, CheckoutSettings, PaymentSettings, Policies, ChatSettings],
+  // Shopping assistant (chatbot): /api/assistant/chat and /api/assistant/event
+  endpoints: [assistantChatEndpoint, assistantEventEndpoint],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -124,6 +130,18 @@ export default buildConfig({
         handler: async ({ req }) => {
           const { releaseUnpaidOrders } = await import('./lib/payments/service')
           return { output: { released: await releaseUnpaidOrders(req.payload) } }
+        },
+      },
+      {
+        // Shopping assistant privacy: chats (with their IPs and locations) older than the retention period,
+        // and blocks that expired more than 90 days ago
+        slug: 'cleanupChats',
+        label: 'Delete old chat conversations',
+        schedule: [{ cron: '17 3 * * *', queue: 'default' }],
+        outputSchema: [{ name: 'deleted', type: 'number' }],
+        handler: async ({ req }) => {
+          const { cleanupChats } = await import('./lib/assistant/cleanup')
+          return { output: { deleted: await cleanupChats(req.payload) } }
         },
       },
     ],

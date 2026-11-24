@@ -37,6 +37,9 @@ import {
   IconFileCertificate,
   IconListSearch,
   IconMessageStar,
+  IconMessageChatbot,
+  IconMessages,
+  IconBan,
 } from '@tabler/icons-react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
@@ -75,6 +78,9 @@ const ICONS: Record<string, ComponentType<{ size?: number; stroke?: number }>> =
   import: IconFileImport,
   search: IconListSearch,
   audit: IconFileCertificate,
+  chat: IconMessages,
+  block: IconBan,
+  assistant: IconMessageChatbot,
 }
 
 export type NavItemDef = {
