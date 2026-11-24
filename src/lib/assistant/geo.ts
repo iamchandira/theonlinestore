@@ -15,7 +15,9 @@ export type GeoInfo = { country: string; countryCode: string; region: string; ci
 
 const EMPTY: GeoInfo = { country: '', countryCode: '', region: '', city: '', asn: null, asnOrg: '', datacenter: false }
 
-export const geoDir = () => process.env.GEOIP_DIR?.trim() || path.resolve(process.cwd(), '.geoip')
+const SERVER_DIR = '/srv/theonlinestore/geoip'
+/** GEOIP_DIR, else the server folder deploy.sh fills, else ./.geoip (local: pnpm geoip:update) */
+export const geoDir = () => process.env.GEOIP_DIR?.trim() || (fs.existsSync(SERVER_DIR) ? SERVER_DIR : path.resolve(process.cwd(), '.geoip'))
 
 type Readers = { city: Reader<CityResponse> | null; asn: Reader<AsnResponse> | null; at: number }
 const g = globalThis as { __tosGeo?: Promise<Readers> }
@@ -39,7 +41,7 @@ async function readers(): Promise<Readers> {
 
 // Networks of hosting providers and clouds: real shoppers rarely browse from these, bots often do
 const DATACENTER =
-  /amazon|aws|google cloud|google llc|microsoft|azure|digitalocean|hetzner|ovh|linode|akamai|vultr|choopa|contabo|hostinger|oracle|alibaba|tencent|leaseweb|m247|scaleway|cloudflare|fastly|datacamp|hostwinds|kamatera|ionos|godaddy|namecheap|hosting|datacenter|data center|server|vps|colo/i
+  /\b(amazon|aws|google cloud|google llc|microsoft|azure|digitalocean|hetzner|ovh|linode|akamai|vultr|choopa|contabo|hostinger|oracle|alibaba|tencent|leaseweb|m247|scaleway|cloudflare|fastly|datacamp|hostwinds|kamatera|ionos|godaddy|namecheap|hosting|datacenter|data center|servers?|vps|colocation)\b/i
 
 export async function lookupIp(ip: string): Promise<GeoInfo> {
   if (!ip || isPrivateIp(ip)) return EMPTY

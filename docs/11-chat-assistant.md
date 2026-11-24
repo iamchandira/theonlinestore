@@ -119,7 +119,7 @@ Each shopper message makes 2–4 Gemini calls: a search, maybe a product lookup,
   - `lib/assistant/prompt.ts` holds the rules.
   - `lib/assistant/knowledge.ts` holds the store information. It is cached and rebuilt after any catalogue or settings save, or every 10 minutes.
 - **Gemini:** called over its REST API (`v1beta …:streamGenerateContent?alt=sse`) with plain `fetch`, in `lib/assistant/gemini.ts`. The official SDK hung inside the Next.js production build, so it isn't used.
-  - Google gets 25 seconds to start answering.
+  - Google gets 40 seconds to start answering (thinking models on a busy free tier can be slow).
   - A busy main model (429/5xx/timeout before any text) falls through to the backup model, and is skipped for 2 minutes.
   - `CHAT_DEBUG=1` in the server env logs which model answered and how long Google took (no message text).
 - **Widget:**

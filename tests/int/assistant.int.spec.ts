@@ -18,13 +18,13 @@ vi.mock('@/lib/assistant/gemini', () => ({
     const last = req.contents.at(-1)!
     const response = last.parts.find((p) => p.functionResponse)?.functionResponse as { name: string; response: { results?: { slug: string }[] } } | undefined
     if (!response) {
-      yield { text: '', parts: [{ functionCall: { id: 'c1', name: 'search_products', args: { query: 'cerave', limit: 3 } } }], usage: { input: 100, output: 10 } }
+      yield { text: '', parts: [{ functionCall: { id: 'c1', name: 'search_products', args: { query: 'cerave', limit: 3 } } }], usage: { input: 100, output: 10 }, model: 'm' }
     } else if (response.name === 'search_products') {
       const first = response.response.results?.[0]?.slug ?? 'missing'
-      yield { text: '', parts: [{ functionCall: { id: 'c2', name: 'show_products', args: { slugs: [first, 'made-up-product'], title: 'Picks' } } }], usage: { input: 200, output: 10 } }
+      yield { text: '', parts: [{ functionCall: { id: 'c2', name: 'show_products', args: { slugs: [first, 'made-up-product'], title: 'Picks' } } }], usage: { input: 200, output: 10 }, model: 'm' }
     } else {
-      yield { text: 'Here are ', parts: [{ text: 'Here are ' }] }
-      yield { text: 'my picks.', parts: [{ text: 'my picks.' }], usage: { input: 300, output: 20 } }
+      yield { text: 'Here are ', parts: [{ text: 'Here are ' }], model: 'm' }
+      yield { text: 'my picks.', parts: [{ text: 'my picks.' }], usage: { input: 300, output: 20 }, model: 'm' }
     }
   },
 }))
@@ -203,6 +203,9 @@ describe('chat endpoint', () => {
     const saved = await payload.findByID({ collection: 'chat-conversations', id, overrideAccess: true })
     expect(saved.visitorId).toBe(v)
     expect(saved.ip).toBe('112.134.0.1')
+    // Offline IP location (needs `pnpm geoip:update`; skipped when the files aren't there)
+    if (saved.location) expect(saved.location).toMatch(/LK/)
+    if (saved.network) expect(saved.datacenter).toBe(false)
     expect(saved.messageCount).toBe(1)
     expect(saved.who).toBe('Guest')
     expect(saved.device).toMatch(/Chrome on Mac/)

@@ -31,7 +31,10 @@ export const messagesOf = (c: Pick<ChatConversation, 'messages'> | null): Stored
 
 /** The chat so far, for the model: the last few messages, with the cards shown noted in words. */
 export function historyFor(messages: StoredMessage[]): Content[] {
-  return messages.slice(-HISTORY_TURNS).map((m) => ({
+  const recent = messages.slice(-HISTORY_TURNS)
+  // Gemini expects the chat to open with the shopper (a failed turn can leave a reply first)
+  while (recent[0]?.role === 'assistant') recent.shift()
+  return recent.map((m) => ({
     role: m.role === 'user' ? 'user' : 'model',
     parts: [{ text: m.role === 'assistant' && m.products?.length ? `${m.text}\n[Product cards shown: ${m.products.join(', ')}]` : m.text || '…' }],
   }))

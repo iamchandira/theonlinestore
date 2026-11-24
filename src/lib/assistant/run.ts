@@ -40,12 +40,15 @@ export async function runTurn(opts: {
   const contents: Content[] = [...opts.history, { role: 'user', parts: userParts }]
   const usage = { input: 0, output: 0 }
   let text = ''
+  // The model that answers the first round answers the rest of the turn too (its tool-call
+  // "thought signatures" belong to it); others only step in if it becomes busy
+  let models = [opts.cfg.model, opts.cfg.backupModel]
 
   for (let round = 0; round <= MAX_TOOL_ROUNDS; round++) {
     const parts: Part[] = []
     let roundUsage = { input: 0, output: 0 }
     for await (const chunk of streamModel({
-      models: [opts.cfg.model, opts.cfg.backupModel],
+      models,
       system: opts.system,
       contents,
       tools: TOOL_DECLARATIONS,
@@ -61,6 +64,7 @@ export async function runTurn(opts: {
         opts.emit({ type: 'text', delta })
       }
       parts.push(...chunk.parts)
+      if (chunk.model && chunk.model !== models[0]) models = [chunk.model, ...models.filter((m) => m !== chunk.model)]
       if (chunk.usage) roundUsage = chunk.usage
     }
     usage.input += roundUsage.input
@@ -79,6 +83,14 @@ export async function runTurn(opts: {
 
   // The reply points to WhatsApp but the model forgot the button: add it, with the question as context
   if (!effects.handoff && /whatsapp|වට්ස්ඇප්|வாட்ஸ்அப்/i.test(text)) effects.handoff = `Question from the website chat: “${opts.message.slice(0, 200)}”`
+
+  // The reply admits a gap ("isn't listed on our website", "we don't have that information") but the
+  // model didn't flag it: flag it, so staff see the question under "Unanswered"
+  if (
+    !effects.unanswered.length &&
+    /(isn['’]t|is not|aren['’]t|are not|not) (yet )?(listed|available|shown|mentioned) on our (website|site|store)|don['’]t have (that|this|the|any) (information|detail|details)|don['’]t have [^.]{0,60}(listed|on our (website|site))|not (listed|available) (on our (website|site))? ?yet/i.test(text)
+  )
+    effects.unanswered.push(opts.message.slice(0, 200))
 
   if (effects.products) opts.emit({ type: 'products', ...effects.products })
   if (effects.replies.length) opts.emit({ type: 'replies', options: effects.replies })

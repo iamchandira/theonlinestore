@@ -15,7 +15,7 @@ export type Part = {
 }
 export type Content = { role: 'user' | 'model'; parts: Part[] }
 
-export type ModelChunk = { text: string; parts: Part[]; usage?: { input: number; output: number } }
+export type ModelChunk = { text: string; parts: Part[]; usage?: { input: number; output: number }; model: string }
 
 export type ModelRequest = {
   /** Tried in order: when Google is busy (429/5xx/timeout) before the reply starts, the next one answers */
@@ -32,10 +32,10 @@ export type ModelRequest = {
 
 const API = 'https://generativelanguage.googleapis.com/v1beta/models'
 /** Time allowed for Google to start answering (not for the whole reply) */
-const CONNECT_TIMEOUT = 25_000
+const CONNECT_TIMEOUT = 40_000
 
 type Chunk = {
-  candidates?: { content?: { parts?: Part[] } }[]
+  candidates?: { content?: { parts?: Part[] }; finishReason?: string }[]
   usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number; thoughtsTokenCount?: number }
 }
 
@@ -102,6 +102,7 @@ export async function* streamModel(req: ModelRequest): AsyncGenerator<ModelChunk
   const ready = unique.filter((m) => (busyUntil.get(m) ?? 0) <= now)
   const models = ready.length ? [...ready, ...unique.filter((m) => !ready.includes(m))] : unique
   let res: Response | null = null
+  let answered = ''
   let lastError: unknown
   // Main model, then the backup straight away; then one more round after a short pause. Busy errors
   // arrive before any text, so the shopper only notices a slightly slower start.
@@ -110,6 +111,7 @@ export async function* streamModel(req: ModelRequest): AsyncGenerator<ModelChunk
     const t0 = Date.now()
     try {
       res = await open(model, req, key)
+      answered = model
       busyUntil.delete(model)
       debug(`${model}: answering after ${Date.now() - t0} ms`)
       break
@@ -129,8 +131,8 @@ export async function* streamModel(req: ModelRequest): AsyncGenerator<ModelChunk
   let buffer = ''
   for (;;) {
     const { value, done } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
+    // At the end, a last event without the closing blank line still counts
+    buffer += done ? '\n\n' : decoder.decode(value, { stream: true })
     let sep: number
     while ((sep = buffer.search(/\r?\n\r?\n/)) >= 0) {
       const event = buffer.slice(0, sep)
@@ -148,6 +150,8 @@ export async function* streamModel(req: ModelRequest): AsyncGenerator<ModelChunk
         continue
       }
       const parts = chunk.candidates?.[0]?.content?.parts ?? []
+      const finish = chunk.candidates?.[0]?.finishReason
+      if (finish && finish !== 'STOP') debug(`${answered}: reply ended with ${finish}`)
       const text = parts
         .filter((p) => typeof p.text === 'string' && !p.thought)
         .map((p) => p.text)
@@ -157,7 +161,9 @@ export async function* streamModel(req: ModelRequest): AsyncGenerator<ModelChunk
         text,
         parts,
         usage: u ? { input: u.promptTokenCount ?? 0, output: (u.candidatesTokenCount ?? 0) + (u.thoughtsTokenCount ?? 0) } : undefined,
+        model: answered,
       }
     }
+    if (done) break
   }
 }
