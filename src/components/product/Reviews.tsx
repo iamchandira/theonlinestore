@@ -115,7 +115,7 @@ export function Reviews({ productId, productName, summary, initial, totalPages: 
           <Button variant="dark" className="mt-6 w-full sm:w-auto md:w-full" onClick={() => setWriting(true)}>
             <IconPencil size={18} /> Write a review
           </Button>
-          <p className="mt-3 text-xs text-ink-500">Every review is checked by our team before it appears. We never show your email.</p>
+          {/* <p className="mt-3 text-xs text-ink-500">Every review is checked by our team before it appears. We never show your email.</p> */}
         </div>
 
         {/* List */}

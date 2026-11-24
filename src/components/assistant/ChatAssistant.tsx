@@ -272,8 +272,9 @@ function Panel() {
             <IconArrowUp size={18} stroke={2.25} aria-hidden />
           </button>
         </div>
-        <p className="mt-1.5 px-1 text-[11px] leading-snug text-ink-500">
-          {draft.length > a.maxLength * 0.8 ? `${draft.length}/${a.maxLength} · ` : ''}AI answers from our store’s information and can make mistakes. Chats are saved with your IP address and device for security; don’t share card numbers or passwords.
+        <p className="mt-1.5 px-1 text-center text-[11px] leading-snug text-ink-500">
+          {draft.length > a.maxLength * 0.8 ? `${draft.length}/${a.maxLength} · ` : ''}
+          AI assistant can make mistakes. Always confirm details.
         </p>
       </form>
     </motion.section>
