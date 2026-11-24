@@ -65,7 +65,7 @@ export const HomePage: GlobalConfig = {
                 label: 'Product rails',
                 type: 'array',
                 labels: { singular: 'Rail', plural: 'Rails' },
-                admin: { description: 'Shown in this order, in the upper or lower part of the page. Open a rail to edit it.', initCollapsed: true },
+                admin: { description: 'Shown in this order, in the upper or lower part of the page. Open a rail to edit it.', initCollapsed: true, components: { RowLabel: '/components/admin/TitleRowLabel#TitleRowLabel' } },
                 fields: [
                   {
                     type: 'row',

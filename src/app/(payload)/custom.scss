@@ -2729,6 +2729,14 @@ $sectioned: ':is(:has(> .tos-section), :has(> .tabs-field)):not(:has(> .field-ty
     .doc-controls__content {
       display: none; /* dates are in Versions; the status pill says what matters */
     }
+    /* …but Payload's "Revert to published" link stays when there are unpublished changes */
+    .doc-controls__content:has(.status__action) {
+      display: block;
+      padding-top: 8px;
+      .doc-controls__meta > li:not(.doc-controls__status) {
+        display: none;
+      }
+    }
     .doc-controls__controls-wrapper {
       display: flex;
       align-items: flex-start;
@@ -3022,8 +3030,9 @@ $sectioned: ':is(:has(> .tos-section), :has(> .tabs-field)):not(:has(> .field-ty
   border-color: var(--tos-ink) !important;
 }
 
-/* A data group directly inside a section card: the card already carries its title */
-.tos-section > .collapsible > [class^='rah'] > div > .collapsible__content > .render-fields > .group-field {
+/* A card holding just one data group: the card already carries its title (cards with several groups keep
+   their sub-headings) */
+.tos-section > .collapsible > [class^='rah'] > div > .collapsible__content > .render-fields > .group-field:only-child {
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
@@ -3068,7 +3077,31 @@ $sectioned: ':is(:has(> .tos-section), :has(> .tabs-field)):not(:has(> .field-ty
   }
   .tos-table {
     display: block;
+    /* The header row shrinks to a "Select all" bar (only on tables with selection) */
     thead {
+      display: block;
+      tr {
+        display: block;
+      }
+      th {
+        display: none;
+      }
+      th:has(> input[type='checkbox']) {
+        position: static;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: auto !important;
+        padding: 10px 16px;
+        &::after {
+          content: 'Select all';
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--tos-ink-2);
+        }
+      }
+    }
+    thead:not(:has(input[type='checkbox'])) {
       display: none;
     }
     tbody {
@@ -3130,4 +3163,9 @@ $sectioned: ':is(:has(> .tos-section), :has(> .tabs-field)):not(:has(> .field-ty
   .tos-product-cell {
     min-width: 0;
   }
+}
+/* Narrow desktops (around 1025 px): the main column may shrink so the sidebar never runs off the screen */
+.document-fields__main,
+.document-fields__main .document-fields__edit {
+  min-width: 0;
 }

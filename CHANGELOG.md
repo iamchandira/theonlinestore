@@ -19,6 +19,9 @@ All notable changes to The Online Store. Format: [Keep a Changelog](https://keep
   - Admin tables (orders, products, inventory, people, reviews, COD, search insights) show one card per row with labelled values instead of scrolling sideways.
   - Save / Publish stay pinned and fit on every edit page and in "+ add new" drawers.
   - The account page no longer scrolls sideways.
+  - Tables keep a "Select all" bar, and "Revert to published" stays reachable.
+- Home page rails show their titles when collapsed.
+- At about 1025 px wide, the order page's sidebar no longer runs off the screen.
 
 ## [0.9.4] · 2026-11-24 · Product page redesign
 ### Changed

@@ -39,6 +39,7 @@ import { ReviewsList as ReviewsList_068eb4f2e7b1121fba7c0b816aa7ddda } from '../
 import { UsersList as UsersList_8b49d061b2c390956cb5e3eea6dcbd34 } from '../../../components/admin/views/UsersList'
 import { IconPicker as IconPicker_d45a79217f6fa571a01f407369195447 } from '../../../components/admin/fields/IconPicker'
 import { AnnouncementRowLabel as AnnouncementRowLabel_d75459c3f3b800c55429a427e448e8d9 } from '../../../components/admin/fields/AnnouncementRowLabel'
+import { TitleRowLabel as TitleRowLabel_ffd9cfa631a11dcb3a90dd7a1d5c39c7 } from '../../../components/admin/TitleRowLabel'
 import { Nav as Nav_965175d01b56876a09418037afb35340 } from '../../../components/admin/Nav'
 import { AdminIcon as AdminIcon_80ebcb12978a9db9a1c04af0af89c7ec } from '../../../components/admin/Graphics'
 import { AdminLogo as AdminLogo_80ebcb12978a9db9a1c04af0af89c7ec } from '../../../components/admin/Graphics'
@@ -96,6 +97,7 @@ export const importMap = {
   "/components/admin/views/UsersList#UsersList": UsersList_8b49d061b2c390956cb5e3eea6dcbd34,
   "/components/admin/fields/IconPicker#IconPicker": IconPicker_d45a79217f6fa571a01f407369195447,
   "/components/admin/fields/AnnouncementRowLabel#AnnouncementRowLabel": AnnouncementRowLabel_d75459c3f3b800c55429a427e448e8d9,
+  "/components/admin/TitleRowLabel#TitleRowLabel": TitleRowLabel_ffd9cfa631a11dcb3a90dd7a1d5c39c7,
   "/components/admin/Nav#Nav": Nav_965175d01b56876a09418037afb35340,
   "/components/admin/Graphics#AdminIcon": AdminIcon_80ebcb12978a9db9a1c04af0af89c7ec,
   "/components/admin/Graphics#AdminLogo": AdminLogo_80ebcb12978a9db9a1c04af0af89c7ec,
