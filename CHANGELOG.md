@@ -6,6 +6,7 @@ All notable changes to The Online Store. Format: [Keep a Changelog](https://keep
 ### Fixed
 - Dropdown lists (e.g. "Upgrade to") open past the edge of their card instead of being cut off at its bottom.
 - Typing in a dropdown's search no longer shows an orange ring around the typed text.
+- SEO "Auto-generate" no longer fails with "Converting circular structure to JSON" after the Variants tab (or any list with row labels) has been opened. A small patch to `@payloadcms/ui` (`patches/`) stops the SEO plugin sending the rows' label components with its request. Only local dev was affected.
 
 ## [0.9.5] · 2026-11-24 · Admin layout everywhere + phones
 ### Changed
