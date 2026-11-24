@@ -3,6 +3,7 @@ import type { Field, FieldAccess, GlobalConfig } from 'payload'
 import { allowRoles, fieldSuperAdminOnly } from '../access/roles'
 import { DISTRICT_NAMES } from '../config/districts'
 import { audit } from '../lib/payload/audit'
+import { section } from '../fields/section'
 
 /**
  * Payment settings (Sprint 5, TOS-601). One switch, order and limits per method. Gateway credentials can
@@ -70,6 +71,7 @@ export const PaymentSettings: GlobalConfig = {
   slug: 'payment-settings',
   label: 'Payments',
   admin: {
+    hideAPIURL: true,
     group: 'Settings',
     description:
       'Which payment methods shoppers see, in what order, with what limits; gateway credentials.',
@@ -105,328 +107,336 @@ export const PaymentSettings: GlobalConfig = {
     ],
   },
   fields: [
-    {
-      type: 'row',
-      fields: [
-        {
-          name: 'mode',
-          type: 'select',
-          defaultValue: 'test',
-          required: true,
-          options: [
-            { label: 'Test (sandbox gateways)', value: 'test' },
-            { label: 'Live (real money)', value: 'live' },
-          ],
-          admin: {
-            width: '50%',
-            description:
-              'Test uses each gateway’s sandbox. Switch to Live only with live credentials.',
+    section('General', 'Test or live mode, and how long unpaid online orders are held.', [
+      {
+        type: 'row',
+        fields: [
+          {
+            name: 'mode',
+            type: 'select',
+            defaultValue: 'test',
+            required: true,
+            options: [
+              { label: 'Test (sandbox gateways)', value: 'test' },
+              { label: 'Live (real money)', value: 'live' },
+            ],
+            admin: {
+              width: '50%',
+              description:
+                'Test uses each gateway’s sandbox. Switch to Live only with live credentials.',
+            },
           },
-        },
-        {
-          name: 'onlineHoldMinutes',
-          label: 'Hold unpaid card / instalment orders for (minutes)',
-          type: 'number',
-          min: 15,
-          defaultValue: 60,
-          admin: {
-            width: '50%',
-            description: 'Then the order is cancelled and its stock goes back.',
+          {
+            name: 'onlineHoldMinutes',
+            label: 'Hold unpaid card / instalment orders for (minutes)',
+            type: 'number',
+            min: 15,
+            defaultValue: 60,
+            admin: {
+              width: '50%',
+              description: 'Then the order is cancelled and its stock goes back.',
+            },
           },
-        },
-      ],
-    },
-    {
-      name: 'simulateGateways',
-      label: 'Use the built-in test gateway when credentials are missing (never in production)',
-      type: 'checkbox',
-      defaultValue: true,
-      admin: {
-        description:
-          'Lets you try card, Koko and Mintpay checkout locally with Approve / Decline buttons. Not available on the live site.',
-        // Production builds never show it, and the server ignores it there (lib/payments/config.ts)
-        condition: () => process.env.NODE_ENV !== 'production',
+        ],
       },
-    },
+      {
+        name: 'simulateGateways',
+        label: 'Use the built-in test gateway when credentials are missing (never in production)',
+        type: 'checkbox',
+        defaultValue: true,
+        admin: {
+          description:
+            'Lets you try card, Koko and Mintpay checkout locally with Approve / Decline buttons. Not available on the live site.',
+          // Production builds never show it, and the server ignores it there (lib/payments/config.ts)
+          condition: () => process.env.NODE_ENV !== 'production',
+        },
+      },
+    ]),
     {
       type: 'tabs',
       tabs: [
         {
           label: 'Card (PayHere)',
           fields: [
-            {
-              name: 'payhere',
-              type: 'group',
-              label: false,
-              fields: [
-                ...methodBasics({ enabled: true, sortOrder: 10 }),
-                {
-                  name: 'label',
-                  type: 'text',
-                  defaultValue: 'Card, eZ Cash, mCash or Genie',
-                  admin: { description: 'Shown at checkout' },
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      ...credential(
-                        'merchantId',
-                        'Merchant ID',
-                        'Super Admin only. PAYHERE_MERCHANT_ID overrides this.',
-                      ),
-                      admin: { width: '50%' },
-                    } as Field,
-                    {
-                      ...credential(
-                        'merchantSecret',
-                        'Merchant secret',
-                        'Super Admin only. PAYHERE_MERCHANT_SECRET overrides this. Generated per domain in PayHere › Settings › Domains & Credentials.',
-                      ),
-                      admin: { width: '50%' },
-                    } as Field,
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      ...credential(
-                        'appId',
-                        'App ID (for refunds)',
-                        'Super Admin only. PAYHERE_APP_ID overrides this. Create a Business App with the Payment Refund permission in PayHere.',
-                      ),
-                      admin: { width: '50%' },
-                    } as Field,
-                    {
-                      ...credential(
-                        'appSecret',
-                        'App secret (for refunds)',
-                        'Super Admin only. PAYHERE_APP_SECRET overrides this.',
-                      ),
-                      admin: { width: '50%' },
-                    } as Field,
-                  ],
-                },
-              ],
-            },
+            section('Card payments (PayHere)', '', [
+              {
+                name: 'payhere',
+                type: 'group',
+                label: false,
+                fields: [
+                  ...methodBasics({ enabled: true, sortOrder: 10 }),
+                  {
+                    name: 'label',
+                    type: 'text',
+                    defaultValue: 'Card, eZ Cash, mCash or Genie',
+                    admin: { description: 'Shown at checkout' },
+                  },
+                  {
+                    type: 'row',
+                    fields: [
+                      {
+                        ...credential(
+                          'merchantId',
+                          'Merchant ID',
+                          'Super Admin only. PAYHERE_MERCHANT_ID overrides this.',
+                        ),
+                        admin: { width: '50%' },
+                      } as Field,
+                      {
+                        ...credential(
+                          'merchantSecret',
+                          'Merchant secret',
+                          'Super Admin only. PAYHERE_MERCHANT_SECRET overrides this. Generated per domain in PayHere › Settings › Domains & Credentials.',
+                        ),
+                        admin: { width: '50%' },
+                      } as Field,
+                    ],
+                  },
+                  {
+                    type: 'row',
+                    fields: [
+                      {
+                        ...credential(
+                          'appId',
+                          'App ID (for refunds)',
+                          'Super Admin only. PAYHERE_APP_ID overrides this. Create a Business App with the Payment Refund permission in PayHere.',
+                        ),
+                        admin: { width: '50%' },
+                      } as Field,
+                      {
+                        ...credential(
+                          'appSecret',
+                          'App secret (for refunds)',
+                          'Super Admin only. PAYHERE_APP_SECRET overrides this.',
+                        ),
+                        admin: { width: '50%' },
+                      } as Field,
+                    ],
+                  },
+                ],
+              },
+                      ]),
           ],
         },
         {
           label: 'Koko',
-          description:
-            'Live Koko payments switch on once Koko sends its merchant integration guide for this account (their API is private). Until then Koko runs on the built-in test gateway in Test mode only and is hidden on the live site.',
-          fields: [
-            {
-              name: 'koko',
-              type: 'group',
-              label: false,
-              fields: [
-                ...methodBasics({ enabled: true, sortOrder: 20, minOrder: 1000, maxOrder: 100000 }),
-                { name: 'label', type: 'text', defaultValue: 'Koko: 3 interest-free instalments' },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'showOnProducts',
-                      label: 'Show “3 × Rs X” on products',
-                      type: 'checkbox',
-                      defaultValue: false,
-                      admin: { width: '50%', description: 'Only shown while this method is switched on and connected. Leave off until you go live with it.' },
-                    },
-                    {
-                      name: 'feePercent',
-                      label: 'Instalment fee (%)',
-                      type: 'number',
-                      min: 0,
-                      max: 30,
-                      defaultValue: 0,
-                      admin: { width: '50%', description: 'Added to the order total when paying this way (shown at checkout) and to the “3 × Rs X” on products. 0 = same price.' },
-                    },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      ...credential(
-                        'merchantId',
-                        'Merchant ID',
-                        'Super Admin only. KOKO_MERCHANT_ID overrides this.',
-                      ),
-                      admin: { width: '50%' },
-                    } as Field,
-                    {
-                      ...credential(
-                        'apiKey',
-                        'API key',
-                        'Super Admin only. KOKO_API_KEY overrides this.',
-                      ),
-                      admin: { width: '50%' },
-                    } as Field,
-                  ],
-                },
-                credential(
-                  'privateKey',
-                  'Merchant private key (PEM)',
-                  'Super Admin only. KOKO_PRIVATE_KEY overrides this.',
-                  true,
-                ),
-                credential(
-                  'publicKey',
-                  'Koko public key (PEM)',
-                  'Super Admin only. Used to check Koko’s callbacks. KOKO_PUBLIC_KEY overrides this.',
-                  true,
-                ),
-              ],
-            },
+                    fields: [
+            section('Koko', 'Live Koko payments switch on once Koko sends its merchant integration guide for this account (their API is private). Until then Koko runs on the built-in test gateway in Test mode only and is hidden on the live site.', [
+              {
+                name: 'koko',
+                type: 'group',
+                label: false,
+                fields: [
+                  ...methodBasics({ enabled: true, sortOrder: 20, minOrder: 1000, maxOrder: 100000 }),
+                  { name: 'label', type: 'text', defaultValue: 'Koko: 3 interest-free instalments' },
+                  {
+                    type: 'row',
+                    fields: [
+                      {
+                        name: 'showOnProducts',
+                        label: 'Show “3 × Rs X” on products',
+                        type: 'checkbox',
+                        defaultValue: false,
+                        admin: { width: '50%', description: 'Only shown while this method is switched on and connected. Leave off until you go live with it.' },
+                      },
+                      {
+                        name: 'feePercent',
+                        label: 'Instalment fee (%)',
+                        type: 'number',
+                        min: 0,
+                        max: 30,
+                        defaultValue: 0,
+                        admin: { width: '50%', description: 'Added to the order total when paying this way (shown at checkout) and to the “3 × Rs X” on products. 0 = same price.' },
+                      },
+                    ],
+                  },
+                  {
+                    type: 'row',
+                    fields: [
+                      {
+                        ...credential(
+                          'merchantId',
+                          'Merchant ID',
+                          'Super Admin only. KOKO_MERCHANT_ID overrides this.',
+                        ),
+                        admin: { width: '50%' },
+                      } as Field,
+                      {
+                        ...credential(
+                          'apiKey',
+                          'API key',
+                          'Super Admin only. KOKO_API_KEY overrides this.',
+                        ),
+                        admin: { width: '50%' },
+                      } as Field,
+                    ],
+                  },
+                  credential(
+                    'privateKey',
+                    'Merchant private key (PEM)',
+                    'Super Admin only. KOKO_PRIVATE_KEY overrides this.',
+                    true,
+                  ),
+                  credential(
+                    'publicKey',
+                    'Koko public key (PEM)',
+                    'Super Admin only. Used to check Koko’s callbacks. KOKO_PUBLIC_KEY overrides this.',
+                    true,
+                  ),
+                ],
+              },
+                      ]),
           ],
         },
         {
           label: 'Mintpay',
-          description:
-            'Live Mintpay payments switch on once Mintpay sends its merchant integration guide for this account (their API is private). Until then Mintpay runs on the built-in test gateway in Test mode only and is hidden on the live site.',
-          fields: [
-            {
-              name: 'mintpay',
-              type: 'group',
-              label: false,
-              fields: [
-                ...methodBasics({ enabled: true, sortOrder: 30, minOrder: 1000, maxOrder: 150000 }),
-                {
-                  name: 'label',
-                  type: 'text',
-                  defaultValue: 'Mintpay: 3 interest-free instalments',
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      name: 'showOnProducts',
-                      label: 'Show “3 × Rs X” on products',
-                      type: 'checkbox',
-                      defaultValue: false,
-                      admin: { width: '50%', description: 'Only shown while this method is switched on and connected. Leave off until you go live with it.' },
-                    },
-                    {
-                      name: 'feePercent',
-                      label: 'Instalment fee (%)',
-                      type: 'number',
-                      min: 0,
-                      max: 30,
-                      defaultValue: 0,
-                      admin: { width: '50%', description: 'Added to the order total when paying this way (shown at checkout) and to the “3 × Rs X” on products. 0 = same price.' },
-                    },
-                  ],
-                },
-                {
-                  type: 'row',
-                  fields: [
-                    {
-                      ...credential(
-                        'merchantId',
-                        'Merchant ID',
-                        'Super Admin only. MINTPAY_MERCHANT_ID overrides this.',
-                      ),
-                      admin: { width: '50%' },
-                    } as Field,
-                    {
-                      ...credential(
-                        'merchantSecret',
-                        'Merchant secret',
-                        'Super Admin only. MINTPAY_MERCHANT_SECRET overrides this.',
-                      ),
-                      admin: { width: '50%' },
-                    } as Field,
-                  ],
-                },
-              ],
-            },
+                    fields: [
+            section('Mintpay', 'Live Mintpay payments switch on once Mintpay sends its merchant integration guide for this account (their API is private). Until then Mintpay runs on the built-in test gateway in Test mode only and is hidden on the live site.', [
+              {
+                name: 'mintpay',
+                type: 'group',
+                label: false,
+                fields: [
+                  ...methodBasics({ enabled: true, sortOrder: 30, minOrder: 1000, maxOrder: 150000 }),
+                  {
+                    name: 'label',
+                    type: 'text',
+                    defaultValue: 'Mintpay: 3 interest-free instalments',
+                  },
+                  {
+                    type: 'row',
+                    fields: [
+                      {
+                        name: 'showOnProducts',
+                        label: 'Show “3 × Rs X” on products',
+                        type: 'checkbox',
+                        defaultValue: false,
+                        admin: { width: '50%', description: 'Only shown while this method is switched on and connected. Leave off until you go live with it.' },
+                      },
+                      {
+                        name: 'feePercent',
+                        label: 'Instalment fee (%)',
+                        type: 'number',
+                        min: 0,
+                        max: 30,
+                        defaultValue: 0,
+                        admin: { width: '50%', description: 'Added to the order total when paying this way (shown at checkout) and to the “3 × Rs X” on products. 0 = same price.' },
+                      },
+                    ],
+                  },
+                  {
+                    type: 'row',
+                    fields: [
+                      {
+                        ...credential(
+                          'merchantId',
+                          'Merchant ID',
+                          'Super Admin only. MINTPAY_MERCHANT_ID overrides this.',
+                        ),
+                        admin: { width: '50%' },
+                      } as Field,
+                      {
+                        ...credential(
+                          'merchantSecret',
+                          'Merchant secret',
+                          'Super Admin only. MINTPAY_MERCHANT_SECRET overrides this.',
+                        ),
+                        admin: { width: '50%' },
+                      } as Field,
+                    ],
+                  },
+                ],
+              },
+                      ]),
           ],
         },
         {
           label: 'Cash on delivery',
           fields: [
-            {
-              name: 'cod',
-              type: 'group',
-              label: false,
-              fields: [
-                ...methodBasics({ enabled: true, sortOrder: 40, maxOrder: 50000 }),
-                { name: 'fee', label: 'COD fee (Rs)', type: 'number', min: 0, defaultValue: 0 },
-                {
-                  name: 'excludedDistricts',
-                  label: 'Not available in',
-                  type: 'select',
-                  hasMany: true,
-                  options: DISTRICT_NAMES,
-                  admin: { description: 'Districts the couriers can’t collect cash in.' },
-                },
-              ],
-            },
+            section('Cash on delivery', '', [
+              {
+                name: 'cod',
+                type: 'group',
+                label: false,
+                fields: [
+                  ...methodBasics({ enabled: true, sortOrder: 40, maxOrder: 50000 }),
+                  { name: 'fee', label: 'COD fee (Rs)', type: 'number', min: 0, defaultValue: 0 },
+                  {
+                    name: 'excludedDistricts',
+                    label: 'Not available in',
+                    type: 'select',
+                    hasMany: true,
+                    options: DISTRICT_NAMES,
+                    admin: { description: 'Districts the couriers can’t collect cash in.' },
+                  },
+                ],
+              },
+                      ]),
           ],
         },
         {
           label: 'Bank transfer',
           fields: [
-            {
-              name: 'bankTransfer',
-              type: 'group',
-              label: false,
-              fields: [
-                ...methodBasics({ enabled: true, sortOrder: 50 }, { limits: false }),
-                {
-                  name: 'accounts',
-                  label: 'Bank accounts',
-                  type: 'array',
-                  labels: { singular: 'Account', plural: 'Accounts' },
-                  admin: { description: 'Shown to shoppers after ordering, on their order page and in the email. Bank transfer is hidden at checkout until at least one account is added.' },
-                  fields: [
-                    {
-                      type: 'row',
-                      fields: [
-                        { name: 'bankName', label: 'Bank', type: 'text', required: true, admin: { width: '50%', placeholder: 'e.g. Commercial Bank' } },
-                        { name: 'branch', type: 'text', admin: { width: '50%' } },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        { name: 'accountName', label: 'Account name', type: 'text', required: true, admin: { width: '50%' } },
-                        { name: 'accountNumber', label: 'Account number', type: 'text', required: true, admin: { width: '50%' } },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        { name: 'branchCode', label: 'Branch code', type: 'text', admin: { width: '50%' } },
-                        { name: 'swift', label: 'SWIFT code', type: 'text', admin: { width: '50%', description: 'Only for transfers from abroad.' } },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  name: 'instructions',
-                  label: 'Extra instructions (optional)',
-                  type: 'textarea',
-                  admin: {
-                    description:
-                      'Shown under the accounts, e.g. “Use your order number as the reference. Upload the slip on your order page.”',
+            section('Bank transfer', '', [
+              {
+                name: 'bankTransfer',
+                type: 'group',
+                label: false,
+                fields: [
+                  ...methodBasics({ enabled: true, sortOrder: 50 }, { limits: false }),
+                  {
+                    name: 'accounts',
+                    label: 'Bank accounts',
+                    type: 'array',
+                    labels: { singular: 'Account', plural: 'Accounts' },
+                    admin: { description: 'Shown to shoppers after ordering, on their order page and in the email. Bank transfer is hidden at checkout until at least one account is added.' },
+                    fields: [
+                      {
+                        type: 'row',
+                        fields: [
+                          { name: 'bankName', label: 'Bank', type: 'text', required: true, admin: { width: '50%', placeholder: 'e.g. Commercial Bank' } },
+                          { name: 'branch', type: 'text', admin: { width: '50%' } },
+                        ],
+                      },
+                      {
+                        type: 'row',
+                        fields: [
+                          { name: 'accountName', label: 'Account name', type: 'text', required: true, admin: { width: '50%' } },
+                          { name: 'accountNumber', label: 'Account number', type: 'text', required: true, admin: { width: '50%' } },
+                        ],
+                      },
+                      {
+                        type: 'row',
+                        fields: [
+                          { name: 'branchCode', label: 'Branch code', type: 'text', admin: { width: '50%' } },
+                          { name: 'swift', label: 'SWIFT code', type: 'text', admin: { width: '50%', description: 'Only for transfers from abroad.' } },
+                        ],
+                      },
+                    ],
                   },
-                },
-                {
-                  name: 'holdHours',
-                  label: 'Hold the order for (hours)',
-                  type: 'number',
-                  min: 1,
-                  defaultValue: 48,
-                  admin: {
-                    description:
-                      'Unpaid orders with no slip are cancelled after this and the stock goes back.',
+                  {
+                    name: 'instructions',
+                    label: 'Extra instructions (optional)',
+                    type: 'textarea',
+                    admin: {
+                      description:
+                        'Shown under the accounts, e.g. “Use your order number as the reference. Upload the slip on your order page.”',
+                    },
                   },
-                },
-              ],
-            },
+                  {
+                    name: 'holdHours',
+                    label: 'Hold the order for (hours)',
+                    type: 'number',
+                    min: 1,
+                    defaultValue: 48,
+                    admin: {
+                      description:
+                        'Unpaid orders with no slip are cancelled after this and the stock goes back.',
+                    },
+                  },
+                ],
+              },
+                      ]),
           ],
         },
       ],

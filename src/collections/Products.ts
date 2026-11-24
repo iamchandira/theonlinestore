@@ -233,7 +233,7 @@ export const Products: CollectionConfig = {
           {
             type: 'collapsible',
             label: 'Product information',
-            admin: { className: 'tos-section', components: { Label: '/components/admin/product/SectionLabel#SectionLabel' }, description: 'What shoppers see first: the name, brand, category and description.' },
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'What shoppers see first: the name, brand, category and description.' },
             fields: [
                   { name: 'name', type: 'text', required: true, admin: { description: 'Without the brand, e.g. "Hydrating Facial Cleanser".' } },
                   {
@@ -257,7 +257,7 @@ export const Products: CollectionConfig = {
           {
             type: 'collapsible',
             label: 'Photos',
-            admin: { className: 'tos-section', components: { Label: '/components/admin/product/SectionLabel#SectionLabel' }, description: 'Extra photos for the gallery. Each variant’s own photo is set in the Variants & pricing tab.' },
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Extra photos for the gallery. Each variant’s own photo is set in the Variants & pricing tab.' },
             fields: [
                   { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true, label: 'Extra photos', admin: { description: 'Drag to reorder. Shown after the variant’s own photo.' } },
             ],
@@ -270,7 +270,7 @@ export const Products: CollectionConfig = {
           {
             type: 'collapsible',
             label: 'Variants, prices & stock',
-            admin: { className: 'tos-section', components: { Label: '/components/admin/product/SectionLabel#SectionLabel' }, description: 'Each variant is a sellable SKU with its own price (Rs), stock and photo.' },
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Each variant is a sellable SKU with its own price (Rs), stock and photo.' },
             fields: [
                   {
                     type: 'row',
@@ -378,7 +378,7 @@ export const Products: CollectionConfig = {
           {
             type: 'collapsible',
             label: 'Product details',
-            admin: { className: 'tos-section', components: { Label: '/components/admin/product/SectionLabel#SectionLabel' }, description: 'Shown on the product page. The fields change with the product type (in the sidebar).' },
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Shown on the product page. The fields change with the product type (in the sidebar).' },
             fields: [
                   {
                     name: 'details',
@@ -498,7 +498,7 @@ export const Products: CollectionConfig = {
           {
             type: 'collapsible',
             label: 'Merchandising',
-            admin: { className: 'tos-section', components: { Label: '/components/admin/product/SectionLabel#SectionLabel' }, description: 'Badges, collections and recommendations that help shoppers find this product.' },
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Badges, collections and recommendations that help shoppers find this product.' },
             fields: [
                   {
                     name: 'badge',
@@ -554,7 +554,7 @@ export const Products: CollectionConfig = {
               label: 'Search engine listing',
               admin: {
                 className: 'tos-section',
-                components: { Label: '/components/admin/product/SectionLabel#SectionLabel' },
+                components: { Label: '/components/admin/SectionLabel#SectionLabel' },
                 description: 'How this product appears in Google and when its link is shared. Leave empty to use the name and short description.',
               },
               fields: [

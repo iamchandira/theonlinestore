@@ -1,3 +1,4 @@
+import { SectionLabel as SectionLabel_eb0d343dfad511a8f4f171ce7256a51c } from '../../../components/admin/SectionLabel'
 import { OrderPayment as OrderPayment_8f3b9875b38dc957cb3ea31db59ecb17 } from '../../../components/admin/OrderPayment'
 import { OrdersList as OrdersList_50c5ad532643e65e7ab46068cb377ecb } from '../../../components/admin/views/OrdersList'
 import { ReturnPanel as ReturnPanel_ce408278394a5f767f64137a8819d2da } from '../../../components/admin/ReturnPanel'
@@ -24,7 +25,6 @@ import { StrikethroughFeatureClient as StrikethroughFeatureClient_e70f5e05f09f93
 import { UnderlineFeatureClient as UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { BoldFeatureClient as BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { ItalicFeatureClient as ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
-import { SectionLabel as SectionLabel_e0b24b51a8b57dd8c4fe7a13d67075a1 } from '../../../components/admin/product/SectionLabel'
 import { VariantRowLabel as VariantRowLabel_68eaae0e2613d0adaa320e3b74503794 } from '../../../components/admin/VariantRowLabel'
 import { OverviewComponent as OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { MetaTitleComponent as MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
@@ -45,6 +45,7 @@ import { AdminLogo as AdminLogo_80ebcb12978a9db9a1c04af0af89c7ec } from '../../.
 import { HeaderActions as HeaderActions_c9fcc4e841a7b22678cf4272fdcd73be } from '../../../components/admin/HeaderActions'
 import { LoginIntro as LoginIntro_7b77c0a8bf5649eadd846d28c5d927eb } from '../../../components/admin/LoginIntro'
 import { CommandPaletteProvider as CommandPaletteProvider_73d9bfc042b227ff1b21493f062213db } from '../../../components/admin/CommandPalette'
+import { TableLabels as TableLabels_44c7657fc267457a2cf1521ed1f0f73c } from '../../../components/admin/TableLabels'
 import { Dashboard as Dashboard_86ced07c75806cf3261000d7201be5c2 } from '../../../components/admin/views/Dashboard'
 import { Inventory as Inventory_bdcc4029d5f1810af8343409f33e20be } from '../../../components/admin/views/Inventory'
 import { ImportExport as ImportExport_9fd94c829fdf4a91733c388dd655ea7e } from '../../../components/admin/views/ImportExport'
@@ -54,6 +55,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "/components/admin/SectionLabel#SectionLabel": SectionLabel_eb0d343dfad511a8f4f171ce7256a51c,
   "/components/admin/OrderPayment#OrderPayment": OrderPayment_8f3b9875b38dc957cb3ea31db59ecb17,
   "/components/admin/views/OrdersList#OrdersList": OrdersList_50c5ad532643e65e7ab46068cb377ecb,
   "/components/admin/ReturnPanel#ReturnPanel": ReturnPanel_ce408278394a5f767f64137a8819d2da,
@@ -80,7 +82,6 @@ export const importMap = {
   "@payloadcms/richtext-lexical/client#UnderlineFeatureClient": UnderlineFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#BoldFeatureClient": BoldFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#ItalicFeatureClient": ItalicFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
-  "/components/admin/product/SectionLabel#SectionLabel": SectionLabel_e0b24b51a8b57dd8c4fe7a13d67075a1,
   "/components/admin/VariantRowLabel#VariantRowLabel": VariantRowLabel_68eaae0e2613d0adaa320e3b74503794,
   "@payloadcms/plugin-seo/client#OverviewComponent": OverviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/plugin-seo/client#MetaTitleComponent": MetaTitleComponent_a8a977ebc872c5d5ea7ee689724c0860,
@@ -101,6 +102,7 @@ export const importMap = {
   "/components/admin/HeaderActions#HeaderActions": HeaderActions_c9fcc4e841a7b22678cf4272fdcd73be,
   "/components/admin/LoginIntro#LoginIntro": LoginIntro_7b77c0a8bf5649eadd846d28c5d927eb,
   "/components/admin/CommandPalette#CommandPaletteProvider": CommandPaletteProvider_73d9bfc042b227ff1b21493f062213db,
+  "/components/admin/TableLabels#TableLabels": TableLabels_44c7657fc267457a2cf1521ed1f0f73c,
   "/components/admin/views/Dashboard#Dashboard": Dashboard_86ced07c75806cf3261000d7201be5c2,
   "/components/admin/views/Inventory#Inventory": Inventory_bdcc4029d5f1810af8343409f33e20be,
   "/components/admin/views/ImportExport#ImportExport": ImportExport_9fd94c829fdf4a91733c388dd655ea7e,

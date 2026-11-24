@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { allowRoles } from '../access/roles'
+import { section } from '../fields/section'
 
 /**
  * Search analytics (TOS-208): one row per normalised search term per day (Sri Lanka time).
@@ -10,6 +11,7 @@ export const SearchQueries: CollectionConfig = {
   slug: 'search-queries',
   labels: { singular: 'Search', plural: 'Search log' },
   admin: {
+    hideAPIURL: true,
     group: 'Insights',
     useAsTitle: 'term',
     defaultColumns: ['term', 'day', 'count', 'results'],
@@ -24,9 +26,12 @@ export const SearchQueries: CollectionConfig = {
   defaultSort: '-day',
   indexes: [{ fields: ['term', 'day'], unique: true }],
   fields: [
-    { name: 'term', type: 'text', required: true, index: true },
-    { name: 'day', type: 'text', required: true, index: true, admin: { description: 'YYYY-MM-DD (Asia/Colombo)' } },
-    { name: 'count', type: 'number', required: true, defaultValue: 1 },
-    { name: 'results', type: 'number', required: true, defaultValue: 0, admin: { description: 'Results shown the last time this was searched' } },
+    // Edit page: section cards (src/fields/section.ts); field names and stored data unchanged
+    section('Search term', 'What shoppers searched for, counted per day.', [
+      { name: 'term', type: 'text', required: true, index: true },
+      { name: 'day', type: 'text', required: true, index: true, admin: { description: 'YYYY-MM-DD (Asia/Colombo)' } },
+      { name: 'count', type: 'number', required: true, defaultValue: 1 },
+      { name: 'results', type: 'number', required: true, defaultValue: 0, admin: { description: 'Results shown the last time this was searched' } },
+    ]),
   ],
 }

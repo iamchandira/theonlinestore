@@ -5,6 +5,7 @@ import { DISTRICT_NAMES } from '../config/districts'
 import { audit } from '../lib/payload/audit'
 import { resetPassword, verifyEmail } from '../lib/email/templates'
 import { allow, clientIp } from '../lib/server/rateLimit'
+import { section } from '../fields/section'
 
 /**
  * Users: staff (admin panel) and customers (storefront accounts) share one auth collection,
@@ -42,6 +43,7 @@ export const Users: CollectionConfig = {
     description: 'Customers and staff accounts. Roles control what each staff member can see and do.',
     // Customers / Staff tabs with clean addresses (?view=staff) instead of a role filter in the URL
     components: { views: { list: { Component: '/components/admin/views/UsersList#UsersList' } } },
+    hideAPIURL: true,
   },
   auth: {
     tokenExpiration: 60 * 60 * 24 * 30, // 30 days ("Remember me"); without it the cookie ends with the browser session
@@ -194,90 +196,101 @@ export const Users: CollectionConfig = {
       },
     },
   ],
+  // Edit page: section cards (src/fields/section.ts); field names and stored data unchanged
   fields: [
-    { name: 'fullName', type: 'text', label: 'Full name', maxLength: 80 },
-    {
-      name: 'phone',
-      type: 'text',
-      label: 'Mobile number',
-      admin: { description: 'Sri Lankan mobile, e.g. +94 77 123 4567. Used for SMS / WhatsApp order updates.' },
-      validate: (value: string | null | undefined) =>
-        !value || /^(\+94|0)?7\d{8}$/.test(value.replace(/[\s-]/g, '')) || 'Enter a valid Sri Lankan mobile number',
-    },
-    {
-      name: 'addresses',
-      type: 'array',
-      maxRows: 10,
-      labels: { singular: 'Address', plural: 'Address book' },
-      admin: { description: 'Delivery addresses (TOS-304). The default one is pre-selected at checkout.', initCollapsed: true },
-      fields: [
-        {
-          type: 'row',
-          fields: [
-            { name: 'label', type: 'text', defaultValue: 'Home', maxLength: 30, admin: { width: '30%' } },
-            { name: 'recipientName', type: 'text', required: true, maxLength: 80, admin: { width: '40%' } },
-            {
-              name: 'phone',
-              type: 'text',
-              required: true,
-              admin: { width: '30%' },
-              validate: (v: string | null | undefined) => !v || /^(\+94|0)?7\d{8}$/.test(v.replace(/[\s-]/g, '')) || 'Enter a valid Sri Lankan mobile number',
+    section('Profile', 'Name and mobile number for order updates.', [
+      { name: 'fullName', type: 'text', label: 'Full name', maxLength: 80 },
+      {
+        name: 'phone',
+        type: 'text',
+        label: 'Mobile number',
+        admin: { description: 'Sri Lankan mobile, e.g. +94 77 123 4567. Used for SMS / WhatsApp order updates.' },
+        validate: (value: string | null | undefined) =>
+          !value || /^(\+94|0)?7\d{8}$/.test(value.replace(/[\s-]/g, '')) || 'Enter a valid Sri Lankan mobile number',
+      },
+    ]),
+    section('Address book', 'Saved delivery addresses. The default one is pre-selected at checkout.', [
+      {
+        name: 'addresses',
+        type: 'array',
+        maxRows: 10,
+        labels: { singular: 'Address', plural: 'Address book' },
+        admin: { initCollapsed: true },
+        fields: [
+          {
+            type: 'row',
+            fields: [
+              { name: 'label', type: 'text', defaultValue: 'Home', maxLength: 30, admin: { width: '30%' } },
+              { name: 'recipientName', type: 'text', required: true, maxLength: 80, admin: { width: '40%' } },
+              {
+                name: 'phone',
+                type: 'text',
+                required: true,
+                admin: { width: '30%' },
+                validate: (v: string | null | undefined) => !v || /^(\+94|0)?7\d{8}$/.test(v.replace(/[\s-]/g, '')) || 'Enter a valid Sri Lankan mobile number',
+              },
+            ],
+          },
+          { name: 'line1', label: 'Address line 1', type: 'text', required: true, maxLength: 120 },
+          { name: 'line2', label: 'Address line 2', type: 'text', maxLength: 120 },
+          {
+            type: 'row',
+            fields: [
+              { name: 'city', type: 'text', required: true, maxLength: 60, admin: { width: '35%' } },
+              { name: 'district', type: 'select', required: true, options: DISTRICT_NAMES, admin: { width: '35%' } },
+              { name: 'postalCode', type: 'text', maxLength: 10, admin: { width: '30%' } },
+            ],
+          },
+          { name: 'landmark', type: 'text', maxLength: 120, admin: { description: 'Helps the courier, e.g. "Opposite the Cargills Food City".' } },
+          { name: 'isDefault', type: 'checkbox', defaultValue: false },
+        ],
+      },
+    ]),
+    // ----- sidebar -----
+    section('Roles', 'What this person can see and do in the admin.', [
+      {
+        name: 'roles',
+        type: 'select',
+        hasMany: true,
+        required: true,
+        defaultValue: ['customer'],
+        saveToJWT: true,
+        options: ROLES.map((r) => ({ label: r.label, value: r.value })),
+        access: { create: fieldAdminOnly, update: fieldAdminOnly },
+        admin: { description: 'Controls what this person can see and do. See docs/06-rbac-matrix.md.' },
+      },
+    ], { sidebar: true }),
+    section('Marketing', 'Offers by email, SMS or WhatsApp, with consent kept for the PDPA.', [
+      {
+        name: 'marketingOptIn',
+        type: 'checkbox',
+        label: 'Agreed to receive offers',
+        defaultValue: false,
             },
-          ],
-        },
-        { name: 'line1', label: 'Address line 1', type: 'text', required: true, maxLength: 120 },
-        { name: 'line2', label: 'Address line 2', type: 'text', maxLength: 120 },
-        {
-          type: 'row',
-          fields: [
-            { name: 'city', type: 'text', required: true, maxLength: 60, admin: { width: '35%' } },
-            { name: 'district', type: 'select', required: true, options: DISTRICT_NAMES, admin: { width: '35%' } },
-            { name: 'postalCode', type: 'text', maxLength: 10, admin: { width: '30%' } },
-          ],
-        },
-        { name: 'landmark', type: 'text', maxLength: 120, admin: { description: 'Helps the courier, e.g. "Opposite the Cargills Food City".' } },
-        { name: 'isDefault', type: 'checkbox', defaultValue: false },
-      ],
-    },
-    {
-      name: 'roles',
-      type: 'select',
-      hasMany: true,
-      required: true,
-      defaultValue: ['customer'],
-      saveToJWT: true,
-      options: ROLES.map((r) => ({ label: r.label, value: r.value })),
-      access: { create: fieldAdminOnly, update: fieldAdminOnly },
-      admin: { position: 'sidebar', description: 'Controls what this person can see and do. See docs/06-rbac-matrix.md.' },
-    },
-    {
-      name: 'marketingOptIn',
-      type: 'checkbox',
-      label: 'Agreed to receive offers',
-      defaultValue: false,
-      admin: { position: 'sidebar' },
-    },
-    {
-      name: 'marketingChannels',
-      type: 'select',
-      hasMany: true,
-      options: [
-        { label: 'Email', value: 'email' },
-        { label: 'SMS', value: 'sms' },
-        { label: 'WhatsApp', value: 'whatsapp' },
-      ],
-      admin: { position: 'sidebar', condition: (data) => Boolean(data?.marketingOptIn) },
-    },
-    { name: 'marketingConsentAt', type: 'date', admin: { position: 'sidebar', readOnly: true, description: 'When consent was last given or withdrawn (PDPA).' } },
-    {
-      name: 'deletionRequestedAt',
-      type: 'date',
-      access: { update: ({ req, id }) => isStaff(req.user) || String(req.user?.id) === String(id) },
-      admin: { position: 'sidebar', readOnly: true, description: 'Customer asked for their account to be deleted (process within 14 days).' },
-    },
+      {
+        name: 'marketingChannels',
+        type: 'select',
+        hasMany: true,
+        options: [
+          { label: 'Email', value: 'email' },
+          { label: 'SMS', value: 'sms' },
+          { label: 'WhatsApp', value: 'whatsapp' },
+        ],
+        admin: { condition: (data) => Boolean(data?.marketingOptIn) },
+      },
+      { name: 'marketingConsentAt', type: 'date', admin: { readOnly: true, description: 'When consent was last given or withdrawn (PDPA).' } },
+    ], { sidebar: true }),
+    section('Staff notes', 'Internal only: never shown to the customer.', [
+      { name: 'staffNote', type: 'textarea', access: { read: staffOnly, update: staffOnly }, label: false, admin: { placeholder: 'Only staff see this' } },
+      {
+        name: 'deletionRequestedAt',
+        type: 'date',
+        access: { update: ({ req, id }) => isStaff(req.user) || String(req.user?.id) === String(id) },
+        admin: { readOnly: true, description: 'The customer asked for their account to be deleted (process within 14 days).', condition: (data) => Boolean(data?.deletionRequestedAt) },
+      },
+    ], { sidebar: true }),
     { name: 'wishlist', type: 'json', admin: { hidden: true } },
     { name: 'cart', type: 'json', admin: { hidden: true } },
-    { name: 'staffNote', type: 'textarea', access: { read: staffOnly, update: staffOnly }, admin: { position: 'sidebar' } },
   ],
   timestamps: true,
 }
