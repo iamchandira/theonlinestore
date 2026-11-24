@@ -97,7 +97,7 @@ export function toProduct(doc: PProduct): Product {
 const GENDER: Record<string, string> = { women: 'Women', men: 'Men', unisex: 'Unisex', kids: 'Kids' }
 
 /** Key facts per product type, shown as a compact "Details" list on the product page. */
-function productFacts(doc: PProduct): [string, string][] {
+export function productFacts(doc: PProduct): [string, string][] {
   const d = doc.details ?? {}
   const facts: [string, string | null | undefined][] = []
   switch (doc.productType) {
@@ -125,7 +125,7 @@ function productFacts(doc: PProduct): [string, string][] {
   return facts.filter((f): f is [string, string] => Boolean(f[1]))
 }
 
-function toDetail(doc: PProduct): ProductDetail {
+export function toDetail(doc: PProduct): ProductDetail {
   const base = toProduct(doc)
   const { breadcrumbs } = categoryInfo(doc.categories)
   const variantImages = new Set(base.variants.map((v) => v.image))
@@ -186,7 +186,7 @@ export const getCategoryTree = cache(async (): Promise<{ roots: CategoryNode[]; 
   return { roots, bySlug }
 })
 
-const descendantIds = (node: CategoryNode): number[] => [node.id, ...node.children.flatMap(descendantIds)]
+export const descendantIds = (node: CategoryNode): number[] => [node.id, ...node.children.flatMap(descendantIds)]
 
 /** Resolve /c/[...segments]; "beauty" is a virtual department spanning the beauty categories. */
 export const getCategoryByPath = cache(async (segments: string[]) => {

@@ -16,6 +16,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
+import { AskAboutProduct } from '@/components/assistant/AskAboutProduct'
 import { Badge, badgeLabel } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { InstalmentLine } from '@/components/ui/InstalmentLine'
@@ -218,6 +219,8 @@ export function ProductView({ product, details }: Props) {
               {saved ? <IconHeartFilled size={22} className="text-rose-600" /> : <IconHeart size={22} />}
             </button>
           </div>
+
+          <AskAboutProduct slug={product.slug} name={`${product.brand} ${product.name}`.trim()} />
 
           {/* Reassurance */}
           <ul className="grid gap-2.5 rounded-xl border border-line bg-surface p-4 text-sm sm:grid-cols-2">

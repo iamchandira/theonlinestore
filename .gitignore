@@ -56,3 +56,6 @@ node_modules/
 
 # Bank transfer slips (customer uploads, never committed)
 /private
+
+# IP location databases for the chat log (pnpm geoip:update)
+/.geoip
