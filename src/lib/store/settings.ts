@@ -5,6 +5,7 @@ import { cache } from 'react'
 import type { CheckoutSetting, Policy, StoreSetting } from '@/payload-types'
 
 import { getPayloadClient } from '../catalog/server'
+import { hasGeminiKey, loadChatConfig } from '../assistant/config'
 import { gatewayRoute, loadPaymentConfig } from '../payments/config'
 
 /**
@@ -37,18 +38,21 @@ export type StorePublic = {
   returns: { windowDays: number; nonReturnableTypes: string[] }
   /** Slugs of the categories that exist (menus and tiles only show these) */
   categories: string[]
+  /** Shopping assistant (chat), or null when it is switched off or the server has no Gemini key */
+  assistant: { name: string; tagline: string; greeting: string; starters: string[]; maxLength: number } | null
 }
 
 const SHORT: Record<string, string> = { payhere: 'Cards', koko: 'Koko', mintpay: 'Mintpay', cod: 'Cash on delivery', 'bank-transfer': 'Bank transfer' }
 
 export const getStoreSettings = cache(async (): Promise<StorePublic> => {
   const payload = await getPayloadClient()
-  const [cats, s, c, p, pay] = await Promise.all([
+  const [cats, s, c, p, pay, chat] = await Promise.all([
     payload.find({ collection: 'categories', limit: 0, pagination: false, depth: 0, select: { slug: true } }),
     payload.findGlobal({ slug: 'store-settings', depth: 0 }) as Promise<StoreSetting>,
     payload.findGlobal({ slug: 'checkout-settings', depth: 0 }) as Promise<CheckoutSetting>,
     payload.findGlobal({ slug: 'policies', depth: 0 }) as Promise<Policy>,
     loadPaymentConfig(payload),
+    hasGeminiKey() ? loadChatConfig(payload) : Promise.resolve(null),
   ])
   const usable = Object.values(pay.methods)
     .filter((m) => m.enabled && (m.id === 'cod' || (m.id === 'bank-transfer' ? pay.bankTransfer.accounts.length > 0 : gatewayRoute(pay, m.id as 'payhere') !== null)))
@@ -73,6 +77,7 @@ export const getStoreSettings = cache(async (): Promise<StorePublic> => {
     instalments: bnpl.length ? { providers: bnpl.map((id) => SHORT[id]), feePercent: Math.min(...bnpl.map((id) => pay.instalmentDisplay[id].feePercent)) } : null,
     returns: { windowDays: p.returnWindowDays ?? 7, nonReturnableTypes: (p.nonReturnableTypes ?? ['chocolate']) as string[] },
     categories: cats.docs.map((d) => (d as { slug?: string }).slug).filter((x): x is string => Boolean(x)),
+    assistant: chat?.enabled ? { name: chat.botName, tagline: chat.tagline, greeting: chat.greeting, starters: chat.starters, maxLength: chat.limits.maxLength } : null,
   }
 })
 

@@ -4,6 +4,7 @@ import { MotionConfig } from 'motion/react'
 import type { ReactNode } from 'react'
 import { Toaster } from 'sonner'
 
+import { ChatProvider } from '@/components/assistant/ChatProvider'
 import { AuthProvider } from '@/lib/auth/AuthProvider'
 import { SmoothScroll } from '@/lib/motion/SmoothScroll'
 import type { StorePublic } from '@/lib/store/settings'
@@ -18,6 +19,7 @@ export function Providers({ children, store }: { children: ReactNode; store: Sto
       <SmoothScroll />
       <AuthProvider>
       <ShopProvider>
+      <ChatProvider>
         {children}
         <Toaster
           position="top-center"
@@ -32,6 +34,7 @@ export function Providers({ children, store }: { children: ReactNode; store: Sto
             },
           }}
         />
+      </ChatProvider>
       </ShopProvider>
       </AuthProvider>
     </MotionConfig>

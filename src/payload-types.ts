@@ -83,6 +83,8 @@ export interface Config {
     recipients: Recipient;
     'stock-movements': StockMovement;
     'search-queries': SearchQuery;
+    'chat-conversations': ChatConversation;
+    'chat-blocks': ChatBlock;
     media: Media;
     users: User;
     couriers: Courier;
@@ -111,6 +113,8 @@ export interface Config {
     recipients: RecipientsSelect<false> | RecipientsSelect<true>;
     'stock-movements': StockMovementsSelect<false> | StockMovementsSelect<true>;
     'search-queries': SearchQueriesSelect<false> | SearchQueriesSelect<true>;
+    'chat-conversations': ChatConversationsSelect<false> | ChatConversationsSelect<true>;
+    'chat-blocks': ChatBlocksSelect<false> | ChatBlocksSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     couriers: CouriersSelect<false> | CouriersSelect<true>;
@@ -131,6 +135,7 @@ export interface Config {
     'checkout-settings': CheckoutSetting;
     'payment-settings': PaymentSetting;
     policies: Policy;
+    'chat-settings': ChatSetting;
     'payload-jobs-stats': PayloadJobsStat;
   };
   globalsSelect: {
@@ -139,6 +144,7 @@ export interface Config {
     'checkout-settings': CheckoutSettingsSelect<false> | CheckoutSettingsSelect<true>;
     'payment-settings': PaymentSettingsSelect<false> | PaymentSettingsSelect<true>;
     policies: PoliciesSelect<false> | PoliciesSelect<true>;
+    'chat-settings': ChatSettingsSelect<false> | ChatSettingsSelect<true>;
     'payload-jobs-stats': PayloadJobsStatsSelect<false> | PayloadJobsStatsSelect<true>;
   };
   locale: null;
@@ -149,6 +155,7 @@ export interface Config {
   jobs: {
     tasks: {
       releaseUnpaidOrders: TaskReleaseUnpaidOrders;
+      cleanupChats: TaskCleanupChats;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1238,6 +1245,90 @@ export interface SearchQuery {
   createdAt: string;
 }
 /**
+ * Every chat with the shopping assistant. Flags show questions it couldn’t answer and possible bots.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-conversations".
+ */
+export interface ChatConversation {
+  id: number;
+  title?: string | null;
+  messages?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  unanswered?: boolean | null;
+  unansweredQuestions?: string | null;
+  who?: string | null;
+  customer?: (number | null) | User;
+  /**
+   * Random ID kept in this browser.
+   */
+  visitorId?: string | null;
+  startPage?: string | null;
+  product?: (number | null) | Product;
+  ip?: string | null;
+  lastIp?: string | null;
+  location?: string | null;
+  countryCode?: string | null;
+  /**
+   * Internet provider (ASN).
+   */
+  network?: string | null;
+  /**
+   * Real shoppers rarely come from these; bots often do.
+   */
+  datacenter?: boolean | null;
+  device?: string | null;
+  userAgent?: string | null;
+  referrer?: string | null;
+  suspicious?: boolean | null;
+  suspiciousReasons?: string | null;
+  limitHits?: number | null;
+  fastMessages?: number | null;
+  messageCount?: number | null;
+  productsShown?: number | null;
+  handoffClicked?: boolean | null;
+  inputTokens?: number | null;
+  outputTokens?: number | null;
+  /**
+   * YYYY-MM-DD (Asia/Colombo)
+   */
+  day?: string | null;
+  lastMessageAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * IP addresses, devices and accounts that can’t use the shopping assistant.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-blocks".
+ */
+export interface ChatBlock {
+  id: number;
+  label?: string | null;
+  type: 'ip' | 'range' | 'visitor' | 'customer';
+  /**
+   * IP address (e.g. 203.0.113.7), range (e.g. 203.0.113.0/24) or the device ID from a chat.
+   */
+  value?: string | null;
+  customer?: (number | null) | User;
+  reason?: string | null;
+  expiresAt?: string | null;
+  blockedBy?: (number | null) | User;
+  conversation?: (number | null) | ChatConversation;
+  hits?: number | null;
+  lastHitAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Who changed roles, prices, reviews and content, and when. Entries can’t be edited or deleted.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1342,7 +1433,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'releaseUnpaidOrders' | 'schedulePublish';
+        taskSlug: 'inline' | 'releaseUnpaidOrders' | 'cleanupChats' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1375,7 +1466,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'releaseUnpaidOrders' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'releaseUnpaidOrders' | 'cleanupChats' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1461,6 +1552,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'search-queries';
         value: number | SearchQuery;
+      } | null)
+    | ({
+        relationTo: 'chat-conversations';
+        value: number | ChatConversation;
+      } | null)
+    | ({
+        relationTo: 'chat-blocks';
+        value: number | ChatBlock;
       } | null)
     | ({
         relationTo: 'media';
@@ -2053,6 +2152,61 @@ export interface SearchQueriesSelect<T extends boolean = true> {
   day?: T;
   count?: T;
   results?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-conversations_select".
+ */
+export interface ChatConversationsSelect<T extends boolean = true> {
+  title?: T;
+  messages?: T;
+  unanswered?: T;
+  unansweredQuestions?: T;
+  who?: T;
+  customer?: T;
+  visitorId?: T;
+  startPage?: T;
+  product?: T;
+  ip?: T;
+  lastIp?: T;
+  location?: T;
+  countryCode?: T;
+  network?: T;
+  datacenter?: T;
+  device?: T;
+  userAgent?: T;
+  referrer?: T;
+  suspicious?: T;
+  suspiciousReasons?: T;
+  limitHits?: T;
+  fastMessages?: T;
+  messageCount?: T;
+  productsShown?: T;
+  handoffClicked?: T;
+  inputTokens?: T;
+  outputTokens?: T;
+  day?: T;
+  lastMessageAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-blocks_select".
+ */
+export interface ChatBlocksSelect<T extends boolean = true> {
+  label?: T;
+  type?: T;
+  value?: T;
+  customer?: T;
+  reason?: T;
+  expiresAt?: T;
+  blockedBy?: T;
+  conversation?: T;
+  hits?: T;
+  lastHitAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2788,6 +2942,70 @@ export interface Policy {
   createdAt?: string | null;
 }
 /**
+ * The shopping assistant on the store: what it says, what it knows and how much it can be used.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-settings".
+ */
+export interface ChatSetting {
+  id: number;
+  /**
+   * It also needs GEMINI_API_KEY in the server settings; without it the chat stays hidden.
+   */
+  enabled?: boolean | null;
+  botName: string;
+  tagline?: string | null;
+  greeting: string;
+  /**
+   * Tappable questions under the greeting. Keep them short.
+   */
+  starters?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional, e.g. "Friendly and warm, like a helpful shop assistant. Use simple words."
+   */
+  tone?: string | null;
+  faqs?:
+    | {
+        title: string;
+        answer: string;
+        id?: string | null;
+      }[]
+    | null;
+  notes?: string | null;
+  perHour: number;
+  perDay: number;
+  perConversation: number;
+  maxLength: number;
+  /**
+   * One IP address may send this many times the per-shopper limits (mobile networks share IPs).
+   */
+  ipMultiplier: number;
+  /**
+   * When reached, the chat asks shoppers to use WhatsApp until midnight (Sri Lanka time).
+   */
+  dailyCap: number;
+  autoBlock?: boolean | null;
+  autoBlockThreshold?: number | null;
+  model: string;
+  /**
+   * Answers when the main model is busy. Leave empty for none.
+   */
+  backupModel?: string | null;
+  temperature: number;
+  maxOutputTokens: number;
+  /**
+   * Mention this in your Privacy policy. IP addresses and locations are deleted with the chat.
+   */
+  retentionDays: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs-stats".
  */
@@ -3037,6 +3255,47 @@ export interface PoliciesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "chat-settings_select".
+ */
+export interface ChatSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  botName?: T;
+  tagline?: T;
+  greeting?: T;
+  starters?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  tone?: T;
+  faqs?:
+    | T
+    | {
+        title?: T;
+        answer?: T;
+        id?: T;
+      };
+  notes?: T;
+  perHour?: T;
+  perDay?: T;
+  perConversation?: T;
+  maxLength?: T;
+  ipMultiplier?: T;
+  dailyCap?: T;
+  autoBlock?: T;
+  autoBlockThreshold?: T;
+  model?: T;
+  backupModel?: T;
+  temperature?: T;
+  maxOutputTokens?: T;
+  retentionDays?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-jobs-stats_select".
  */
 export interface PayloadJobsStatsSelect<T extends boolean = true> {
@@ -3063,6 +3322,16 @@ export interface TaskReleaseUnpaidOrders {
   input?: unknown;
   output: {
     released?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskCleanupChats".
+ */
+export interface TaskCleanupChats {
+  input?: unknown;
+  output: {
+    deleted?: number | null;
   };
 }
 /**

@@ -94,6 +94,8 @@ export async function Nav(props: ServerProps) {
       icon: 'analytics',
       children: [
         ...when(can('search-queries'), { label: 'Search insights', href: '/admin/search-insights', icon: 'search' }),
+        ...when(can('chat-conversations'), { label: 'Chat conversations', href: '/admin/collections/chat-conversations', icon: 'chat' }),
+        ...when(can('chat-blocks'), { label: 'Chat blocks', href: '/admin/collections/chat-blocks', icon: 'block' }),
         { label: 'Analytics', icon: 'analytics', soon: 'Sprint 8' },
       ],
     },
@@ -106,6 +108,7 @@ export async function Nav(props: ServerProps) {
         ...when(canGlobal('checkout-settings'), { label: 'Checkout & delivery', href: '/admin/globals/checkout-settings', icon: 'shipping' }),
         ...when(can('couriers'), { label: 'Couriers', href: '/admin/collections/couriers', icon: 'couriers' }),
         ...when(canGlobal('policies'), { label: 'Policies', href: '/admin/globals/policies', icon: 'policies' }),
+        ...when(canGlobal('chat-settings'), { label: 'Chat assistant', href: '/admin/globals/chat-settings', icon: 'assistant' }),
         ...when(can('users'), { label: 'Staff & roles', href: '/admin/collections/users?view=staff', icon: 'staff', match: 'view=staff' }),
         ...when(can('audit-logs'), { label: 'Audit log', href: '/admin/collections/audit-logs', icon: 'audit' }),
         { label: 'Notifications', icon: 'notifications', soon: 'Sprint 7' },

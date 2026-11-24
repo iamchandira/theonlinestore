@@ -198,7 +198,7 @@ async function toRule(payload: Payload, d: Discount): Promise<DiscountRule> {
   }
 }
 
-const liveNow = (now: Date): Where => ({
+export const liveNow = (now: Date): Where => ({
   and: [
     { active: { equals: true } },
     { or: [{ startsAt: { exists: false } }, { startsAt: { less_than_equal: now.toISOString() } }] },

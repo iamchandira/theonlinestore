@@ -252,6 +252,9 @@ The integration test races two shoppers for the last units: exactly one order su
 
 **Test gateway isolation:** all of it lives in `lib/payments/simulator.ts` and `app/(frontend)/checkout/pay/test-gateway/`; the production branch deletes the folder and stubs the module.
 
+### Added in v0.10.0 (shopping assistant)
+**Chat:** `POST /api/assistant/chat` (root Payload endpoint, NDJSON stream) runs Gemini (REST API v1beta over `fetch`, streamed) with function calling over the store's own data. The tools search the live catalogue (`lib/catalog`), read one product, show cards, quick replies, WhatsApp hand-off, add to bag, and flag unanswered questions. Store knowledge (settings, delivery, payments, policies, live automatic promotions, admin FAQs, taxonomy slugs) is built once and cached until the catalogue or settings change. Conversation history is read from `chat-conversations`, never from the client. Blocks (`chat-blocks`) and limits (`chat-settings`) are checked before Gemini is called; the daily cap is counted in the database. IP location runs offline (DB-IP Lite MMDB via `maxmind`, `GEOIP_DIR`). The storefront widget lives in `components/assistant/` (`ChatProvider` inside `ShopProvider`); the admin uses `components/admin/assistant/`. Full guide: [11-chat-assistant.md](11-chat-assistant.md).
+
 ### Target (Sprints 2–7)
 ```mermaid
 erDiagram

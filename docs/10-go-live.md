@@ -118,7 +118,7 @@ store$ nano /srv/theonlinestore/.env
 store$ chmod 600 /srv/theonlinestore/.env
 ```
 
-Fill every value: `NEXT_PUBLIC_SITE_URL=https://theonlinestore.lk`, the password written out in full in both places, SMTP details, PayHere values (or leave PayHere empty to launch with cash on delivery and bank transfer). Never add `ALLOW_TEST_GATEWAY`.
+Fill every value: `NEXT_PUBLIC_SITE_URL=https://theonlinestore.lk`, the password written out in full in both places, SMTP details, PayHere values (or leave PayHere empty to launch with cash on delivery and bank transfer). Never add `ALLOW_TEST_GATEWAY`. For the shopping assistant add `GEMINI_API_KEY` (with billing turned on for its Google project; see [11-chat-assistant.md](11-chat-assistant.md)); without it the chat stays hidden.
 
 **3.8 Database**
 
@@ -191,6 +191,7 @@ Open `https://theonlinestore.lk/admin`. On an empty database it asks you to **cr
 3. **Settings › Checkout & delivery:** free delivery on/off and threshold, weight rules, district zones and fees, same-day, gift wrap fee.
 4. **Settings › Payments** (Super Admin): bank accounts (bank transfer stays hidden until one is added); cash on delivery limits and excluded districts; PayHere Merchant ID/secret and refund App ID/secret (or in the server `.env`); order of methods; leave Koko and Mintpay off until their integrations are built; keep **Test** mode until a sandbox payment works, then switch to **Live**.
 5. **Settings › Couriers:** your couriers and their tracking links.
+5a. **Settings › Chat assistant:** check the greeting and suggested questions, add questions & answers shoppers often ask, and review the limits. Add a line about chat logs to the Privacy policy.
 6. **Catalogue › Categories:** the menu shows a category once it exists. Create them with these names (the web addresses come from the names):
    - **Beauty** (`beauty`) as the parent of Skincare, Hair Care, Body Care and Lips
    - Skincare: Cleansers, Serums & Ampoules (`serums`), Moisturisers (`moisturizers`), Sunscreen, Masks, Toners & Mists (`toners-mists`), Eye, Lash & Brow (`eye-care`), Gift Sets

@@ -21,6 +21,9 @@ pnpm install --frozen-lockfile --prod=false
 pnpm payload migrate
 pnpm build
 
+echo "→ IP location data for the chat log (refreshed monthly; a failed download never stops the deploy)"
+GEOIP_DIR="${GEOIP_DIR:-/srv/theonlinestore/geoip}" node scripts/update-geoip.mjs || true
+
 echo "→ Keeping optimised images between deploys"
 mkdir -p /srv/theonlinestore/image-cache
 rm -rf .next/standalone/.next/cache/images

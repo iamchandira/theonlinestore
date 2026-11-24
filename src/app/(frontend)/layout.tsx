@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 
+import { ChatAssistant } from '@/components/assistant/ChatAssistant'
 import { AnnouncementBar } from '@/components/layout/AnnouncementBar'
 import { CartDrawer } from '@/components/layout/CartDrawer'
 import { Footer } from '@/components/layout/Footer'
@@ -61,6 +62,7 @@ export default async function FrontendLayout({ children }: { children: ReactNode
           <QuickAddSheet />
           <MobileBottomNav />
           <WhatsAppFab />
+          {store.assistant ? <ChatAssistant /> : null}
         </Providers>
       </body>
     </html>
