@@ -27,7 +27,7 @@ if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
   pnpm install --frozen-lockfile >/dev/null
 fi
 
-remove() { for p in "$@"; do if [ -e "$p" ] || git ls-files --error-unmatch "$p" >/dev/null 2>&1; then git rm -rq --ignore-unmatch "$p"; rm -rf "$p"; echo "  removed $p"; fi; done; }
+remove() { for p in "$@"; do if [ -e "$p" ] || git ls-files --error-unmatch "$p" >/dev/null 2>&1; then git rm -rqf --ignore-unmatch "$p"; rm -rf "$p"; echo "  removed $p"; fi; done; }
 
 echo "→ Tests and test tooling"
 remove tests playwright.config.ts vitest.config.mts vitest.setup.ts test.env
