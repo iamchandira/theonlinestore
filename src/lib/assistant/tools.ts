@@ -169,6 +169,8 @@ export type ToolContext = {
   /** Slugs the shopper may be shown this turn: tool results, the product being viewed, and products shown earlier in the chat */
   seen: Set<string>
   effects: TurnEffects
+  /** Slugs from this turn's latest search, best first (cards to fall back on) */
+  lastSearch?: string[]
 }
 
 const clip = (s: string | null | undefined, n: number) => {
@@ -323,6 +325,7 @@ async function searchProducts(ctx: ToolContext, args: Record<string, unknown>) {
   const picked = docs.slice(0, limit)
   const results = picked.map((d) => summary(toProduct(d), d, vocab))
   results.forEach((r) => ctx.seen.add(r.slug))
+  if (results.length) ctx.lastSearch = results.map((r) => r.slug)
   return { results, total: res.totalDocs, filters: applied, ...(note ? { note } : {}) }
 }
 

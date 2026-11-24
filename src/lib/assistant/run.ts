@@ -81,6 +81,11 @@ export async function runTurn(opts: {
     contents.push({ role: 'user', parts: responses })
   }
 
+  // The model searched and presented results ("Here are a few…") but forgot to show the cards: show the
+  // best of its latest search (not when it ends by asking the shopper something)
+  if (!effects.products && ctx.lastSearch?.length && text.trim() && !/\?\s*$/.test(text.trim()))
+    effects.products = { slugs: ctx.lastSearch.slice(0, 4), title: '' }
+
   // The reply points to WhatsApp but the model forgot the button: add it, with the question as context
   if (!effects.handoff && /whatsapp|වට්ස්ඇප්|வாட்ஸ்அப்/i.test(text)) effects.handoff = `Question from the website chat: “${opts.message.slice(0, 200)}”`
 
