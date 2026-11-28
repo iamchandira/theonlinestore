@@ -2,6 +2,10 @@
 
 All notable changes to The Online Store. Format: [Keep a Changelog](https://keepachangelog.com). Versions follow sprints.
 
+## [0.10.1] · 2026-11-28 · Product main photo
+### Fixed
+- Products whose photos were added only under **Photos › Extra photos** showed no main image on product cards, in the search box, the bag and the admin lists. A variant without its own photo now uses the first extra photo, both when a product is saved and, through migration `20261128_120000_variant_photo_fallback`, for products that already exist. Each variant can still have its own photo.
+
 ## [0.10.0] · 2026-11-24 · Shopping assistant (chatbot)
 ### Added
 - **TOS Assistant**, a chat on every store page, powered by Google Gemini and answering only from the store's own data. It:

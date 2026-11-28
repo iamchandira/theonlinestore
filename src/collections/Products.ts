@@ -17,6 +17,7 @@ type VariantRow = {
   cost?: number | null
   stock?: number
   lowStockThreshold?: number
+  image?: unknown
 }
 
 type StockReason = 'initial' | 'adjustment' | 'restock' | 'sale' | 'return' | 'damaged' | 'count'
@@ -96,6 +97,13 @@ export const Products: CollectionConfig = {
         data.totalStock = variants.reduce((n, v) => n + Math.max(0, Number(v.stock ?? 0)), 0)
         data.lowStock = variants.some((v) => Number(v.stock ?? 0) <= Number(v.lowStockThreshold ?? 5))
         data.onSale = variants.some((v) => v.compareAtPrice && Number(v.compareAtPrice) > Number(v.price))
+
+        // A variant without its own photo uses the first extra photo, so cards, search, the bag and the
+        // admin lists always have a main image (each variant can still get its own photo)
+        const firstPhoto = (Array.isArray(data.gallery) ? data.gallery : [])
+          .map((g: unknown) => (g && typeof g === 'object' ? (g as { id?: number }).id : g))
+          .find((id: unknown) => typeof id === 'number' || (typeof id === 'string' && id !== ''))
+        if (firstPhoto) for (const v of variants) if (!v.image) v.image = firstPhoto as number
 
         // Search text: brand + name + taxonomy names, so search can match "cerave cleanser" or "dark spots"
         const brandId = typeof data.brand === 'object' ? data.brand?.id : data.brand
@@ -257,9 +265,9 @@ export const Products: CollectionConfig = {
           {
             type: 'collapsible',
             label: 'Photos',
-            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Extra photos for the gallery. Each variant’s own photo is set in the Variants & pricing tab.' },
+            admin: { className: 'tos-section', components: { Label: '/components/admin/SectionLabel#SectionLabel' }, description: 'Product photos. The first one is the main photo for any variant without its own (set in Variants & pricing).' },
             fields: [
-                  { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true, label: 'Extra photos', admin: { description: 'Drag to reorder. Shown after the variant’s own photo.' } },
+                  { name: 'gallery', type: 'upload', relationTo: 'media', hasMany: true, label: 'Extra photos', admin: { description: 'Drag to reorder. The first photo is used as the main photo unless a variant has its own.' } },
             ],
           },
           ],

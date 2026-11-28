@@ -372,7 +372,7 @@ export interface Product {
     [k: string]: unknown;
   } | null;
   /**
-   * Drag to reorder. Shown after the variant’s own photo.
+   * Drag to reorder. The first photo is used as the main photo unless a variant has its own.
    */
   gallery?: (number | Media)[] | null;
   /**
