@@ -73,6 +73,22 @@ describe('Products', () => {
     expect(p.searchText).toContain('int test product calc')
   })
 
+  it('uses the first extra photo for variants without their own photo', async () => {
+    const media = (await payload.find({ collection: 'media', limit: 2, depth: 0, overrideAccess: true })).docs
+    expect(media.length).toBe(2)
+    const base = baseProduct('photo') as { variants: Record<string, unknown>[] }
+    const variants = base.variants.map((v, i) => ({ ...v, image: i === 0 ? null : media[1].id }))
+    const p = await payload.create({
+      collection: 'products',
+      data: { ...base, variants, gallery: [media[0].id, media[1].id] } as never,
+      user: admin,
+      context: { disableRevalidate: true },
+    })
+    createdProducts.push(p.id)
+    const ids = p.variants.map((v) => (typeof v.image === 'object' && v.image ? v.image.id : v.image))
+    expect(ids).toEqual([media[0].id, media[1].id]) // empty one filled, own photo kept
+  })
+
   it('logs opening stock and later adjustments with the user who made them', async () => {
     const p = await payload.create({ collection: 'products', data: baseProduct('log') as never, user: admin, context: { disableRevalidate: true } })
     createdProducts.push(p.id)
